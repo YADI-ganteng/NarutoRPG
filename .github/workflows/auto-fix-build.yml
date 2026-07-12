@@ -1,0 +1,196 @@
+name: Auto-Fix & Build APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  analyze-and-fix:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: 🔍 ANALISIS PROJECT
+      run: |
+        echo "========================================="
+        echo "  🔍 ANALISIS PROJECT"
+        echo "========================================="
+        
+        # Cek main.py
+        if [ -f "main.py" ]; then
+          echo "✅ main.py ADA"
+          wc -l main.py
+          head -5 main.py
+        else
+          echo "❌ main.py TIDAK ADA!"
+          echo "Membuat main.py otomatis..."
+          cat > main.py << 'PYEOF'
+        from kivy.app import App
+        from kivy.uix.boxlayout import BoxLayout
+        from kivy.uix.button import Button
+        from kivy.uix.label import Label
+        from kivy.uix.widget import Widget
+        from kivy.graphics import Color, Rectangle, Ellipse
+        from kivy.core.window import Window
+        from kivy.clock import Clock
+        from random import randint
+
+        Window.size = (800, 480)
+
+        class GameWidget(Widget):
+            def __init__(self, **kwargs):
+                super().__init__(**kwargs)
+                self.player = {'x':400,'y':240,'hp':500,'max_hp':500,'cp':200,'gold':1000,'level':1,'kills':0,'speed':5}
+                self.enemies = [{'x':randint(50,750),'y':randint(50,430),'hp':100,'max_hp':150,'alive':True,'name':f'Ninja {i}'} for i in range(10)]
+                self.items = [{'x':randint(100,700),'y':randint(100,380),'type':'💰','collected':False} for _ in range(10)]
+                self.keys = set()
+                Window.bind(on_key_down=lambda w,k,*_: self.keys.add(k))
+                Window.bind(on_key_up=lambda w,k,*_: self.keys.discard(k))
+                Clock.schedule_interval(self.update, 1/60)
+            
+            def attack(self):
+                for e in self.enemies:
+                    if not e['alive']: continue
+                    if abs(self.player['x']-e['x'])<80 and abs(self.player['y']-e['y'])<60:
+                        e['hp']-=40
+                        if e['hp']<=0:
+                            e['alive']=False
+                            self.player['kills']+=1
+                            self.player['gold']+=randint(20,70)
+                        break
+            
+            def update(self, dt):
+                if 275 in self.keys: self.player['x']+=self.player['speed']
+                if 276 in self.keys: self.player['x']-=self.player['speed']
+                if 273 in self.keys: self.player['y']+=self.player['speed']
+                if 274 in self.keys: self.player['y']-=self.player['speed']
+                if 293 in self.keys: self.attack()
+                self.player['x']=max(20,min(780,self.player['x']))
+                self.player['y']=max(20,min(460,self.player['y']))
+                for item in self.items:
+                    if not item['collected'] and abs(self.player['x']-item['x'])<25 and abs(self.player['y']-item['y'])<25:
+                        item['collected']=True
+                        self.player['gold']+=100
+                if self.player['cp']<self.player['max_cp']: self.player['cp']+=0.05
+                if self.player['hp']<self.player['max_hp']: self.player['hp']+=0.02
+                self.draw()
+            
+            def draw(self):
+                self.canvas.clear()
+                with self.canvas:
+                    Color(0.1,0.1,0.2); Rectangle(pos=(0,0),size=(800,480))
+                    Color(0.2,0.5,0.2); Rectangle(pos=(0,0),size=(800,80))
+                    for item in self.items:
+                        if not item['collected']:
+                            Color(1,1,0,0.9); Ellipse(pos=(item['x']-10,item['y']-10),size=(20,20))
+                    for e in self.enemies:
+                        if not e['alive']: continue
+                        Color(0.8,0.2,0.2); Rectangle(pos=(e['x']-15,e['y']-20),size=(30,40))
+                        Color(1,0.7,0.5); Ellipse(pos=(e['x']-10,e['y']-30),size=(20,20))
+                        Color(1,0,0); Rectangle(pos=(e['x']-15,e['y']-38),size=(30*(e['hp']/e['max_hp']),4))
+                    Color(1,0.42,0.2); Rectangle(pos=(self.player['x']-15,self.player['y']-25),size=(30,45))
+                    Color(1,0.8,0.6); Ellipse(pos=(self.player['x']-12,self.player['y']-38),size=(24,24))
+                    Color(0,0.8,0.3); Rectangle(pos=(self.player['x']-22,self.player['y']-48),size=(44*(self.player['hp']/self.player['max_hp']),5))
+
+        class GameUI(BoxLayout):
+            def __init__(self, **kwargs):
+                super().__init__(orientation='vertical')
+                self.hud = Label(text='Naruto RPG', size_hint=(1,0.1), color=(1,1,1,1))
+                self.game = GameWidget()
+                self.add_widget(self.hud)
+                self.add_widget(self.game)
+                btn = Button(text='👊 ATTACK', size_hint=(1,0.15), background_color=(1,0.2,0.2,1))
+                btn.bind(on_press=lambda x: self.game.attack())
+                self.add_widget(btn)
+                Clock.schedule_interval(lambda dt: self.update_hud(), 0.2)
+            
+            def update_hud(self):
+                p = self.game.player
+                self.hud.text = f'❤️ {int(p["hp"])} | 💙 {int(p["cp"])} | 💰 {p["gold"]} | ⭐ Lv.{p["level"]} | 👹 {p["kills"]}'
+
+        class NarutoApp(App):
+            def build(self):
+                return GameUI()
+
+        if __name__ == '__main__':
+            NarutoApp().run()
+        PYEOF
+          echo "✅ main.py dibuat otomatis!"
+        fi
+        
+        # Cek buildozer.spec
+        if [ -f "buildozer.spec" ]; then
+          echo "✅ buildozer.spec ADA"
+        else
+          echo "❌ buildozer.spec TIDAK ADA!"
+          echo "Membuat buildozer.spec otomatis..."
+          cat > buildozer.spec << 'SPECEOF'
+        [app]
+        title = Naruto RPG
+        package.name = narutorpg
+        package.domain = com.rpg.naruto
+        source.dir = .
+        source.include_exts = py
+        requirements = python3,kivy==2.2.1
+        orientation = landscape
+        fullscreen = 1
+        android.permissions = INTERNET
+        android.arch = armeabi-v7a, arm64-v8a
+        android.api = 30
+        android.minapi = 21
+        android.ndk = 25b
+        android.sdk = 33
+        android.accept_sdk_license = True
+        android.allow_download_worker = True
+        SPECEOF
+          echo "✅ buildozer.spec dibuat otomatis!"
+        fi
+    
+    - name: 🔧 AUTO-FIX buildozer.spec
+      run: |
+        echo "Memperbaiki buildozer.spec..."
+        
+        # Pastikan source.include_exts ada .py
+        if grep -q "source.include_exts" buildozer.spec; then
+          sed -i 's/source.include_exts = .*/source.include_exts = py/' buildozer.spec
+        fi
+        
+        # Pastikan accept_sdk_license = True
+        sed -i 's/android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
+        sed -i 's/android.allow_download_worker = False/android.allow_download_worker = True/' buildozer.spec
+        
+        echo "✅ buildozer.spec fixed!"
+        cat buildozer.spec | head -20
+    
+    - name: 📦 BUILD APK
+      run: |
+        echo "Installing dependencies..."
+        sudo apt-get update -qq
+        sudo apt-get install -y -qq openjdk-17-jdk python3-pip
+        pip install buildozer cython==0.29.37
+        
+        echo "Building APK..."
+        buildozer android debug 2>&1 | grep -E "SUCCESS|ERROR|APK|Python|copy|available" | tail -20
+        
+        echo "APK location:"
+        find . -name "*.apk" -type f -ls
+    
+    - name: 📤 UPLOAD APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: NarutoRPG-AutoFix-APK
+        path: "**/*.apk"
+    
+    - name: 🚀 CREATE RELEASE
+      uses: softprops/action-gh-release@v2
+      with:
+        files: "**/*.apk"
+        tag_name: auto-build
+        name: "📱 Auto-Build APK"
+        body: "APK dibuat otomatis oleh GitHub Actions!"
+        draft: false
+        prerelease: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      continue-on-error: true

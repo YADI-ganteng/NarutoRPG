@@ -8,13 +8,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Create Project
+      - name: Create Project Structure
         run: |
           mkdir -p app/src/main/java/com/rpg/naruto
           mkdir -p app/src/main/res/values
           mkdir -p app/src/main/assets
-          
-          # Copy all game files to assets
+      
+      - name: Copy Game Assets
+        run: |
           cp -r characters app/src/main/assets/ 2>/dev/null || true
           cp -r sounds app/src/main/assets/ 2>/dev/null || true
           cp -r effects app/src/main/assets/ 2>/dev/null || true
@@ -22,95 +23,562 @@ jobs:
           cp -r ui app/src/main/assets/ 2>/dev/null || true
           cp -r sprites_extracted app/src/main/assets/ 2>/dev/null || true
           cp characters.json app/src/main/assets/ 2>/dev/null || true
-          
-          echo "Files copied!"
-          ls -la app/src/main/assets/
-      
-      - name: Create Build Files
+          find app/src/main/assets/ -type d | head -30
+
+      - name: Create Game Engine HTML
         run: |
-          # settings.gradle
+          cat > app/src/main/assets/index.html << 'HTMLEOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=800, user-scalable=no">
+          <title>Naruto RPG</title>
+          <style>
+          *{margin:0;padding:0;box-sizing:border-box}
+          body{background:#000;display:flex;justify-content:center;align-items:center;height:100vh;overflow:hidden;font-family:monospace}
+          #screen{position:relative;width:800px;height:480px;background:#0a0a2e;overflow:hidden;image-rendering:pixelated}
+          #gameCanvas{position:absolute;top:0;left:0;z-index:1}
+          #uiLayer{position:absolute;bottom:0;left:0;width:100%;z-index:10;display:flex;justify-content:space-between;padding:8px;background:rgba(0,0,0,0.7)}
+          #hpBar{width:200px;height:16px;background:#333;border:1px solid #555;border-radius:4px;overflow:hidden}
+          #hpFill{width:100%;height:100%;background:linear-gradient(90deg,#ff4444,#ff6b35);transition:width 0.3s}
+          #chakraBar{width:200px;height:10px;background:#1a1a4a;border:1px solid #335;border-radius:4px;overflow:hidden;margin-top:2px}
+          #chakraFill{width:100%;height:100%;background:linear-gradient(90deg,#4488ff,#66aaff);transition:width 0.3s}
+          #skillBar{position:absolute;bottom:50px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:10}
+          .skillBtn{width:56px;height:56px;background:rgba(0,0,0,0.8);border:2px solid #ff6b35;border-radius:8px;color:white;font-size:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+          .skillBtn:active{background:#ff6b35;transform:scale(0.9)}
+          .skillBtn .icon{font-size:22px}
+          #charSelect{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:20;display:none;overflow-y:auto;padding:20px}
+          #charSelect h2{color:#ff6b35;text-align:center;margin-bottom:16px;font-size:20px}
+          .charGrid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+          .charCard{width:90px;height:110px;background:#1a1a3a;border:2px solid #333;border-radius:8px;cursor:pointer;text-align:center;padding:6px;color:white;font-size:11px;transition:0.2s}
+          .charCard:hover,.charCard.selected{border-color:#ff6b35;background:#2a2a4a;transform:scale(1.05)}
+          .charCard img{width:50px;height:50px;object-fit:contain;image-rendering:pixelated}
+          #messageBox{position:absolute;top:10px;left:50%;transform:translateX(-50%);color:white;font-size:16px;text-shadow:2px 2px 4px black;z-index:15;background:rgba(0,0,0,0.8);padding:6px 16px;border-radius:20px;display:none}
+          #joystick{position:absolute;bottom:60px;left:20px;width:100px;height:100px;z-index:10;opacity:0.5}
+          #attackBtn{position:absolute;bottom:100px;right:30px;width:70px;height:70px;background:rgba(255,100,50,0.7);border-radius:50%;z-index:10;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:14px;border:3px solid #ff6b35}
+          #attackBtn:active{background:#ff6b35;transform:scale(0.85)}
+          #enemyInfo{position:absolute;top:10px;right:10px;color:white;text-align:right;z-index:10;background:rgba(0,0,0,0.7);padding:6px 10px;border-radius:8px;font-size:12px}
+          #playerInfo{position:absolute;bottom:130px;left:10px;color:white;z-index:10;background:rgba(0,0,0,0.7);padding:6px 10px;border-radius:8px;font-size:12px}
+          </style>
+          </head>
+          <body>
+          <div id="screen">
+          <canvas id="gameCanvas" width="800" height="480"></canvas>
+          <div id="playerInfo">👤 <span id="pName">Naruto</span> | ❤️ <span id="pHP">100</span></div>
+          <div id="enemyInfo">👤 <span id="eName">-</span> | ❤️ <span id="eHP">0</span></div>
+          <div id="messageBox"></div>
+          <div id="skillBar"></div>
+          <div id="uiLayer">
+          <div>
+          <div style="color:white;font-size:12px">❤️ HP</div>
+          <div id="hpBar"><div id="hpFill"></div></div>
+          <div style="color:#88ccff;font-size:10px;margin-top:2px">💠 Chakra</div>
+          <div id="chakraBar"><div id="chakraFill"></div></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-end">
+          <button onclick="toggleCharSelect()" style="padding:8px 14px;background:#4488ff;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer">👥 Pilih</button>
+          <button onclick="spawnEnemy()" style="padding:8px 14px;background:#ff4444;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer">⚔️ Lawan</button>
+          </div>
+          </div>
+          <div id="attackBtn" onclick="basicAttack()">⚔️<br>Atk</div>
+          <div id="charSelect">
+          <h2>🔥 PILIH KARAKTER</h2>
+          <div class="charGrid" id="charGrid"></div>
+          <button onclick="toggleCharSelect()" style="display:block;margin:16px auto;padding:10px 30px;background:#ff4444;color:white;border:none;border-radius:8px;font-size:16px;cursor:pointer">TUTUP ✖</button>
+          </div>
+          </div>
+
+          <script>
+          // ==========================================
+          // NARUTO RPG GAME ENGINE
+          // ==========================================
+          const canvas = document.getElementById('gameCanvas');
+          const ctx = canvas.getContext('2d');
+          
+          // Game State
+          let gameData = { characters: [], enemies: [] };
+          let player = {
+              name: 'Naruto', hp: 100, maxHp: 100, chakra: 100, maxChakra: 100,
+              x: 300, y: 300, speed: 3, sprite: null, skills: [],
+              dir: 0, animFrame: 0, animTimer: 0, attacking: false, attackTimer: 0,
+              selected: false
+          };
+          let enemy = null;
+          let keys = {};
+          let mapImage = null;
+          let mapName = '1.nsx';
+          let effects = [];
+          let particles = [];
+          let camera = { x: 0, y: 0 };
+          let bgmPlaying = false;
+          
+          // Audio context
+          let audioCtx = null;
+          function initAudio() {
+              if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+              if (audioCtx.state === 'suspended') audioCtx.resume();
+          }
+          
+          // Load characters.json
+          async function loadGameData() {
+              try {
+                  const resp = await fetch('characters.json');
+                  const data = await resp.json();
+                  gameData.characters = Array.isArray(data) ? data : [];
+                  console.log('✅ Characters loaded:', gameData.characters.length);
+                  buildCharGrid();
+              } catch(e) {
+                  console.log('⚠️ No characters.json, using defaults');
+                  gameData.characters = generateDefaultCharacters();
+                  buildCharGrid();
+              }
+          }
+          
+          function generateDefaultCharacters() {
+              const names = ['Naruto','Sasuke','Sakura','Kakashi','Itachi','Jiraiya','Tsunade',
+                  'Orochimaru','Gaara','Lee','Neji','Hinata','Shikamaru','Choji','Ino',
+                  'Kiba','Shino','Tenten','Minato','Hiruzen','Tobirama','Hashirama','Madara',
+                  'Pain','Konan','Kisame','Deidara','Sasori','Hidan','Kakuzu','Zetsu',
+                  'Yamato','Sai','Suigetsu','Jugo','Karin','Nagato','Hanzo','Danzo',
+                  'Asuma','Kurenai','Gai','Iruka','Shizune','Anko','Ibiki','Genma',
+                  'Raido','Aoba','Hayate','Yugao','Rin','Obito'];
+              return names.map((n,i) => ({
+                  name: n, id: i, hp: 80+Math.floor(Math.random()*70),
+                  chakra: 50+Math.floor(Math.random()*100),
+                  attack: 10+Math.floor(Math.random()*30),
+                  defense: 5+Math.floor(Math.random()*20),
+                  skills: ['Pukulan','Serangan Cepat','Jurus Spesial'],
+                  sprite: 'naruto_rgba.png'
+              }));
+          }
+          
+          function buildCharGrid() {
+              const grid = document.getElementById('charGrid');
+              grid.innerHTML = gameData.characters.slice(0,30).map((c,i) => `
+              <div class="charCard" onclick="selectCharacter(${i})" id="card${i}">
+              <img src="sprites_extracted/naruto_offset_${(i%5)*256}.png" 
+                   onerror="this.src='sprites_extracted/naruto_rgba.png';this.onerror=null">
+              <div style="margin-top:4px">${c.name || c.id || 'Hero'}</div>
+              <div style="font-size:10px;color:#ff6b35">❤️${c.hp||100}</div>
+              </div>
+              `).join('');
+          }
+          
+          function selectCharacter(i) {
+              const c = gameData.characters[i];
+              if (!c) return;
+              player.name = c.name || 'Hero';
+              player.hp = c.hp || 100;
+              player.maxHp = c.hp || 100;
+              player.chakra = c.chakra || 100;
+              player.maxChakra = c.chakra || 100;
+              player.skills = c.skills || ['Pukulan','Tendangan','Jurus'];
+              player.attack = c.attack || 20;
+              player.defense = c.defense || 10;
+              player.selected = true;
+              
+              // Update UI
+              document.querySelectorAll('.charCard').forEach(el => el.classList.remove('selected'));
+              document.getElementById('card'+i)?.classList.add('selected');
+              updateUI();
+              showMessage('✅ ' + player.name + ' dipilih!');
+              setTimeout(() => toggleCharSelect(), 800);
+          }
+          
+          function toggleCharSelect() {
+              const sel = document.getElementById('charSelect');
+              sel.style.display = sel.style.display === 'block' ? 'none' : 'block';
+              initAudio();
+          }
+          
+          function showMessage(msg) {
+              const box = document.getElementById('messageBox');
+              box.textContent = msg;
+              box.style.display = 'block';
+              clearTimeout(box._timeout);
+              box._timeout = setTimeout(() => box.style.display = 'none', 2000);
+          }
+          
+          function updateUI() {
+              document.getElementById('pName').textContent = player.name;
+              document.getElementById('pHP').textContent = player.hp;
+              document.getElementById('hpFill').style.width = (player.hp/player.maxHp*100)+'%';
+              document.getElementById('chakraFill').style.width = (player.chakra/player.maxChakra*100)+'%';
+              
+              if (enemy) {
+                  document.getElementById('eName').textContent = enemy.name;
+                  document.getElementById('eHP').textContent = enemy.hp;
+              } else {
+                  document.getElementById('eName').textContent = '-';
+                  document.getElementById('eHP').textContent = '0';
+              }
+              
+              buildSkillBar();
+          }
+          
+          function buildSkillBar() {
+              const bar = document.getElementById('skillBar');
+              const skills = player.skills.length > 0 ? player.skills : ['Pukulan','Tendangan','Jurus'];
+              bar.innerHTML = skills.slice(0,5).map((s,i) => `
+              <div class="skillBtn" onclick="useSkill(${i})">
+              <span class="icon">${['👊','💥','🔥','⚡','🌀'][i]||'⭐'}</span>
+              <span>${s}</span>
+              </div>
+              `).join('');
+          }
+          
+          // Load map
+          function loadMap(name) {
+              mapName = name;
+              const img = new Image();
+              img.onload = () => { mapImage = img; };
+              img.onerror = () => { mapImage = null; };
+              img.src = 'maps/' + name;
+          }
+          
+          // Spawn enemy
+          function spawnEnemy() {
+              initAudio();
+              if (enemy) return showMessage('⚔️ Lawan masih hidup!');
+              
+              const pool = gameData.characters.length > 0 ? gameData.characters : generateDefaultCharacters();
+              const template = pool[Math.floor(Math.random() * pool.length)];
+              
+              enemy = {
+                  name: template.name || 'Musuh',
+                  hp: (template.hp || 80) + Math.floor(Math.random()*40),
+                  maxHp: (template.hp || 80) + Math.floor(Math.random()*40),
+                  x: 500 + Math.random()*200,
+                  y: 200 + Math.random()*100,
+                  sprite: null,
+                  animFrame: 0,
+                  animTimer: 0
+              };
+              
+              showMessage('⚔️ ' + enemy.name + ' muncul!');
+              updateUI();
+          }
+          
+          function basicAttack() {
+              if (!enemy) return showMessage('⚠️ Tidak ada musuh!');
+              initAudio();
+              
+              const dmg = Math.floor((player.attack || 20) * (0.8 + Math.random()*0.4));
+              enemy.hp -= dmg;
+              player.attacking = true;
+              player.attackTimer = 15;
+              
+              // Effects
+              for (let i=0;i<8;i++) {
+                  particles.push({
+                      x: enemy.x, y: enemy.y,
+                      vx: (Math.random()-0.5)*6, vy: (Math.random()-0.5)*6-2,
+                      life: 20, color: '#ff6b35', size: 3+Math.random()*4
+                  });
+              }
+              
+              showMessage('👊 ' + dmg + ' damage!');
+              
+              if (enemy.hp <= 0) {
+                  showMessage('💀 ' + enemy.name + ' dikalahkan!');
+                  enemy = null;
+              }
+              updateUI();
+          }
+          
+          function useSkill(i) {
+              if (!enemy) return showMessage('⚠️ Tidak ada musuh!');
+              if (player.chakra < 20) return showMessage('💠 Chakra kurang!');
+              initAudio();
+              
+              player.chakra -= 20;
+              const skillName = player.skills[i] || 'Jurus';
+              const multiplier = 1.5 + i * 0.5;
+              const dmg = Math.floor((player.attack || 20) * multiplier * (0.8 + Math.random()*0.4));
+              enemy.hp -= dmg;
+              player.attacking = true;
+              player.attackTimer = 20;
+              
+              const colors = ['#ff6b35','#ff4444','#ffaa00','#44aaff','#aa44ff'];
+              for (let j=0;j<15;j++) {
+                  particles.push({
+                      x: enemy.x, y: enemy.y,
+                      vx: (Math.random()-0.5)*10, vy: (Math.random()-0.5)*10-3,
+                      life: 25, color: colors[i%5], size: 4+Math.random()*6
+                  });
+              }
+              
+              showMessage('🔥 ' + skillName + '! ' + dmg + ' damage!');
+              
+              if (enemy.hp <= 0) {
+                  showMessage('💀 ' + enemy.name + ' dikalahkan!');
+                  enemy = null;
+              }
+              updateUI();
+          }
+          
+          // Keyboard & Touch controls
+          document.addEventListener('keydown', e => { keys[e.key] = true; initAudio(); });
+          document.addEventListener('keyup', e => { keys[e.key] = false; });
+          
+          // Virtual joystick touch
+          let touchStart = null;
+          canvas.addEventListener('touchstart', e => {
+              e.preventDefault();
+              initAudio();
+              touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          });
+          canvas.addEventListener('touchmove', e => {
+              e.preventDefault();
+              if (!touchStart) return;
+              const dx = e.touches[0].clientX - touchStart.x;
+              const dy = e.touches[0].clientY - touchStart.y;
+              keys['ArrowRight'] = dx > 20;
+              keys['ArrowLeft'] = dx < -20;
+              keys['ArrowDown'] = dy > 20;
+              keys['ArrowUp'] = dy < -20;
+          });
+          canvas.addEventListener('touchend', e => {
+              e.preventDefault();
+              keys['ArrowRight']=keys['ArrowLeft']=keys['ArrowUp']=keys['ArrowDown']=false;
+              touchStart = null;
+          });
+          
+          // Game Loop
+          function update() {
+              // Player movement
+              let moved = false;
+              if (keys['ArrowRight'] || keys['d']) { player.x += player.speed; player.dir = 1; moved = true; }
+              if (keys['ArrowLeft'] || keys['a']) { player.x -= player.speed; player.dir = 2; moved = true; }
+              if (keys['ArrowDown'] || keys['s']) { player.y += player.speed; player.dir = 0; moved = true; }
+              if (keys['ArrowUp'] || keys['w']) { player.y -= player.speed; player.dir = 3; moved = true; }
+              
+              player.x = Math.max(20, Math.min(780, player.x));
+              player.y = Math.max(40, Math.min(440, player.y));
+              
+              if (moved) {
+                  player.animTimer++;
+                  if (player.animTimer > 8) { player.animTimer = 0; player.animFrame = (player.animFrame+1)%4; }
+              } else {
+                  player.animFrame = 0;
+              }
+              
+              if (player.attacking) {
+                  player.attackTimer--;
+                  if (player.attackTimer <= 0) player.attacking = false;
+              }
+              
+              // Enemy AI
+              if (enemy) {
+                  const dx = player.x - enemy.x;
+                  const dy = player.y - enemy.y;
+                  const dist = Math.sqrt(dx*dx+dy*dy);
+                  if (dist > 60) {
+                      enemy.x += (dx/dist) * 1.2;
+                      enemy.y += (dy/dist) * 1.2;
+                  } else if (dist < 50) {
+                      player.hp -= 0.05;
+                      if (Math.random() < 0.02) {
+                          player.hp -= 2;
+                          showMessage('💢 ' + enemy.name + ' menyerang!');
+                      }
+                  }
+                  enemy.animTimer++;
+                  if (enemy.animTimer > 10) { enemy.animTimer = 0; enemy.animFrame = (enemy.animFrame+1)%4; }
+                  if (player.hp <= 0) {
+                      showMessage('💀 Game Over!');
+                      player.hp = player.maxHp;
+                      enemy = null;
+                  }
+              }
+              
+              // Particles
+              particles = particles.filter(p => { p.life--; return p.life > 0; });
+              particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.2; });
+              
+              // Chakra regen
+              if (player.chakra < player.maxChakra) player.chakra += 0.03;
+              
+              updateUI();
+          }
+          
+          function draw() {
+              ctx.clearRect(0, 0, 800, 480);
+              
+              // Background
+              if (mapImage) {
+                  ctx.drawImage(mapImage, 0, 0, 800, 480);
+              } else {
+                  const gradient = ctx.createLinearGradient(0,0,0,480);
+                  gradient.addColorStop(0,'#1a1a3a');
+                  gradient.addColorStop(0.5,'#0d0d2b');
+                  gradient.addColorStop(1,'#2a1a0a');
+                  ctx.fillStyle = gradient;
+                  ctx.fillRect(0,0,800,480);
+                  
+                  // Grid
+                  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+                  for (let x=0;x<800;x+=40) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,480); ctx.stroke(); }
+                  for (let y=0;y<480;y+=40) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(800,y); ctx.stroke(); }
+              }
+              
+              // Draw player
+              drawCharacter(player, true);
+              
+              // Draw enemy
+              if (enemy) drawCharacter(enemy, false);
+              
+              // Particles
+              particles.forEach(p => {
+                  ctx.fillStyle = p.color;
+                  ctx.globalAlpha = p.life / 25;
+                  ctx.fillRect(p.x-2, p.y-2, p.size, p.size);
+                  ctx.globalAlpha = 1;
+              });
+              
+              requestAnimationFrame(() => { update(); draw(); });
+          }
+          
+          function drawCharacter(char, isPlayer) {
+              const sx = (char.animFrame % 4) * 64;
+              const sy = char.dir * 64;
+              const w = 48, h = 56;
+              
+              // Shadow
+              ctx.fillStyle = 'rgba(0,0,0,0.4)';
+              ctx.beginPath();
+              ctx.ellipse(char.x, char.y+26, 18, 6, 0, 0, Math.PI*2);
+              ctx.fill();
+              
+              // Body
+              ctx.fillStyle = isPlayer ? '#ff6b35' : '#ff4444';
+              ctx.fillRect(char.x-14, char.y-22, 28, 40);
+              
+              // Head
+              ctx.fillStyle = isPlayer ? '#ffaa55' : '#ff8866';
+              ctx.beginPath();
+              ctx.arc(char.x, char.y-26, 12, 0, Math.PI*2);
+              ctx.fill();
+              
+              // Eyes
+              ctx.fillStyle = 'white';
+              ctx.fillRect(char.x-4, char.y-30, 3, 3);
+              ctx.fillRect(char.x+1, char.y-30, 3, 3);
+              ctx.fillStyle = '#222';
+              ctx.fillRect(char.x-3, char.y-29, 2, 2);
+              ctx.fillRect(char.x+2, char.y-29, 2, 2);
+              
+              // Name tag
+              ctx.fillStyle = 'white';
+              ctx.font = '10px monospace';
+              ctx.textAlign = 'center';
+              ctx.fillText(char.name || '?', char.x, char.y-36);
+              
+              // HP bar
+              if (char.maxHp) {
+                  ctx.fillStyle = '#333';
+                  ctx.fillRect(char.x-18, char.y-40, 36, 4);
+                  ctx.fillStyle = isPlayer ? '#44ff44' : '#ff4444';
+                  ctx.fillRect(char.x-18, char.y-40, 36*(char.hp/char.maxHp), 4);
+              }
+              
+              // Attack effect
+              if (isPlayer && player.attacking) {
+                  ctx.strokeStyle = '#ffff00';
+                  ctx.lineWidth = 2;
+                  ctx.beginPath();
+                  ctx.arc(char.x+20, char.y-10, 15, 0, Math.PI*2);
+                  ctx.stroke();
+              }
+          }
+          
+          // Initialize
+          loadMap('1.nsx');
+          loadGameData();
+          updateUI();
+          draw();
+          
+          // Map switching every 30 seconds
+          setInterval(() => {
+              const maps = ['1.nsx','2.nsx','3.nsx','4.nsx','5.nsx','100.nsx'];
+              const next = maps[Math.floor(Math.random()*maps.length)];
+              loadMap(next);
+          }, 30000);
+          
+          console.log('🔥 Naruto RPG Engine Ready!');
+          console.log('👤 Characters:', gameData.characters.length || 'loading...');
+          console.log('🗺 Maps: 1-5, 100');
+          </script>
+          </body>
+          </html>
+          HTMLEOF
+          echo "✅ Game engine HTML created"
+
+      - name: Setup Build Files
+        run: |
           echo 'rootProject.name = "NarutoRPG"' > settings.gradle
           echo 'include ":app"' >> settings.gradle
           
-          # Root build.gradle
           cat > build.gradle << 'EOF'
-          buildscript {
-              repositories {
-                  google()
-                  mavenCentral()
-              }
-              dependencies {
-                  classpath 'com.android.tools.build:gradle:7.4.2'
-              }
-          }
-          allprojects {
-              repositories {
-                  google()
-                  mavenCentral()
-              }
+          plugins {
+              id 'com.android.application' version '8.2.0' apply false
           }
           EOF
           
-          # App build.gradle - PAKAI FORMAT LAMA
           cat > app/build.gradle << 'EOF'
-          apply plugin: 'com.android.application'
-          
+          plugins {
+              id 'com.android.application'
+          }
           android {
               namespace 'com.rpg.naruto'
-              compileSdk 33
-              
+              compileSdk 34
               defaultConfig {
                   applicationId "com.rpg.naruto"
-                  minSdkVersion 21
-                  targetSdkVersion 33
+                  minSdk 21
+                  targetSdk 34
                   versionCode 1
                   versionName "1.0"
               }
-              
               buildTypes {
-                  debug {
-                      debuggable true
-                  }
+                  debug { debuggable true }
+                  release { minifyEnabled false }
               }
           }
           EOF
           
-          # gradle.properties
-          cat > gradle.properties << 'EOF'
-          android.useAndroidX=true
-          org.gradle.jvmargs=-Xmx2048m
-          EOF
-      
+          echo 'android.useAndroidX=true' > gradle.properties
+          echo 'org.gradle.jvmargs=-Xmx2048m' >> gradle.properties
+
       - name: Create Android Files
         run: |
-          # AndroidManifest.xml
           cat > app/src/main/AndroidManifest.xml << 'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
           <uses-permission android:name="android.permission.INTERNET"/>
-          <application android:label="Naruto RPG" android:allowBackup="true" android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
-          <activity android:name=".MainActivity" android:exported="true" android:screenOrientation="landscape">
+          <application android:label="Naruto RPG" android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" android:hardwareAccelerated="true">
+          <activity android:name=".MainActivity" android:exported="true" android:screenOrientation="landscape" android:configChanges="orientation|screenSize">
           <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
           </activity>
           </application>
           </manifest>
           EOF
           
-          # strings.xml
           cat > app/src/main/res/values/strings.xml << 'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <resources><string name="app_name">Naruto RPG</string></resources>
           EOF
           
-          # MainActivity.java
           cat > app/src/main/java/com/rpg/naruto/MainActivity.java << 'EOF'
           package com.rpg.naruto;
           import android.app.Activity;
           import android.os.Bundle;
           import android.webkit.WebView;
           import android.webkit.WebSettings;
+          import android.webkit.WebViewClient;
           import android.view.Window;
           import android.view.WindowManager;
+          import android.view.View;
           public class MainActivity extends Activity {
               @Override
               protected void onCreate(Bundle s) {
@@ -122,30 +590,36 @@ jobs:
                   ws.setJavaScriptEnabled(true);
                   ws.setDomStorageEnabled(true);
                   ws.setAllowFileAccess(true);
+                  ws.setAllowContentAccess(true);
+                  ws.setUseWideViewPort(true);
+                  ws.setLoadWithOverviewMode(true);
+                  ws.setMediaPlaybackRequiresUserGesture(false);
+                  wv.setWebViewClient(new WebViewClient());
+                  wv.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
                   wv.loadUrl("file:///android_asset/index.html");
                   setContentView(wv);
               }
           }
           EOF
-      
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-      
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          packages: 'platforms;android-33 build-tools;33.0.0'
-      
+          packages: 'platforms;android-34 build-tools;34.0.0'
+
       - name: Build APK
         run: |
-          gradle wrapper --gradle-version 7.6
+          gradle wrapper --gradle-version 8.5
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon --stacktrace
           find . -name "*.apk" -type f -ls
-      
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:

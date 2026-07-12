@@ -1,0 +1,580 @@
+[
+  {
+    "name": "AnimalPath",
+    "files": [
+      "AnimalPath.nst",
+      "AnimalPath.nsi",
+      "AnimalPath.ns"
+    ],
+    "size_kb": 22.44921875
+  },
+  {
+    "name": "Asuma",
+    "files": [
+      "Asuma.nst",
+      "Asuma.nsi",
+      "Asuma1.nst",
+      "Asuma.ns",
+      "Asuma1.nsi"
+    ],
+    "size_kb": 552.505859375
+  },
+  {
+    "name": "AsuraPath",
+    "files": [
+      "AsuraPath.ns",
+      "AsuraPath.nsi",
+      "AsuraPath.nst"
+    ],
+    "size_kb": 21.0537109375
+  },
+  {
+    "name": "Chiyo",
+    "files": [
+      "Chiyo1.nsi",
+      "Chiyo.nsi",
+      "Chiyo1.nst",
+      "Chiyo.nst",
+      "Chiyo.ns"
+    ],
+    "size_kb": 1002.8193359375
+  },
+  {
+    "name": "Choji",
+    "files": [
+      "Choji.nst",
+      "Choji.nsi",
+      "Choji.ns",
+      "Choji1.nst",
+      "Choji1.nsi"
+    ],
+    "size_kb": 265.404296875
+  },
+  {
+    "name": "Choji2",
+    "files": [
+      "Choji.nst",
+      "Choji.nsi",
+      "Choji.ns",
+      "Choji1.nst",
+      "Choji1.nsi"
+    ],
+    "size_kb": 308.21484375
+  },
+  {
+    "name": "Deidara",
+    "files": [
+      "Deidara1.nsi",
+      "Deidara.ns",
+      "Deidara.nst",
+      "Deidara1.nst",
+      "Deidara.nsi"
+    ],
+    "size_kb": 303.1748046875
+  },
+  {
+    "name": "DevaPath",
+    "files": [
+      "DevaPath.ns",
+      "DevaPath.nsi",
+      "DevaPath.nst"
+    ],
+    "size_kb": 45.44921875
+  },
+  {
+    "name": "Gaara",
+    "files": [
+      "Gaara1.nsi",
+      "Gaara.ns",
+      "Gaara1.nst",
+      "Gaara.nst",
+      "Gaara.nsi"
+    ],
+    "size_kb": 332.2685546875
+  },
+  {
+    "name": "Hidan",
+    "files": [
+      "Hidan1.nsi",
+      "Hidan1.nst",
+      "Hidan.nst",
+      "Hidan.nsi",
+      "Hidan.ns"
+    ],
+    "size_kb": 315.7890625
+  },
+  {
+    "name": "Hinata",
+    "files": [
+      "Hinata.ns",
+      "Hinata.nsi",
+      "Hinata1.nst",
+      "Hinata1.nsi",
+      "Hinata.nst"
+    ],
+    "size_kb": 646.3798828125
+  },
+  {
+    "name": "Hiruzen",
+    "files": [
+      "Hiruzen1.nst",
+      "Hiruzen.nsi",
+      "Hiruzen1.nsi",
+      "Hiruzen.nst",
+      "Hiruzen.ns"
+    ],
+    "size_kb": 343.2763671875
+  },
+  {
+    "name": "Ino",
+    "files": [
+      "Ino.ns",
+      "Ino1.nst",
+      "Ino.nst",
+      "Ino.nsi",
+      "Ino1.nsi"
+    ],
+    "size_kb": 334.671875
+  },
+  {
+    "name": "Itachi",
+    "files": [
+      "Itachi.ns",
+      "Itachi.nst",
+      "Itachi1.nsi",
+      "Itachi1.nst",
+      "Itachi.nsi"
+    ],
+    "size_kb": 287.9833984375
+  },
+  {
+    "name": "IwaNinja",
+    "files": [
+      "IwaNinja.nst",
+      "IwaNinjaSoil.ns",
+      "IwaNinja.ns",
+      "IwaNinja.nsi"
+    ],
+    "size_kb": 28.1083984375
+  },
+  {
+    "name": "Jiraiya",
+    "files": [
+      "Jiraiya.nst",
+      "Jiraiya1.nsi",
+      "Jiraiya.ns",
+      "Jiraiya.nsi",
+      "Jiraiya1.nst"
+    ],
+    "size_kb": 323.486328125
+  },
+  {
+    "name": "JiraiyaSage",
+    "files": [
+      "JiraiyaSage.nsi",
+      "JiraiyaSage.ns",
+      "JiraiyaSage.nst"
+    ],
+    "size_kb": 676.2783203125
+  },
+  {
+    "name": "Jugo",
+    "files": [
+      "Jugo1.nst",
+      "Jugo.ns",
+      "Jugo1.nsi",
+      "Jugo.nsi",
+      "Jugo.nst"
+    ],
+    "size_kb": 467.53515625
+  },
+  {
+    "name": "Kakashi",
+    "files": [
+      "Kakashi.nsi",
+      "Kakashi.nst",
+      "Kakashi1.nst",
+      "Kakashi1.nsi",
+      "Kakashi.ns"
+    ],
+    "size_kb": 533.578125
+  },
+  {
+    "name": "Kakuzu",
+    "files": [
+      "Kakuzu.ns",
+      "Kakuzu.nsi",
+      "Kakuzu.nst"
+    ],
+    "size_kb": 113.84765625
+  },
+  {
+    "name": "Kankuro",
+    "files": [
+      "Kankuro.ns",
+      "Kankuro1.nsi",
+      "Kankuro.nst",
+      "Kankuro1.nst",
+      "Kankuro.nsi"
+    ],
+    "size_kb": 86.951171875
+  },
+  {
+    "name": "Karin",
+    "files": [
+      "Karin.nsi",
+      "Karin1.nsi",
+      "Karin.ns",
+      "Karin.nst",
+      "Karin1.nst"
+    ],
+    "size_kb": 272.2490234375
+  },
+  {
+    "name": "Kiba",
+    "files": [
+      "Kiba.ns",
+      "Kiba.nst",
+      "Kiba.nsi",
+      "Kiba2.ns"
+    ],
+    "size_kb": 245.2939453125
+  },
+  {
+    "name": "Kimimaro",
+    "files": [
+      "Kimimaro.ns",
+      "Kimimaro.nsi",
+      "Kimimaro.nst",
+      "Kimimaro1.nst",
+      "Kimimaro1.nsi"
+    ],
+    "size_kb": 159.572265625
+  },
+  {
+    "name": "KiriNinja",
+    "files": [
+      "KiriNinja.ns",
+      "KiriNinja.nsi",
+      "KiriNinja.nst"
+    ],
+    "size_kb": 29.9599609375
+  },
+  {
+    "name": "Kisame",
+    "files": [
+      "Kisame.nst",
+      "Kisame1.nsi",
+      "Kisame.ns",
+      "Kisame1.nst",
+      "Kisame.nsi"
+    ],
+    "size_kb": 431.9599609375
+  },
+  {
+    "name": "Konan",
+    "files": [
+      "Konan.nst",
+      "Konan1.nst",
+      "Konan.ns",
+      "Konan1.nsi",
+      "Konan.nsi"
+    ],
+    "size_kb": 164.68359375
+  },
+  {
+    "name": "KonohaNinja",
+    "files": [
+      "KonohaNinja.nst",
+      "KonohaNinja.nsi",
+      "KonohaNinja.ns"
+    ],
+    "size_kb": 40.779296875
+  },
+  {
+    "name": "KumoNinja",
+    "files": [
+      "KumoNinja.ns",
+      "KumoNinja.nsi",
+      "KumoNinja.nst",
+      "KumoNinjaThunder.ns"
+    ],
+    "size_kb": 32.654296875
+  },
+  {
+    "name": "Lee",
+    "files": [
+      "Lee1.nst",
+      "Lee1.nsi",
+      "Lee.nst",
+      "Lee.ns",
+      "Lee.nsi"
+    ],
+    "size_kb": 520.9375
+  },
+  {
+    "name": "MadaraMusou",
+    "files": [
+      "TengaiShinsei3.nsi",
+      "MadaraMusou1.nst",
+      "TengaiShinsei2.nsi",
+      "MadaraMusou.nsi",
+      "TengaiShinsei5.nst",
+      "MadaraMusou.ns",
+      "TengaiShinsei2.nst",
+      "TengaiShinsei.ns",
+      "TengaiShinsei6.nsi",
+      "TengaiShinsei4.nst",
+      "TengaiShinsei3.nst",
+      "MadaraMusou1.nsi",
+      "TengaiShinsei6.nst",
+      "TengaiShinsei4.nsi",
+      "TengaiShinsei1.nst",
+      "TengaiShinsei5.nsi",
+      "MadaraMusou.nst",
+      "TengaiShinsei7.nsi",
+      "TengaiShinsei7.nst",
+      "TengaiShinsei1.nsi"
+    ],
+    "size_kb": 21348.28515625
+  },
+  {
+    "name": "Minato",
+    "files": [
+      "Minato.nsi",
+      "Minato1.nst",
+      "Minato1.nsi",
+      "Minato.ns",
+      "Minato.nst"
+    ],
+    "size_kb": 613.892578125
+  },
+  {
+    "name": "Nagato",
+    "files": [
+      "Nagato.ns",
+      "Nagato.nsi",
+      "Nagato.nst"
+    ],
+    "size_kb": 99.2373046875
+  },
+  {
+    "name": "Naruto",
+    "files": [
+      "Naruto_Sejutsu.nsi",
+      "Naruto.nsi",
+      "Naruto1.nsi",
+      "Naruto1.nst",
+      "Naruto.ns",
+      "Naruto.nst",
+      "SexJutsuEffect.nsi",
+      "SexJutsuEffect.nst",
+      "Naruto_Sejutsu.nst"
+    ],
+    "size_kb": 2483.7275390625
+  },
+  {
+    "name": "NarutoRikudo",
+    "files": [
+      "NarutoRikudo.ns",
+      "NarutoRikudo.nst",
+      "NarutoRikudo.nsi"
+    ],
+    "size_kb": 814.7626953125
+  },
+  {
+    "name": "NarutoSage",
+    "files": [
+      "NarutoSage.nsi",
+      "NarutoSage.ns",
+      "NarutoSage.nst"
+    ],
+    "size_kb": 757.76171875
+  },
+  {
+    "name": "Neji",
+    "files": [
+      "Neji.nsi",
+      "Neji.nst",
+      "Neji.ns",
+      "Neji1.nst",
+      "Neji1.nsi"
+    ],
+    "size_kb": 616.0322265625
+  },
+  {
+    "name": "Orochimaru",
+    "files": [
+      "Orochimaru.ns",
+      "Orochimaru.nst",
+      "Orochimaru.nsi",
+      "Orochimaru1.nsi",
+      "Orochimaru1.nst"
+    ],
+    "size_kb": 329.4208984375
+  },
+  {
+    "name": "Pain",
+    "files": [
+      "Pain.nst",
+      "Pain.nsi",
+      "Pain.ns",
+      "Pain1.nst",
+      "Pain1.nsi"
+    ],
+    "size_kb": 175.2275390625
+  },
+  {
+    "name": "Rin",
+    "files": [
+      "Rin.nsi",
+      "Rin1.nst",
+      "Rin.ns",
+      "Rin1.nsi",
+      "Rin.nst"
+    ],
+    "size_kb": 654.646484375
+  },
+  {
+    "name": "RockLee",
+    "files": [
+      "RockLee.nsi",
+      "RockLee.ns",
+      "RockLee.nst"
+    ],
+    "size_kb": 75.880859375
+  },
+  {
+    "name": "Sai",
+    "files": [
+      "Sai.nst",
+      "Sai.nsi",
+      "Sai1.nst",
+      "Sai1.nsi",
+      "Sai.ns"
+    ],
+    "size_kb": 157.0732421875
+  },
+  {
+    "name": "Sakura",
+    "files": [
+      "Sakura.ns",
+      "Sakura.nst",
+      "Sakura.nsi",
+      "Sakura1.nst",
+      "Sakura1.nsi"
+    ],
+    "size_kb": 336.40625
+  },
+  {
+    "name": "Sasuke",
+    "files": [
+      "Sasuke.ns",
+      "Sasuke1.nst",
+      "Sasuke.nst",
+      "Sasuke.nsi",
+      "Sasuke1.nsi"
+    ],
+    "size_kb": 553.9541015625
+  },
+  {
+    "name": "SasukeImmortal",
+    "files": [
+      "SasukeImmortal.ns",
+      "SasukeImmortal.nsi",
+      "SasukeImmortal.nst"
+    ],
+    "size_kb": 259.037109375
+  },
+  {
+    "name": "Shikamaru",
+    "files": [
+      "Shikamaru1.nsi",
+      "Shikamaru.nsi",
+      "Shikamaru1.nst",
+      "Shikamaru.ns",
+      "Shikamaru.nst"
+    ],
+    "size_kb": 125.7724609375
+  },
+  {
+    "name": "Shino",
+    "files": [
+      "Shino.ns",
+      "Shino1.nsi",
+      "Shino.nst",
+      "Shino.nsi",
+      "Shino1.nst"
+    ],
+    "size_kb": 238.921875
+  },
+  {
+    "name": "Suigetsu",
+    "files": [
+      "Suigetsu1.nst",
+      "Suigetsu1.nsi",
+      "Suigetsu.nst",
+      "Suigetsu.ns",
+      "Suigetsu.nsi"
+    ],
+    "size_kb": 212.119140625
+  },
+  {
+    "name": "SunaNinja",
+    "files": [
+      "SunaNinja.nst",
+      "SunaNinja.nsi",
+      "SunaNinja.ns"
+    ],
+    "size_kb": 40.228515625
+  },
+  {
+    "name": "Tenten",
+    "files": [
+      "Tenten1.nsi",
+      "Tenten.nsi",
+      "Tenten.nst",
+      "Tenten.ns",
+      "Tenten1.nst"
+    ],
+    "size_kb": 198.7265625
+  },
+  {
+    "name": "Tobi",
+    "files": [
+      "Tobi1.nst",
+      "Tobi.nst",
+      "TamaBomb3.ns",
+      "Tobi2.ns",
+      "Tobi.nsi",
+      "Tobi.ns",
+      "TamaBomb.ns",
+      "Tobi1.nsi",
+      "MinePlain.ns",
+      "TamaBomb2.ns"
+    ],
+    "size_kb": 861.125
+  },
+  {
+    "name": "Tobirama",
+    "files": [
+      "Tobirama.nsi",
+      "Tobirama.nst",
+      "Tobirama.ns",
+      "Tobirama1.nst",
+      "Tobirama1.nsi"
+    ],
+    "size_kb": 518.79296875
+  },
+  {
+    "name": "Tsunade",
+    "files": [
+      "Tsunade1.nsi",
+      "Tsunade.nst",
+      "Tsunade.nsi",
+      "Tsunade.ns",
+      "Tsunade1.nst"
+    ],
+    "size_kb": 189.701171875
+  }
+]

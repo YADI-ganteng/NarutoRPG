@@ -1,0 +1,107 @@
+name: Build APK v3
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+    - uses: android-actions/setup-android@v3
+      with:
+        packages: 'platforms;android-33 build-tools;33.0.0'
+    
+    - name: Create Project
+      run: |
+        mkdir -p app/src/main/java/com/rpg/naruto app/src/main/res/values app/src/main/assets
+        
+        cat > app/src/main/assets/index.html << 'GAME'
+        <!DOCTYPE html><html><head><meta charset="utf-8"><title>Naruto RPG</title>
+        <style>*{margin:0;padding:0}body{background:#ff6b35!important;color:white;font-family:Arial;text-align:center;padding:30px;min-height:100vh}h1{font-size:3em;margin:20px 0}button{background:white;color:#ff6b35;border:none;padding:20px 40px;font-size:1.5em;border-radius:30px;cursor:pointer;font-weight:bold;margin:10px;display:block;width:80%;margin:10px auto}.bar{width:100%;height:25px;background:#333;border-radius:13px;overflow:hidden;margin:10px 0}.fill{height:100%;background:#4CAF50;width:100%;transition:0.3s;border-radius:13px}.log{background:rgba(255,255,255,0.1);padding:10px;border-radius:10px;margin-top:15px}</style></head>
+        <body><h1>🥷 NARUTO RPG</h1><div class="bar"><div class="fill" id="bar"></div></div><p>❤️ <span id="hp">500</span>/500</p>
+        <button onclick="hit(50)">👊 ATTACK (-50)</button><button onclick="hit(100)">⚡ SKILL (-100)</button><button onclick="hit(200)">🌟 ULT (-200)</button>
+        <button onclick="hp=500;update()">🔄 RESET</button><div class="log" id="log">Game Ready!</div>
+        <script>var hp=500;function hit(d){if(hp<=0)return;hp-=d;if(hp<0)hp=0;update();document.getElementById('log').textContent='Damage: -'+d+' HP';if(hp<=0)document.getElementById('log').textContent='💀 GAME OVER! Press RESET!'}
+        function update(){document.getElementById('hp').textContent=hp;document.getElementById('bar').style.width=(hp/500*100)+'%';document.getElementById('bar').style.background=hp<100?'#ff4444':'#4CAF50'}</script></body></html>
+        GAME
+    
+    - name: Create Build Files
+      run: |
+        cat > settings.gradle << 'EOF'
+        rootProject.name = "NarutoRPG"
+        include ':app'
+        EOF
+        
+        cat > build.gradle << 'EOF'
+        buildscript { repositories { google(); mavenCentral() } dependencies { classpath 'com.android.tools.build:gradle:7.4.2' } }
+        allprojects { repositories { google(); mavenCentral() } }
+        EOF
+        
+        cat > app/build.gradle << 'EOF'
+        apply plugin: 'com.android.application'
+        android { namespace 'com.rpg.naruto' compileSdkVersion 33 defaultConfig { applicationId "com.rpg.naruto" minSdkVersion 21 targetSdkVersion 33 versionCode 3 versionName "3.0" } buildTypes { debug { debuggable true } } }
+        EOF
+        
+        cat > gradle.properties << 'EOF'
+        android.useAndroidX=true
+        org.gradle.jvmargs=-Xmx2048m
+        EOF
+        
+        cat > app/src/main/AndroidManifest.xml << 'EOF'
+        <?xml version="1.0" encoding="utf-8"?>
+        <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+        <application android:label="Naruto RPG" android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" android:hardwareAccelerated="true">
+        <activity android:name=".MainActivity" android:exported="true" android:screenOrientation="landscape" android:configChanges="orientation|screenSize">
+        <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>
+        EOF
+        
+        cat > app/src/main/java/com/rpg/naruto/MainActivity.java << 'EOF'
+        package com.rpg.naruto;
+        import android.app.Activity;
+        import android.os.Bundle;
+        import android.webkit.WebView;
+        import android.webkit.WebSettings;
+        import android.view.Window;
+        import android.view.WindowManager;
+        import android.graphics.Color;
+        public class MainActivity extends Activity {
+            @Override
+            protected void onCreate(Bundle s) {
+                super.onCreate(s);
+                requestWindowFeature(Window.FEATURE_NO_TITLE);
+                getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                WebView wv = new WebView(this);
+                wv.setBackgroundColor(Color.parseColor("#ff6b35"));
+                WebSettings ws = wv.getSettings();
+                ws.setJavaScriptEnabled(true);
+                ws.setDomStorageEnabled(true);
+                ws.setAllowFileAccess(true);
+                wv.loadUrl("file:///android_asset/index.html");
+                setContentView(wv);
+            }
+        }
+        EOF
+        
+        cat > app/src/main/res/values/strings.xml << 'EOF'
+        <?xml version="1.0" encoding="utf-8"?><resources><string name="app_name">Naruto RPG</string></resources>
+        EOF
+    
+    - name: Build APK
+      run: |
+        wget -q https://services.gradle.org/distributions/gradle-7.6-bin.zip
+        unzip -q gradle-7.6-bin.zip
+        export PATH=$PWD/gradle-7.6/bin:$PATH
+        gradle wrapper --gradle-version 7.6
+        chmod +x gradlew
+        ./gradlew assembleDebug --no-daemon 2>&1 | tail -20
+        find . -name "*.apk" -type f -ls
+    
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: NarutoRPG-v3
+        path: app/build/outputs/apk/debug/*.apk

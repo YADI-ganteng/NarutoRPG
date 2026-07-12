@@ -12,8 +12,8 @@ class GameWidget(Widget):
     def __init__(self,**k):
         super().__init__(**k)
         self.p={"x":400,"y":240,"hp":500,"mhp":500,"cp":200,"gold":1000,"lv":1,"kl":0,"sp":5}
-        self.en=[{"x":randint(50,750),"y":randint(50,430),"hp":100,"al":True,"n":"Enemy "+str(i)} for i in range(10)]
-        self.it=[{"x":randint(100,700),"y":randint(100,380),"t":"$","c":False} for _ in range(10)]
+        self.en=[{"x":randint(50,750),"y":randint(50,430),"hp":100,"al":True} for i in range(10)]
+        self.it=[{"x":randint(100,700),"y":randint(100,380),"c":False} for _ in range(10)]
         self.ks=set()
         Window.bind(on_key_down=lambda w,k,*_:self.ks.add(k))
         Window.bind(on_key_up=lambda w,k,*_:self.ks.discard(k))
@@ -22,7 +22,7 @@ class GameWidget(Widget):
         for e in self.en:
             if not e["al"]:continue
             if abs(self.p["x"]-e["x"])<80:e["hp"]-=40
-            if e["hp"]<=0:e["al"]=False;self.p["kl"]+=1;self.p["gold"]+=randint(20,70);break
+            if e["hp"]<=0:e["al"]=False;self.p["kl"]+=1;break
     def up(self,dt):
         if 275 in self.ks:self.p["x"]+=self.p["sp"]
         if 276 in self.ks:self.p["x"]-=self.p["sp"]
@@ -32,7 +32,6 @@ class GameWidget(Widget):
         self.p["x"]=max(20,min(780,self.p["x"]));self.p["y"]=max(20,min(460,self.p["y"]))
         for i in self.it:
             if not i["c"] and abs(self.p["x"]-i["x"])<25:i["c"]=True;self.p["gold"]+=100
-        if self.p["cp"]<200:self.p["cp"]+=0.05
         self.draw()
     def draw(self):
         self.canvas.clear()
@@ -40,14 +39,11 @@ class GameWidget(Widget):
             Color(0.1,0.1,0.2);Rectangle(pos=(0,0),size=(800,480))
             Color(0.2,0.5,0.2);Rectangle(pos=(0,0),size=(800,80))
             for i in self.it:
-                if not i["c"]:Color(1,1,0,0.9);Ellipse(pos=(i["x"]-10,i["y"]-10),size=(20,20))
+                if not i["c"]:Color(1,1,0);Ellipse(pos=(i["x"]-8,i["y"]-8),size=(16,16))
             for e in self.en:
                 if not e["al"]:continue
-                Color(0.8,0.2,0.2);Rectangle(pos=(e["x"]-15,e["y"]-20),size=(30,40))
-                Color(1,0.7,0.5);Ellipse(pos=(e["x"]-10,e["y"]-30),size=(20,20))
-            Color(1,0.42,0.2);Rectangle(pos=(self.p["x"]-15,self.p["y"]-25),size=(30,45))
-            Color(1,0.8,0.6);Ellipse(pos=(self.p["x"]-12,self.p["y"]-38),size=(24,24))
-            Color(0,0.8,0.3);Rectangle(pos=(self.p["x"]-22,self.p["y"]-48),size=(44*self.p["hp"]/500,5))
+                Color(0.8,0.2,0.2);Rectangle(pos=(e["x"]-12,e["y"]-16),size=(24,32))
+            Color(1,0.4,0.2);Rectangle(pos=(self.p["x"]-12,self.p["y"]-20),size=(24,36))
 class NarutoApp(App):
     def build(self):
         l=BoxLayout(orientation="vertical")
@@ -61,5 +57,5 @@ class NarutoApp(App):
         return l
     def upd(self):
         p=self.g.p
-        self.hud.text=f'HP {int(p["hp"])} | CP {int(p["cp"])} | GOLD {p["gold"]} | LV {p["lv"]} | KILLS {p["kl"]}'
+        self.hud.text=f'HP {int(p["hp"])} | CP {int(p["cp"])} | GOLD {p["gold"]} | KILLS {p["kl"]}'
 if __name__=="__main__":NarutoApp().run()

@@ -1,0 +1,167 @@
+name: Build APK
+
+on: workflow_dispatch
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Create Android Project
+      run: |
+        # Buat project Android
+        mkdir -p app/src/main/java/com/rpg/naruto
+        mkdir -p app/src/main/res/values
+        mkdir -p app/src/main/assets
+        
+        # Copy game HTML ke assets
+        cp index.html app/src/main/assets/
+        cp -r characters app/src/main/assets/ 2>/dev/null || echo "No characters folder"
+        cp -r sounds app/src/main/assets/ 2>/dev/null || echo "No sounds folder"
+        cp -r effects app/src/main/assets/ 2>/dev/null || echo "No effects folder"
+        cp -r maps app/src/main/assets/ 2>/dev/null || echo "No maps folder"
+        cp -r ui app/src/main/assets/ 2>/dev/null || echo "No ui folder"
+        
+        # AndroidManifest.xml
+        cat > app/src/main/AndroidManifest.xml << 'MAN'
+        <?xml version="1.0" encoding="utf-8"?>
+        <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+            package="com.rpg.naruto">
+            <uses-permission android:name="android.permission.INTERNET"/>
+            <application
+                android:label="Naruto RPG"
+                android:allowBackup="true"
+                android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+                <activity
+                    android:name=".MainActivity"
+                    android:exported="true"
+                    android:screenOrientation="landscape"
+                    android:configChanges="orientation|screenSize">
+                    <intent-filter>
+                        <action android:name="android.intent.action.MAIN"/>
+                        <category android:name="android.intent.category.LAUNCHER"/>
+                    </intent-filter>
+                </activity>
+            </application>
+        </manifest>
+        MAN
+        
+        # MainActivity.java - WebView Game
+        cat > app/src/main/java/com/rpg/naruto/MainActivity.java << 'JAVA'
+        package com.rpg.naruto;
+        import android.app.Activity;
+        import android.os.Bundle;
+        import android.webkit.WebView;
+        import android.webkit.WebSettings;
+        import android.view.Window;
+        import android.view.WindowManager;
+        
+        public class MainActivity extends Activity {
+            @Override
+            protected void onCreate(Bundle s) {
+                super.onCreate(s);
+                requestWindowFeature(Window.FEATURE_NO_TITLE);
+                getWindow().setFlags(
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                
+                WebView webView = new WebView(this);
+                WebSettings settings = webView.getSettings();
+                settings.setJavaScriptEnabled(true);
+                settings.setDomStorageEnabled(true);
+                settings.setAllowFileAccess(true);
+                
+                webView.loadUrl("file:///android_asset/index.html");
+                setContentView(webView);
+            }
+        }
+        JAVA
+        
+        # strings.xml
+        cat > app/src/main/res/values/strings.xml << 'STR'
+        <?xml version="1.0" encoding="utf-8"?>
+        <resources><string name="app_name">Naruto RPG</string></resources>
+        STR
+        
+        # Build files
+        cat > build.gradle << 'ROOT'
+        buildscript {
+            repositories { google(); mavenCentral() }
+            dependencies { classpath 'com.android.tools.build:gradle:8.2.0' }
+        }
+        allprojects { repositories { google(); mavenCentral() } }
+        ROOT
+        
+        cat > settings.gradle << 'SET'
+        rootProject.name = "NarutoRPG"
+        include ':app'
+        SET
+        
+        cat > app/build.gradle << 'APP'
+        plugins { id 'com.android.application' }
+        android {
+            namespace 'com.rpg.naruto'
+            compileSdk 33
+            defaultConfig {
+                applicationId "com.rpg.naruto"
+                minSdk 21
+                targetSdk 33
+                versionCode 1
+                versionName "1.0"
+            }
+            buildTypes { debug { debuggable true } }
+        }
+        APP
+        
+        cat > gradle.properties << 'PROPS'
+        android.useAndroidX=true
+        org.gradle.jvmargs=-Xmx2048m
+        PROPS
+    
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+    
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+      with:
+        packages: 'platforms;android-33 build-tools;33.0.0'
+    
+    - name: Build APK
+      run: |
+        gradle wrapper --gradle-version 8.5
+        chmod +x gradlew
+        ./gradlew assembleDebug --no-daemon 2>&1 | tail -20
+        find . -name "*.apk" -type f -ls
+    
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: NarutoRPG-APK
+        path: app/build/outputs/apk/debug/*.apk
+        if-no-files-found: warn
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: app/build/outputs/apk/debug/*.apk
+        tag_name: apk-v1.0
+        name: "📱 Naruto RPG APK v1.0"
+        body: |
+          ## 🎮 Naruto RPG - 53 Karakter!
+          
+          ### 📱 Install langsung di Android!
+          
+          ### Fitur:
+          - 👤 53 Karakter Naruto
+          - ⚔️ Battle System
+          - 🎒 Inventory
+          - 💰 Gold & Level System
+          
+          ### Min: Android 5.0+
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      continue-on-error: true

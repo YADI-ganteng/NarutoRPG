@@ -1,0 +1,84 @@
+name: Build APK
+
+on: workflow_dispatch
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Create Project
+      run: |
+        mkdir -p app/src/main/java/com/rpg/naruto
+        mkdir -p app/src/main/res/values
+        mkdir -p app/src/main/assets
+        
+        # Copy HTML if exists
+        if [ -f index.html ]; then
+          cp index.html app/src/main/assets/
+        elif [ -f NARUTO_RPG_GAME/index.html ]; then
+          cp NARUTO_RPG_GAME/index.html app/src/main/assets/
+        else
+          echo "<html><body style='background:#0a0a1a;color:white;text-align:center;padding:50px'><h1 style='color:#ff6b35'>NARUTO RPG</h1><p>53 Karakter</p></body></html>" > app/src/main/assets/index.html
+        fi
+        
+        # Copy assets
+        cp -r characters app/src/main/assets/ 2>/dev/null || true
+        cp -r sounds app/src/main/assets/ 2>/dev/null || true
+        cp -r effects app/src/main/assets/ 2>/dev/null || true
+        cp -r maps app/src/main/assets/ 2>/dev/null || true
+        cp -r ui app/src/main/assets/ 2>/dev/null || true
+        
+        echo "Files copied!"
+        ls -la app/src/main/assets/
+    
+    - name: Create Build Files
+      run: |
+        # settings.gradle
+        printf 'rootProject.name = "NarutoRPG"\ninclude ":app"\n' > settings.gradle
+        
+        # Root build.gradle
+        printf 'buildscript {\n  repositories { google(); mavenCentral() }\n  dependencies { classpath "com.android.tools.build:gradle:8.2.0" }\n}\nallprojects { repositories { google(); mavenCentral() } }\n' > build.gradle
+        
+        # App build.gradle
+        printf 'plugins { id "com.android.application" }\nandroid {\n  namespace "com.rpg.naruto"\n  compileSdk 33\n  defaultConfig { applicationId "com.rpg.naruto" minSdk 21 targetSdk 33 versionCode 1 versionName "1.0" }\n  buildTypes { debug { debuggable true } }\n}\n' > app/build.gradle
+        
+        # gradle.properties
+        printf 'android.useAndroidX=true\norg.gradle.jvmargs=-Xmx2048m\n' > gradle.properties
+    
+    - name: Create Android Files
+      run: |
+        # AndroidManifest.xml
+        printf '<?xml version="1.0" encoding="utf-8"?>\n<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.rpg.naruto">\n<uses-permission android:name="android.permission.INTERNET"/>\n<application android:label="Naruto RPG" android:allowBackup="true" android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">\n<activity android:name=".MainActivity" android:exported="true" android:screenOrientation="landscape">\n<intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>\n</activity>\n</application>\n</manifest>\n' > app/src/main/AndroidManifest.xml
+        
+        # strings.xml
+        printf '<?xml version="1.0" encoding="utf-8"?>\n<resources><string name="app_name">Naruto RPG</string></resources>\n' > app/src/main/res/values/strings.xml
+        
+        # MainActivity.java
+        printf 'package com.rpg.naruto;\nimport android.app.Activity;\nimport android.os.Bundle;\nimport android.webkit.WebView;\nimport android.webkit.WebSettings;\nimport android.view.Window;\nimport android.view.WindowManager;\npublic class MainActivity extends Activity {\n    @Override\n    protected void onCreate(Bundle s) {\n        super.onCreate(s);\n        requestWindowFeature(Window.FEATURE_NO_TITLE);\n        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);\n        WebView wv = new WebView(this);\n        WebSettings ws = wv.getSettings();\n        ws.setJavaScriptEnabled(true);\n        ws.setDomStorageEnabled(true);\n        ws.setAllowFileAccess(true);\n        wv.loadUrl("file:///android_asset/index.html");\n        setContentView(wv);\n    }\n}\n' > app/src/main/java/com/rpg/naruto/MainActivity.java
+    
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+    
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+      with:
+        packages: 'platforms;android-33 build-tools;33.0.0'
+    
+    - name: Build APK
+      run: |
+        gradle wrapper --gradle-version 8.5
+        chmod +x gradlew
+        ./gradlew assembleDebug --no-daemon 2>&1 | tail -20
+        find . -name "*.apk" -type f -ls
+    
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: NarutoRPG-APK
+        path: app/build/outputs/apk/debug/*.apk
+        if-no-files-found: warn

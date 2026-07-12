@@ -1,14 +1,215 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"><title>Naruto RPG</title>
-<style>*{margin:0;padding:0;box-sizing:border-box}body{background:linear-gradient(135deg,#1a1a2e,#0a0a1a);color:white;font-family:Arial;text-align:center;padding:20px;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center}h1{color:#ff6b35;font-size:2.5em;margin:15px 0;text-shadow:2px 2px 4px rgba(0,0,0,.5)}.card{background:rgba(255,255,255,.08);border-radius:20px;padding:25px;margin:15px;max-width:350px;width:90%}.bar{width:100%;height:20px;background:#333;border-radius:10px;overflow:hidden;margin:10px 0}.fill{height:100%;background:#4CAF50;width:100%;transition:.3s;border-radius:10px}button{background:#ff6b35;color:white;border:none;padding:15px 30px;font-size:1.1em;border-radius:30px;cursor:pointer;font-weight:bold;margin:8px;width:85%;max-width:300px}button:active{transform:scale(.95);background:#ff4400}.log{color:#aaa;margin-top:15px;font-size:.9em}.chars{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0}.char-btn{background:rgba(255,255,255,.1);color:white;border:2px solid rgba(255,255,255,.2);padding:8px 12px;border-radius:10px;cursor:pointer;font-size:.8em}.char-btn.sel{border-color:#ff6b35;background:rgba(255,107,53,.3)}</style></head>
-<body><h1>🥷 NARUTO RPG</h1><div class="card"><div style="font-size:1.3em">❤️ <b id="hp">500</b>/500</div><div class="bar"><div class="fill" id="bar"></div></div><div class="chars" id="chars"></div></div>
-<button onclick="atk(50,'👊 Attack')">👊 ATTACK</button><button onclick="atk(100,'⚡ Skill')">⚡ SKILL</button><button onclick="atk(200,'🌟 Ultimate')">🌟 ULTIMATE</button><button onclick="resetGame()">🔄 RESET</button>
-<div class="log" id="log">Pilih karakter & serang!</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Naruto Open World RPG</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;overflow:hidden;height:100vh;touch-action:manipulation;user-select:none;-webkit-user-select:none;font-family:Arial}
+canvas{display:block}
+#ui{position:fixed;top:0;left:0;right:0;z-index:10;pointer-events:none;padding:8px}
+#top{display:flex;justify-content:space-between;align-items:center}
+.hud{background:rgba(0,0,0,.7);color:white;padding:5px 10px;border-radius:8px;font-size:11px;margin:2px}
+.hp-c{color:#4CAF50}.cp-c{color:#4488ff}.gold-c{color:#ffd700}
+#btns{position:fixed;bottom:20px;right:20px;z-index:20;display:flex;flex-direction:column;gap:8px}
+.btn{width:55px;height:55px;border-radius:50%;border:none;color:white;font-size:1.3em;cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,.5)}
+.btn:active{transform:scale(.9)}
+.btn-atk{background:linear-gradient(135deg,#ff4444,#cc0000)}
+.btn-skl{background:linear-gradient(135deg,#4488ff,#0066cc)}
+.btn-ult{background:linear-gradient(135deg,#ffaa00,#ff6600)}
+.btn-int{background:linear-gradient(135deg,#44aa44,#228822)}
+#joy{position:fixed;bottom:30px;left:30px;width:130px;height:130px;z-index:20}
+.jb{width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.2)}
+.jt{width:55px;height:55px;border-radius:50%;background:rgba(255,107,53,.6);position:absolute;top:37px;left:37px}
+#minimap{position:fixed;top:50px;right:10px;width:90px;height:90px;border-radius:50%;border:2px solid #ff6b35;z-index:10;overflow:hidden}
+#dialog{position:fixed;bottom:50%;left:50%;transform:translate(-50%,50%);background:rgba(0,0,0,.95);padding:20px;border-radius:15px;z-index:30;display:none;text-align:center;color:white;border:2px solid #ff6b35;max-width:350px;width:90%}
+#dialog h3{color:#ff6b35;margin-bottom:8px}
+#dialog p{color:#ccc;font-size:.85em;margin-bottom:12px}
+#dialog button{background:#ff6b35;color:white;border:none;padding:8px 20px;border-radius:20px;cursor:pointer;margin:4px;font-size:.85em}
+#quests{position:fixed;top:50px;left:10px;z-index:10;background:rgba(0,0,0,.7);padding:8px;border-radius:8px;font-size:10px;color:#ffaa00;display:none}
+@media(max-width:600px){#joy{bottom:20px;left:15px;width:110px;height:110px}.jb{width:110px;height:110px}.jt{width:45px;height:45px;top:32px;left:32px}.btn{width:45px;height:45px;font-size:1.1em}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="ui"><div id="top"><span class="hud hp-c">❤️ <b id="hpT">500</b></span><span class="hud cp-c">💙 <b id="cpT">200</b></span><span class="hud gold-c">💰 <b id="gdT">1000</b></span><span class="hud">⭐ Lv.<b id="lvT">1</b></span><span class="hud">👹 <b id="klT">0</b></span></div></div>
+<div id="minimap"><canvas id="mm" width="90" height="90"></canvas></div>
+<div id="btns"><button class="btn btn-atk" onclick="attack()">👊</button><button class="btn btn-skl" onclick="skill()">⚡</button><button class="btn btn-ult" onclick="ultimate()">🌟</button><button class="btn btn-int" onclick="interact()">🤝</button></div>
+<div id="joy"><div class="jb" id="jsB"><div class="jt" id="jsT"></div></div></div>
+<div id="dialog"><h3 id="dT">NPC</h3><p id="dM">...</p><button onclick="acceptQ()">✅ Terima</button><button onclick="closeD()">❌ Tutup</button></div>
+<div id="quests"><b>📜 QUESTS</b><div id="qL"></div></div>
+
 <script>
-var hp=500,mhp=500,chars=['Naruto','Sasuke','Sakura','Kakashi','Itachi','Jiraiya','Tsunade','Orochimaru','Gaara','Lee','Neji','Hinata','Minato','Madara','Pain'],sel='Naruto';
-function init(){var c=document.getElementById('chars');chars.forEach(function(n){var b=document.createElement('button');b.className='char-btn';b.textContent=n;b.onclick=function(){sel=n;document.querySelectorAll('.char-btn').forEach(function(x){x.classList.remove('sel')});b.classList.add('sel');log('✅ '+n+' dipilih!')};if(n==sel)b.classList.add('sel');c.appendChild(b)})}
-function atk(d,n){if(hp<=0){log('💀 GAME OVER! Reset!');return}hp-=d;if(hp<0)hp=0;updateUI();log(n+': -'+d+' HP | '+sel+': '+hp+' HP');if(hp<=0)log('💀 '+sel+' KALAH! RESET!')}
-function resetGame(){hp=mhp;updateUI();log('🔄 '+sel+' siap bertarung!')}
-function updateUI(){document.getElementById('hp').textContent=hp;document.getElementById('bar').style.width=(hp/mhp*100)+'%';document.getElementById('bar').style.background=hp<100?'#ff4444':'#4CAF50'}
-function log(m){document.getElementById('log').textContent=m}
-init();log('🎮 Game Ready!')
-</script></body></html>
+// ===== DATA KARAKTER =====
+const CHARACTERS = ["AnimalPath", "Asuma", "AsuraPath", "Chiyo", "Choji", "Choji2", "Deidara", "DevaPath", "Gaara", "Hidan", "Hinata", "Hiruzen", "Ino", "Itachi", "IwaNinja", "Jiraiya", "JiraiyaSage", "Jugo", "Kakashi", "Kakuzu", "Kankuro", "Karin", "Kiba", "Kimimaro", "KiriNinja", "Kisame", "Konan", "KonohaNinja", "KumoNinja", "Lee", "MadaraMusou", "Minato", "Nagato", "Naruto", "NarutoRikudo", "NarutoSage", "Neji", "Orochimaru", "Pain", "Rin", "RockLee", "Sai", "Sakura", "Sasuke", "SasukeImmortal", "Shikamaru", "Shino", "Suigetsu", "SunaNinja", "Tenten", "Tobi", "Tobirama", "Tsunade"];
+const SOUNDS = {"": ["intro2.ogg", "intro.ogg"], "Kisame": ["Kisame_ougis.ogg", "Kisame_combo.ogg", "Kisame_skill10_1.ogg", "Kisame_dead.ogg", "Kisame_hurt.ogg", "Kisame_skill1.ogg", "Kisame_skill5.ogg", "Kisame_skill2.ogg", "Kisame_skill4.ogg", "Kisame_skill3.ogg", "Kisame_skill10.ogg"], "Kankuro": ["Kankuro_skill2.ogg", "Kankuro_skill4.ogg", "Kankuro_hurt.ogg", "Kankuro_skill5_1.ogg", "Kankuro_skill1.ogg", "Kankuro_ougis.ogg", "Kankuro_combo.ogg", "Kankuro_dead.ogg", "Kankuro_skill3.ogg"], "Kakuzu": ["Kakuzu_skill1.ogg", "Kakuzu_ougis.ogg", "Kakuzu_skill4.ogg", "Kakuzu_combo.ogg", "Kakuzu_skill2_1.ogg", "Kakuzu_skill3.ogg", "Kakuzu_dead.ogg", "Kakuzu_skill2.ogg"], "Effect": ["break_sound3.ogg", "chakra_treat.ogg", "hiraishin_effect2.ogg", "rush.ogg", "bom.ogg", "byakugan.ogg", "break_sound.ogg", "combo3.ogg", "suzou_effect.ogg", "kunai.ogg", "kara.ogg", "thunder_effect.ogg", "goukakyu.ogg", "dash_effect.ogg", "futon_effect.ogg", "rasen.ogg", "xiu.ogg", "srg.ogg", "damage_o.ogg", "damage_i.ogg", "damage_k.ogg", "water_effect.ogg", "poof.ogg", "blade_damage2.ogg", "hiraishin_effect.ogg", "kugutsu.ogg", "a.ogg", "combo1.ogg", "pup.ogg", "combo2.ogg", "damage_h.ogg", "log_roll.ogg", "break_sound2.ogg", "damage_rasen.ogg", "bijyudama.ogg", "o2_damage.ogg", "damage_l.ogg", "bubble.ogg", "blade_damage.ogg", "damage_c.ogg", "damage_haken.ogg", "blade.ogg", "kuroari.ogg", "stick_damage.ogg", "poof2.ogg", "suiryudan.ogg", "damage_o2.ogg", "ougis.ogg", "srg2.ogg"], "Sakura": ["Sakura_dead.ogg", "Sakura_combo2.ogg", "Sakura_skill2.ogg", "Sakura_skill5_3.ogg", "Sakura_skill5_1.ogg", "Sakura_combo.ogg", "Sakura_skill3.ogg", "Sakura_skill4_2.ogg", "Sakura_skill1.ogg", "Sakura_skill4_1.ogg", "Sakura_skill5_2.ogg", "Sakura_skill5_4.ogg", "Sakura_hurt.ogg", "Sakura_ougis.ogg", "Sakura_skill5.ogg"], "SasukeImmortal": ["SasukeImmortal_ougis.ogg", "SasukeImmortal_skill1_2.ogg", "SasukeImmortal_skill4.ogg", "SasukeImmortal_skill2.ogg", "SasukeImmortal_skill5_1.ogg", "SasukeImmortal_skill1_1.ogg", "SasukeImmortal_skill10.ogg", "SasukeImmortal_skill3.ogg"], "Neji": ["Neji_skill03.ogg", "Neji_skill5_4.ogg", "Neji_dead.ogg", "Neji_skill5_5.ogg", "Neji_combo.ogg", "Neji_skill5_1.ogg", "Neji_skill01.ogg", "Neji_skill04.ogg", "Neji_skill04_1.ogg", "Neji_skill02_1.ogg", "Neji_hurt.ogg", "Neji_skill02_2.ogg", "Neji_ougis.ogg", "Neji_skill5_3.ogg"], "Tsunade": ["Tsunade_ougis.ogg", "Tsunade_skill4_2.ogg", "Tsunade_skill3.ogg", "Tsunade_skill4_3.ogg", "Tsunade_skill11.ogg", "Tsunade_skill2_1.ogg", "Tsunade_hurt.ogg", "Tsunade_dead.ogg", "Tsunade_skill4_1.ogg", "Tsunade_skill5.ogg", "Tsunade_skill2.ogg", "Tsunade_combo.ogg", "Tsunade_skill1.ogg"], "Naruto": ["SexJutsu_effect.ogg", "Naruto_skill4_1.ogg", "Naruto_combo.ogg", "SexJutsu.ogg", "Naruto_dead.ogg", "Naruto_skill5.ogg", "Naruto_skill2.ogg", "Naruto_ougis_t1.ogg", "OirokeJutsu.ogg", "OirokeJutsu_effect.ogg", "CutieJutsu_effect.ogg", "Naruto_skill3.ogg", "Kagura.ogg", "CutieJutsu.ogg", "Naruto_skill1.ogg", "Naruto_ougis.ogg", "Naruto_skill12.ogg", "Naruto_skill4.ogg", "Naruto_hurt.ogg"], "Kimimaro": ["Kimimaro_skill5.ogg", "Kimimaro_skill4_2.ogg", "Kimimaro_skill3.ogg", "Kimimaro_skill2.ogg", "Kimimaro_combo.ogg", "Kimimaro_ougis.ogg", "Kimimaro_hurt.ogg", "Kimimaro_skill1.ogg", "Kimimaro_dead.ogg", "Kimimaro_skill4_1.ogg"], "HokageMinato": ["HokageMinato_skill2_1.ogg", "HokageMinato_ougis.ogg", "HokageMinato_skill3.ogg", "HokageMinato_skill1_1.ogg", "HokageMinato_skill4.ogg", "HokageMinato_skill2.ogg"], "Tobirama": ["Tobirama_skill5_4.ogg", "Tobirama_skill5_3.ogg", "Tobirama_skill4_1.ogg", "Tobirama_ougis.ogg", "Tobirama_skill2.ogg", "Tobirama_skill1.ogg", "Tobirama_skill4.ogg", "Tobirama_hurt.ogg", "Tobirama_skill5_2.ogg", "Tobirama_skill3.ogg", "Tobirama_dead.ogg", "Tobirama_skill5_1.ogg", "Tobirama_combo.ogg"], "Intro": ["Neji.ogg", "Pain.ogg", "Tobi.ogg", "Hinata.ogg", "Tobirama.ogg", "Itachi.ogg", "Naruto.ogg", "Naruto_t1.ogg", "Sai.ogg", "Kisame.ogg", "Gaara.ogg", "Suigetsu.ogg", "Tsunade.ogg", "Kakuzu.ogg", "Asuma.ogg", "Jugo.ogg", "Shino.ogg", "Chiyo.ogg", "Deidara.ogg", "Rin.ogg", "Minato.ogg", "Tenten.ogg", "Sasuke.ogg", "Lee.ogg", "Hidan.ogg", "Kimimaro.ogg", "Orochimaru.ogg", "Shikamaru.ogg", "Jiraiya.ogg", "Choji.ogg", "Sakura.ogg", "Kiba.ogg", "Konan.ogg", "Kakashi.ogg", "Kankuro.ogg", "Ino.ogg", "Hiruzen.ogg", "Karin.ogg"], "Itachi": ["Itachi_ougis.ogg", "Itachi_skill3_1.ogg", "Itachi_dead.ogg", "Itachi_skill1_1.ogg", "Itachi_skill3.ogg", "Itachi_skill5_2.ogg", "Itachi_skill1.ogg", "Itachi_skill2.ogg", "Itachi_skill5_1.ogg", "Itachi_hurt.ogg", "Itachi_combo.ogg", "Itachi_skill4.ogg"], "Ino": ["Ino_dead.ogg", "Ino_ougis.ogg", "Ino_skill1.ogg", "Ino_skill3.ogg", "Ino_skill3_2.ogg", "Ino_combo.ogg", "Ino_skill2.ogg", "Ino_skill4.ogg", "Ino_skill3_1.ogg", "Ino_hurt.ogg"], "Hidan": ["Hidan_skill2.ogg", "Hidan_skill3.ogg", "Hidan_skill4_1.ogg", "Hidan_dead.ogg", "Hidan_skill4.ogg", "Hidan_ougis.ogg", "Hidan_combo.ogg", "Hidan_skill1.ogg"], "Hiruzen": ["Hiruzen_skill3_1.ogg", "Hiruzen_hurt.ogg", "Hiruzen_skill3_2.ogg", "Hiruzen_skill5.ogg", "Hiruzen_dead.ogg", "Hiruzen_skill4_3.ogg", "Hiruzen_skill1.ogg", "Hiruzen_skill2.ogg", "Hiruzen_skill4_1.ogg", "Hiruzen_combo.ogg", "Hiruzen_skill4_2.ogg", "Hiruzen_ougis.ogg"], "Asuma": ["Asuma_skill4_6.ogg", "Asuma_skill4_2.ogg", "Asuma_skill3_1.ogg", "Asuma_skill2_2.ogg", "Asuma_ougis.ogg", "Asuma_skill4_3.ogg", "Asuma_skill4_1.ogg", "Asuma_hurt.ogg", "Asuma_skill2_1.ogg", "Asuma_skill4_5.ogg", "Asuma_skill5.ogg", "Asuma_skill4.ogg", "Asuma_skill3.ogg", "Asuma_combo.ogg", "Asuma_skill1.ogg", "Asuma_dead.ogg"], "Sasuke": ["Sasuke_dead.ogg", "Sasuke_skill1.ogg", "Sasuke_skill4.ogg", "Sasuke_combo.ogg", "Sasuke_skill1_1.ogg", "Sasuke_hurt.ogg", "Sasuke_skill3.ogg", "Sasuke_ougis.ogg", "Sasuke_skill10.ogg", "Sasuke_skill2.ogg", "Sasuke_skill4_1.ogg", "Sasuke_skill2_2.ogg", "Sasuke_skill11.ogg"], "NarutoRikudo": ["NarutoRikudo_skill4.ogg", "NarutoRikudo_skill3.ogg", "Kurama_combo.ogg", "NarutoRikudo_skill2.ogg", "NarutoRikudo_skill5.ogg", "NarutoRikudo_ougis.ogg", "NarutoRikudo_skill1.ogg"], "Shino": ["Shino_skill1.ogg", "Shino_dead.ogg", "Shino_skill4.ogg", "Shino_ougis.ogg", "Shino_hurt.ogg", "Shino_combo.ogg", "Shino_skill2.ogg", "Shino_skill2_1.ogg", "Shino_skill5.ogg", "Shino_skill1_1.ogg", "Shino_skill3.ogg"], "Pain": ["AsuraPath_skill1.ogg", "Pain_ougis.ogg", "Pain_skill4.ogg", "Pain_combo.ogg", "Pain_dead.ogg", "Pain_hurt.ogg", "NarakaPath_skill2.ogg", "AnimalPath_skill1.ogg", "NarakaPath_combo.ogg", "Pain_skill3.ogg", "Pain_skill1.ogg", "Pain_skill2.ogg", "NarakaPath_skill1.ogg"], "Music": ["menu_music.ogg", "Battle2.ogg", "Battle6.ogg", "Battle11.ogg", "Battle12.ogg", "Battle8.ogg", "loading_music.ogg", "Battle13.ogg", "credits_music.ogg", "Battle4.ogg", "Battle7.ogg", "Battle10.ogg", "Battle9.ogg", "Battle1.ogg", "intro_music.ogg", "Battle3.ogg", "Battle5.ogg", "select_music.ogg"], "JiraiyaSage": ["JiraiyaSage_skill5.ogg", "JiraiyaSage_skill4.ogg", "JiraiyaSage_skill3.ogg", "JiraiyaSage_skill3_1.ogg", "JiraiyaSage_skill5_1.ogg", "JiraiyaSage_skill2.ogg", "JiraiyaSage_skill1.ogg", "JiraiyaSage_skill4_1.ogg", "JiraiyaSage_combo.ogg", "JiraiyaSage_ougis.ogg"], "Karin": ["Karin_dead.ogg", "Karin_ougis.ogg", "Karin_skill4.ogg", "Karin_skill5_2.ogg", "Karin_skill5_1.ogg", "Karin_skill1.ogg", "Karin_skill5_3.ogg", "Karin_combo.ogg", "Karin_hurt.ogg", "Karin_skill3.ogg", "Karin_skill2.ogg"], "Suigetsu": ["Suigetsu_skill3_2.ogg", "Suigetsu_skill2.ogg", "Suigetsu_skill4.ogg", "Suigetsu_dead.ogg", "Suigetsu_skill1.ogg", "Suigetsu_skill3_1.ogg", "Suigetsu_skill5_4.ogg", "Suigetsu_ougis.ogg", "Suigetsu_skill5_3.ogg", "Suigetsu_skill5_5.ogg", "Suigetsu_combo.ogg", "Suigetsu_hurt.ogg"], "Kiba": ["Kiba_dead.ogg", "Kiba_skill4_1.ogg", "Kiba_ougis.ogg", "Kiba_skill5.ogg", "Kiba_skill2.ogg", "Kiba_skill1.ogg", "Kiba_combo.ogg", "Kiba_skill11.ogg", "Kiba_skill3.ogg", "Kiba_hurt.ogg", "Kiba_skill4_2.ogg"], "Nagato": ["Nagato_skill5.ogg", "Nagato_hurt.ogg", "Nagato_combo.ogg", "Nagato_skill1.ogg", "Nagato_skill4.ogg", "Nagato_skill2_1.ogg", "Nagato_skill2.ogg", "Nagato_skill3.ogg", "Nagato_ougis.ogg"], "Konan": ["Konan_skill5.ogg", "Konan_dead.ogg", "Konan_skill3.ogg", "Konan_skill4.ogg", "Konan_hurt.ogg", "Konan_combo.ogg", "Konan_skill5_1.ogg", "Konan_skill3_1.ogg", "Konan_ougis.ogg", "Konan_skill1.ogg", "Konan_skill2.ogg"], "Roshi": ["Roshi_combo.ogg", "Roshi_combo2.ogg", "Roshi_ougis.ogg", "Roshi_Hurt.ogg"], "Deidara": ["Deidara_hurt.ogg", "Deidara_combo.ogg", "Deidara_dead.ogg", "Deidara_skill1.ogg", "Deidara_ougis.ogg", "Deidara_skill5.ogg", "Deidara_skill4.ogg", "Deidara_skill3.ogg", "Deidara_skill2.ogg"], "Choji": ["Choji_skill2.ogg", "Choji_skill12.ogg", "Choji_skill4.ogg", "Choji_skill10.ogg", "Choji_skill1.ogg", "Choji_skill3.ogg", "Choji_combo.ogg", "Choji_dead.ogg", "Choji_ougis.ogg", "Choji_hurt.ogg"], "Gaara": ["Gaara_skill0.ogg", "Gaara_skill5.ogg", "Gaara_skill3.ogg", "Gaara_hurt.ogg", "Gaara_combo.ogg", "Gaara_skill0_1.ogg", "Gaara_skill2.ogg", "Gaara_skill1.ogg", "Gaara_dead.ogg", "Gaara_ougis.ogg"], "Tenten": ["Tenten_combo.ogg", "Tenten_skill5_1.ogg", "Tenten_skill3.ogg", "Tenten_dead.ogg", "Tenten_hurt.ogg", "Tenten_skill4_1.ogg", "Tenten_ougis.ogg", "Tenten_skill5_3.ogg", "Tenten_skill4.ogg", "Tenten_skill1.ogg", "Tenten_skill2.ogg", "Tenten_skill5_2.ogg", "Tenten_skill2_1.ogg"], "Hinata": ["Hinata_skill5_4.ogg", "Hinata_ougis.ogg", "Hinata_skill5_6.ogg", "Hinata_skill02_1.ogg", "Hinata_skill5_1.ogg", "Hinata_skill5_3.ogg", "Hinata_skill03.ogg", "Hinata_skill04.ogg", "Hinata_skill5_2.ogg", "Hinata_combo.ogg", "Hinata_dead.ogg", "Hinata_skill01.ogg", "Hinata_hurt.ogg", "Hinata_skill02_2.ogg"], "Sai": ["Sai_skill2_1.ogg", "Sai_skill1.ogg", "Sai_combo.ogg", "Ink_tiger.ogg", "Sai_ougis.ogg", "Sai_skill5.ogg", "Sai_hurt.ogg", "Sai_skill4_2.ogg", "Sai_combo2.ogg", "Sai_skill3.ogg", "Sai_skill2.ogg", "Sai_skill4.ogg", "Ink_mouse.ogg", "Sai_dead.ogg", "Sai_skill4_1.ogg"], "Han": ["Han_combo.ogg", "Han_ougis.ogg", "Han_combo2.ogg", "Han_hurt.ogg"], "Shikamaru": ["Shikamaru_skill03.ogg", "Shikamaru_hurt.ogg", "Shikamaru_skill04.ogg", "Shikamaru_skill5.ogg", "Shikamaru_skill02.ogg", "Shikamaru_skill01.ogg", "Shikamaru_dead.ogg", "kage.ogg", "Shikamaru_combo.ogg", "Shikamaru_ougis.ogg"], "Tobi": ["Tobi_skill4_1.ogg", "Tobi_hurt.ogg", "Tobi_skill5_1.ogg", "Tobi_skill4.ogg", "Tobi_combo.ogg", "Tobi_skill2_1.ogg", "Tobi_skill5.ogg", "Tobi_skill4_2.ogg", "Tobi_skill1.ogg", "Tobi_dead.ogg", "Tobi_skill3.ogg", "Tobi_skill2.ogg", "Tobi_skill5_2.ogg", "Tobi_skill1_01.ogg", "Tobi_ougis.ogg", "Tobi_skill2_2.ogg"], "Orochimaru": ["Orochimaru_dead.ogg", "Orochimaru_ougis.ogg", "Orochimaru_hurt.ogg", "Orochimaru_skill4.ogg", "Orochimaru_combo.ogg", "Orochimaru_skill3_1.ogg", "Orochimaru_skill3.ogg", "Orochimaru_skill1.ogg", "Orochimaru_skill5.ogg", "Orochimaru_skill2.ogg", "Orochimaru_skill5_1.ogg"], "MadaraMusou": ["MadaraMusou_skill3.ogg", "TengaiShinsei.ogg", "Susano.ogg", "MadaraMusou_skill2.ogg", "MadaraMusou_skill1.ogg"], "Lee": ["Lee_skill3_3.ogg", "Lee_skill2.ogg", "Lee_dead.ogg", "Lee_skill3_1.ogg", "Lee_skill4_2.ogg", "Lee_skill1.ogg", "Lee_skill3_2.ogg", "Lee_skill4_1.ogg", "Lee_hurt.ogg", "Lee_skill10.ogg", "Lee_skill5_1.ogg", "Lee_combo.ogg", "Lee_skill11.ogg", "Lee_skill5_2.ogg"], "Battle": ["kill2_1.ogg", "battle_over2.ogg", "battle_over.ogg", "kill4.ogg", "kill3_1.ogg", "kill3_2.ogg", "kill2_4.ogg", "kill2_2.ogg", "kill2_3.ogg", "battle_start.ogg", "kill3_3.ogg", "kill3_4.ogg", "battle_start2.ogg"], "Kakashi": ["Kakashi_ougis.ogg", "Kakashi_skill5_5.ogg", "Kakashi_skill1.ogg", "Kakashi_skill3.ogg", "Kakashi_skill11.ogg", "Kakashi_skill5_4.ogg", "leiqie.ogg", "leiqie2.ogg", "Kakashi_hurt.ogg", "Kakashi_skill10.ogg", "Kakashi_skill5_1.ogg", "Kakashi_dead.ogg", "Kakashi_skill4.ogg", "Kakashi_skill2.ogg", "Kakashi_combo.ogg", "Kakashi_skill5_3.ogg"], "NarutoSage": ["NarutoSage_skill1.ogg", "NarutoSage_skill3.ogg", "NarutoSage_skill8.ogg", "NarutoSage_ougis.ogg", "NarutoSage_skill3_1.ogg", "xianfa.ogg", "NarutoSage_skill5.ogg"], "Jugo": ["Jugo_skill5.ogg", "Jugo_combo.ogg", "Jugo_hurt.ogg", "Jugo_skill1.ogg", "Jugo_skill3.ogg", "Jugo_skill2.ogg", "Jugo_dead.ogg", "Jugo_skill4_1.ogg", "Jugo_ougis.ogg", "Jugo_skill4_2.ogg", "Jugo_skill10.ogg"], "UI": ["exit.ogg", "confirm.ogg", "confirm2.ogg", "network.ogg", "select.ogg", "training.ogg", "cancel.ogg", "change_btn.ogg", "credits.ogg"], "Minato": ["Minato_skill2.ogg", "Minato_ougis.ogg", "Minato_skill1.ogg", "Minato_skill5.ogg", "Minato_combo.ogg", "Minato_skill4.ogg", "Minato_skill3.ogg", "Minato_skill2_1.ogg"], "Jiraiya": ["Jiraiya_ougis.ogg", "Jiraiya_hurt.ogg", "Jiraiya_skill5_1.ogg", "Jiraiya_skill5_2.ogg", "Jiraiya_dead.ogg", "Jiraiya_skill4.ogg", "Jiraiya_skill1.ogg", "Jiraiya_skill3.ogg", "Jiraiya_skill2.ogg", "Jiraiya_combo.ogg"], "RockLee": ["RockLee_ougis.ogg"], "Rin": ["Rin_hurt.ogg", "Rin_skill1.ogg", "Rin_skill5_2.ogg", "Rin_ougis.ogg", "Rin_combo.ogg", "Rin_dead.ogg", "Rin_skill5_1.ogg", "Rin_skill3.ogg", "Rin_skill2.ogg", "Rin_skill5.ogg", "Rin_skill4.ogg"], "Chiyo": ["Chiyo_skill5_2.ogg", "Chiyo_ougis.ogg", "Chiyo_skill4.ogg", "Chiyo_combo.ogg", "Chiyo_skill1.ogg", "Chiyo_skill2.ogg", "Chiyo_skill5_1.ogg", "Chiyo_dead.ogg", "Chiyo_skill5.ogg", "Chiyo_skill3.ogg"]};
+
+// ===== CANVAS =====
+const c=document.getElementById('c'),ctx=c.getContext('2d');
+const mm=document.getElementById('mm'),mmc=mm.getContext('2d');
+function rs(){c.width=innerWidth;c.height=innerHeight}
+rs();window.addEventListener('resize',rs);
+
+// ===== WORLD =====
+const W=4000,H=3000;
+let particles=[],dmgNums=[],shake=0;
+
+// Player
+let P={x:W/2,y:H/2,w:30,h:40,spd:5,hp:500,mhp:500,cp:200,mcp:200,gold:1000,lv:1,exp:0,kills:0,dir:0,af:0,at:0,inv:0};
+
+// World objects
+let trees=[],rocks=[],houses=[],npcs=[],enemies=[],items=[];
+
+// Generate
+for(let i=0;i<80;i++)trees.push({x:Math.random()*W,y:Math.random()*H,s:15+Math.random()*35});
+for(let i=0;i<30;i++)rocks.push({x:Math.random()*W,y:Math.random()*H,s:10+Math.random()*25});
+for(let i=0;i<6;i++)houses.push({x:200+i*400,y:300+Math.random()*1500,w:100,h:70});
+
+// NPCs with quests
+const NQ=[{n:'Kakashi',q:'Kalahkan 5 ninja!',r:'Bagus!'},{n:'Tsunade',q:'Cari ramuan obat.',r:'Terima kasih!'},{n:'Jiraiya',q:'Latih jurus baru!',r:'Kamu hebat!'},{n:'Iruka',q:'Antar surat ke timur.',r:'Sampai!'},{n:'Guy',q:'Lari 10 putaran!',r:'Semangat!'},{n:'Shikamaru',q:'Pecahkan teka-teki.',r:'Pintar!'},{n:'Hinata',q:'Kumpulkan bunga.',r:'Arigatou!'},{n:'Yamato',q:'Bangun jembatan.',r:'Selesai!'}];
+NQ.forEach((d,i)=>{npcs.push({x:200+Math.random()*(W-400),y:200+Math.random()*(H-400),name:d.n,quest:d.q,reward:d.r,done:false,ac:false,color:'#'+((Math.random()*0xFFFFFF)>>0).toString(16)})});
+
+// Enemies
+for(let i=0;i<50;i++){enemies.push({x:Math.random()*W,y:Math.random()*H,hp:60+Math.random()*120,mhp:150,name:['Bandit','Ninja Liar','Ronin','Penjahat'][Math.floor(Math.random()*4)]+' '+(i+1),alive:true,spd:1+Math.random()*2,dir:Math.random()*Math.PI*2,wt:0,aggro:false})}
+
+// Items
+for(let i=0;i<35;i++){items.push({x:Math.random()*W,y:Math.random()*H,type:['💊','💰','⚔️','💎','🍃','💣'][Math.floor(Math.random()*6)],collected:false,bob:Math.random()*Math.PI*2})}
+
+// ===== JOYSTICK =====
+let jx=0,jy=0;
+const jsB=document.getElementById('jsB'),jsT=document.getElementById('jsT');
+function ujs(t){let r=jsB.getBoundingClientRect();let cx=r.left+r.width/2,cy=r.top+r.height/2;let dx=t.clientX-cx,dy=t.clientY-cy;let d=Math.sqrt(dx*dx+dy*dy),md=40;if(d>md){dx=dx/d*md;dy=dy/d*md}jsT.style.left=(37+dx)+'px';jsT.style.top=(37+dy)+'px';jx=dx/md;jy=dy/md}
+jsB.addEventListener('touchstart',e=>{e.preventDefault();ujs(e.touches[0])});
+jsB.addEventListener('touchmove',e=>{e.preventDefault();ujs(e.touches[0])});
+jsB.addEventListener('touchend',()=>{jx=0;jy=0;jsT.style.left='37px';jsT.style.top='37px'});
+
+// Keyboard
+let keys={};
+window.addEventListener('keydown',e=>{keys[e.key]=true});
+window.addEventListener('keyup',e=>{keys[e.key]=false});
+
+// ===== COMBAT =====
+function attack(){action(35,'👊','#ff4444')}
+function skill(){if(P.cp>=30){P.cp-=30;action(80,'⚡','#4488ff')}}
+function ultimate(){if(P.cp>=100){P.cp-=100;action(180,'🌟','#ffaa00')}}
+
+function action(dmg,name,color){
+    if(P.inv>0)return;
+    shake=Math.max(shake,dmg/5);
+    let target=null,minD=100;
+    for(let e of enemies){if(!e.alive)continue;let dx=P.x-e.x,dy=P.y-e.y;let d=Math.sqrt(dx*dx+dy*dy);if(d<minD){minD=d;target=e}}
+    if(target){target.hp-=dmg;target.aggro=true;dmgNums.push({x:target.x,y:target.y-30,text:'-'+dmg,color:color,life:1});
+        for(let i=0;i<8;i++)particles.push({x:target.x,y:target.y,vx:(Math.random()-.5)*8,vy:(Math.random()-.5)*6-2,life:.5,color:color,s:3+Math.random()*5});
+        if(target.hp<=0){target.alive=false;P.exp+=50;P.kills++;P.gold+=20+Math.floor(Math.random()*50);
+            for(let i=0;i<15;i++)particles.push({x:target.x,y:target.y,vx:(Math.random()-.5)*10,vy:(Math.random()-.5)*8-3,life:.8,color:'#ff4444',s:2+Math.random()*5});
+            if(P.exp>=P.lv*100){P.lv++;P.exp=0;P.mhp+=50;P.hp=P.mhp;P.mcp+=20;P.cp=P.mcp;dmgNums.push({x:P.x,y:P.y-50,text:'LEVEL UP!',color:'#ffd700',life:2})}}}
+}
+
+// ===== INTERACT =====
+let curN=null;
+function interact(){for(let n of npcs){let dx=P.x-n.x,dy=P.y-n.y;if(Math.sqrt(dx*dx+dy*dy)<70){curN=n;document.getElementById('dT').textContent=n.name;document.getElementById('dM').textContent=n.done?n.reward:n.quest;document.getElementById('dialog').style.display='block';return}}}
+function acceptQ(){if(curN&&!curN.ac){curN.ac=true;document.getElementById('quests').style.display='block';updateQ()}closeD()}
+function closeD(){document.getElementById('dialog').style.display='none';curN=null}
+function updateQ(){let l=document.getElementById('qL');l.innerHTML='';npcs.filter(n=>n.ac&&!n.done).forEach(n=>{l.innerHTML+='<div>📜 '+n.name+': '+n.quest.substring(0,15)+'...</div>'})}
+
+// ===== UPDATE =====
+function update(dt){
+    let kx=0,ky=0;
+    if(keys['w']||keys['ArrowUp'])ky=-1;if(keys['s']||keys['ArrowDown'])ky=1;
+    if(keys['a']||keys['ArrowLeft'])kx=-1;if(keys['d']||keys['ArrowRight'])kx=1;
+    let mx=jx||kx,my=jy||ky;
+    if(mx!==0||my!==0){P.x+=mx*P.spd;P.y+=my*P.spd;P.dir=Math.atan2(my,mx);P.at+=dt;if(P.at>.15){P.at=0;P.af=(P.af+1)%4}}
+    P.x=Math.max(0,Math.min(W,P.x));P.y=Math.max(0,Math.min(H,P.y));
+    if(P.inv>0)P.inv-=dt;
+    if(P.cp<P.mcp)P.cp+=.05;if(P.hp<P.mhp)P.hp+=.03;
+    
+    // Enemies AI
+    enemies.forEach(e=>{if(!e.alive)return;let dx=P.x-e.x,dy=P.y-e.y;let d=Math.sqrt(dx*dx+dy*dy);
+        if(d<300&&!e.aggro&&Math.random()<.01)e.aggro=true;
+        if(e.aggro&&d<300){e.x+=dx/d*e.spd;e.y+=dy/d*e.spd;if(d<50&&P.inv<=0){P.hp-=8;P.inv=.5;dmgNums.push({x:P.x,y:P.y-30,text:'-8',color:'#ff4444',life:.8});if(P.hp<=0){P.hp=P.mhp;P.x=W/2;P.y=H/2;P.gold=Math.floor(P.gold*.8)}}}
+        else if(!e.aggro){e.wt-=dt;if(e.wt<=0){e.dir=Math.random()*Math.PI*2;e.wt=2+Math.random()*3}e.x+=Math.cos(e.dir)*e.spd*.5;e.y+=Math.sin(e.dir)*e.spd*.5}
+        e.x=Math.max(0,Math.min(W,e.x));e.y=Math.max(0,Math.min(H,e.y))});
+    
+    // Check quests
+    npcs.forEach(n=>{if(n.ac&&!n.done&&P.kills>=5)n.done=true});
+    
+    // Pickup items
+    items.forEach(it=>{if(it.collected)return;let dx=P.x-it.x,dy=P.y-it.y;if(Math.sqrt(dx*dx+dy*dy)<35){it.collected=true;if(it.type==='💰')P.gold+=100;if(it.type==='💊')P.hp=Math.min(P.mhp,P.hp+50);if(it.type==='💎')P.gold+=500;dmgNums.push({x:it.x,y:it.y,text:it.type,color:'#ffd700',life:1})}});
+    
+    // Particles
+    particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.life-=dt});particles=particles.filter(p=>p.life>0);
+    dmgNums.forEach(d=>{d.y-=1;d.life-=dt});dmgNums=dmgNums.filter(d=>d.life>0);
+    shake*=.9;
+    
+    // Update HUD
+    document.getElementById('hpT').textContent=Math.floor(P.hp);
+    document.getElementById('cpT').textContent=Math.floor(P.cp);
+    document.getElementById('gdT').textContent=P.gold;
+    document.getElementById('lvT').textContent=P.lv;
+    document.getElementById('klT').textContent=P.kills;
+}
+
+// ===== DRAW =====
+let cam={x:0,y:0};
+function draw(){
+    cam.x=P.x-innerWidth/2;cam.y=P.y-innerHeight/2;
+    let sx=(Math.random()-.5)*shake,sy=(Math.random()-.5)*shake;
+    ctx.save();ctx.translate(sx,sy);
+    ctx.clearRect(0,0,innerWidth,innerHeight);
+    
+    // Ground
+    ctx.fillStyle='#3a7a2a';ctx.fillRect(0,0,innerWidth,innerHeight);
+    ctx.fillStyle='#4a8a3a';
+    for(let x=-cam.x%40;x<innerWidth;x+=40)for(let y=-cam.y%40;y<innerHeight;y+=40)if((Math.floor((x+cam.x)/40)+Math.floor((y+cam.y)/40))%3===0)ctx.fillRect(x,y,20,20);
+    
+    // Paths
+    ctx.fillStyle='#9B8B6B';ctx.fillRect(50-cam.x,H/2-cam.y,W-100,80);ctx.fillRect(W/2-cam.x,50-cam.y,80,H-100);
+    
+    // Houses
+    houses.forEach(h=>{let hx=h.x-cam.x,hy=h.y-cam.y;ctx.fillStyle='#8B6914';ctx.fillRect(hx,hy,h.w,h.h);ctx.fillStyle='#A0792A';ctx.fillRect(hx+15,hy+30,30,25);ctx.fillStyle='#CC4444';ctx.beginPath();ctx.moveTo(hx-10,hy);ctx.lineTo(hx+h.w/2,hy-35);ctx.lineTo(hx+h.w+10,hy);ctx.fill()});
+    
+    // Trees
+    trees.forEach(t=>{let tx=t.x-cam.x,ty=t.y-cam.y;ctx.fillStyle='#5a3a1a';ctx.fillRect(tx-4,ty,t.s*.15,t.s*.7);ctx.fillStyle='#3a8a3a';ctx.beginPath();ctx.arc(tx,ty-t.s*.3,t.s*.4,0,Math.PI*2);ctx.fill();ctx.fillStyle='#4a9a4a';ctx.beginPath();ctx.arc(tx+5,ty-t.s*.25,t.s*.3,0,Math.PI*2);ctx.fill()});
+    
+    // Rocks
+    rocks.forEach(r=>{ctx.fillStyle='#777';ctx.beginPath();ctx.arc(r.x-cam.x,r.y-cam.y,r.s*.3,0,Math.PI*2);ctx.fill()});
+    
+    // Items
+    items.forEach(it=>{if(it.collected)return;let bob=Math.sin(Date.now()/500+it.bob)*5;ctx.font='22px Arial';ctx.fillText(it.type,it.x-15-cam.x,it.y+8+bob-cam.y)});
+    
+    // NPCs
+    npcs.forEach(n=>{let nx=n.x-cam.x,ny=n.y-cam.y;ctx.fillStyle=n.ac?'#4CAF50':n.color;ctx.fillRect(nx-15,ny-25,30,45);ctx.fillStyle='#FFDDBB';ctx.beginPath();ctx.arc(nx,ny-30,12,0,Math.PI*2);ctx.fill();ctx.fillStyle='#000';ctx.fillRect(nx-5,ny-33,4,4);ctx.fillRect(nx+1,ny-33,4,4);ctx.fillStyle='white';ctx.font='9px Arial';ctx.fillText(n.name,nx-12,ny-40);if(n.ac&&!n.done){ctx.fillStyle='#ffaa00';ctx.font='14px Arial';ctx.fillText('!',nx+10,ny-35)}if(n.done){ctx.fillStyle='#4CAF50';ctx.font='14px Arial';ctx.fillText('✓',nx+10,ny-35)}});
+    
+    // Enemies
+    enemies.forEach(e=>{if(!e.alive)return;let ex=e.x-cam.x,ey=e.y-cam.y;ctx.fillStyle=e.aggro?'#ff2222':'#cc4444';ctx.fillRect(ex-14,ey-22,28,40);ctx.fillStyle='#FFCCAA';ctx.beginPath();ctx.arc(ex,ey-26,10,0,Math.PI*2);ctx.fill();ctx.fillStyle=e.aggro?'#ff0':'#000';ctx.fillRect(ex-4,ey-29,3,3);ctx.fillRect(ex+1,ey-29,3,3);ctx.fillStyle='#333';ctx.fillRect(ex-20,ey-40,40,6);ctx.fillStyle='#ff0000';ctx.fillRect(ex-20,ey-40,40*(e.hp/e.mhp),6);ctx.fillStyle='white';ctx.font='8px Arial';ctx.fillText(e.name.split(' ')[0],ex-12,ey-44)});
+    
+    // Player
+    let px=P.x-cam.x,py=P.y-cam.y;ctx.fillStyle='rgba(0,0,0,.3)';ctx.ellipse(px,py+22,14,5,0,0,Math.PI*2);ctx.fill();
+    let lo=Math.sin(P.af*Math.PI/2)*5;ctx.fillStyle='#ff6b35';ctx.fillRect(px-14,py-10+lo,12,30);ctx.fillRect(px+2,py-10-lo,12,30);
+    ctx.fillStyle='#ff6b35';ctx.fillRect(px-14,py-25,28,35);ctx.fillStyle='#ff8a55';ctx.fillRect(px-20,py-20,8,20);ctx.fillRect(px+12,py-20,8,20);
+    ctx.fillStyle='#FFDDBB';ctx.beginPath();ctx.arc(px,py-30,14,0,Math.PI*2);ctx.fill();ctx.fillStyle='#ffdd00';ctx.beginPath();ctx.arc(px,py-33,14,Math.PI,0);ctx.fill();
+    ctx.fillStyle='white';ctx.fillRect(px-8,py-33,6,6);ctx.fillRect(px+2,py-33,6,6);ctx.fillStyle='#0066cc';ctx.fillRect(px-6,py-31,3,3);ctx.fillRect(px+4,py-31,3,3);
+    ctx.fillStyle='#3366cc';ctx.fillRect(px-15,py-37,30,6);ctx.fillStyle='silver';ctx.fillRect(px-4,py-36,8,4);
+    ctx.fillStyle='#333';ctx.fillRect(px-22,py-50,44,8);ctx.fillStyle='#4CAF50';ctx.fillRect(px-22,py-50,44*(P.hp/P.mhp),8);
+    
+    // Particles
+    particles.forEach(p=>{ctx.fillStyle=p.color;ctx.globalAlpha=Math.max(0,p.life/.5);ctx.beginPath();ctx.arc(p.x-cam.x,p.y-cam.y,p.s,0,Math.PI*2);ctx.fill()});ctx.globalAlpha=1;
+    dmgNums.forEach(d=>{ctx.fillStyle=d.color;ctx.globalAlpha=d.life;ctx.font='bold 14px Arial';ctx.fillText(d.text,d.x-cam.x,d.y-cam.y)});ctx.globalAlpha=1;
+    ctx.restore();
+    
+    // Minimap
+    mmc.fillStyle='rgba(0,0,0,.6)';mmc.fillRect(0,0,90,90);
+    let sx2=90/W,sy2=90/H;
+    mmc.fillStyle='#ff4444';enemies.forEach(e=>{if(e.alive)mmc.fillRect(e.x*sx2,e.y*sy2,2,2)});
+    mmc.fillStyle='#4CAF50';npcs.forEach(n=>{mmc.fillRect(n.x*sx2,n.y*sy2,2,2)});
+    mmc.fillStyle='#ff6b35';mmc.fillRect(P.x*sx2-2,P.y*sy2-2,4,4);
+}
+
+// ===== GAME LOOP =====
+let lt=0;
+function loop(t){let dt=Math.min((t-lt)/1000,.1);lt=t;update(dt);draw();requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

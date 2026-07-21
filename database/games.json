@@ -2,15 +2,6 @@
   {
     "name": "Tebak Angka",
     "description": "Game tebak angka 1-100",
-    "type": "game",
-    "html": "<div class=\"game\"><h3>🎲 Tebak Angka</h3><p>Game siap dimainkan!</p></div>",
-    "js": "console.log(\"Game Tebak Angka ready!\");"
-  },
-  {
-    "name": "Batu Kertas Gunting",
-    "description": "Game klasik",
-    "type": "game",
-    "html": "<div class=\"game\"><h3>✊✋✌️ Batu Kertas Gunting</h3><p>Game siap!</p></div>",
-    "js": "console.log(\"Game ready!\");"
+    "type": "game"
   }
 ]

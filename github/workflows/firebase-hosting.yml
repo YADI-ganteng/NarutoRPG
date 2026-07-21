@@ -1,0 +1,46 @@
+name: Deploy to Firebase Hosting
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools@latest
+      
+      - name: Create firebase.json (if not exists)
+        run: |
+          if [ ! -f firebase.json ]; then
+            echo '{
+              "hosting": {
+                "public": ".",
+                "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+                "rewrites": [{"source": "**", "destination": "/index.html"}]
+              }
+            }' > firebase.json
+          fi
+      
+      - name: Create .firebaserc (if not exists)
+        run: |
+          if [ ! -f .firebaserc ]; then
+            echo '{"projects": {"default": "yadstores"}}' > .firebaserc
+          fi
+      
+      - name: Deploy to Firebase Hosting
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          firebase deploy --only hosting --project yadstores --token "$FIREBASE_TOKEN" --non-interactive

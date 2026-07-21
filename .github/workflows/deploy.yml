@@ -1,21 +1,16 @@
-name: Deploy to Firebase Hosting
+name: Deploy to Firebase
 
 on:
+  repository_dispatch:
+    types: [deploy-to-firebase]
   push:
     branches: [main]
-  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Create service account file
-        run: |
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > $HOME/gcloud.json
-          export GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcloud.json
       
       - name: Deploy to Firebase
         uses: FirebaseExtended/action-hosting-deploy@v0

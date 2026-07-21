@@ -1,0 +1,2686 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Yad AI 2.0 - Upload & Auto Admin</title>
+    
+    <!-- Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/universal-sentence-encoder@latest"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <!-- PDF & Word Parser -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #141c2b;
+            --bg-tertiary: #1e2a3a;
+            --text-primary: #e8edf5;
+            --text-secondary: #8899aa;
+            --accent-blue: #4a90d9;
+            --accent-purple: #7c5ce7;
+            --accent-green: #2ecc71;
+            --accent-red: #e74c3c;
+            --accent-gold: #f39c12;
+            --accent-cyan: #00bcd4;
+            --accent-pink: #e91e63;
+            --border-color: #2a3545;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --transition: all 0.3s ease;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            --admin-glow: 0 0 30px rgba(74, 144, 217, 0.5);
+            --user-glow: 0 0 30px rgba(124, 92, 231, 0.3);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            height: 100dvh;
+            width: 100vw;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        #app {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #0f1729 0%, #1a2332 100%);
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            z-index: 20;
+            min-height: 56px;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+        
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-cyan));
+            animation: headerGlow 3s ease infinite;
+        }
+        
+        @keyframes headerGlow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .ai-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            animation: glow 2s infinite;
+            box-shadow: 0 0 15px rgba(74, 144, 217, 0.3);
+            flex-shrink: 0;
+            position: relative;
+        }
+        
+        .ai-avatar.admin {
+            box-shadow: var(--admin-glow);
+            border: 2px solid var(--accent-gold);
+        }
+        
+        .ai-avatar.user {
+            box-shadow: var(--user-glow);
+            border: 2px solid var(--accent-cyan);
+        }
+        
+        .ai-avatar::after {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            animation: spin 3s linear infinite;
+            border-top-color: var(--accent-cyan);
+            border-right-color: var(--accent-purple);
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(74, 144, 217, 0.5); transform: scale(1); }
+            50% { box-shadow: 0 0 25px rgba(124, 92, 231, 0.8); transform: scale(1.05); }
+        }
+        
+        .header-title {
+            font-size: 15px;
+            font-weight: 700;
+        }
+        
+        .header-title span {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple), var(--accent-pink));
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 3s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .role-badge {
+            font-size: 10px;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .role-badge.admin {
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+            animation: pulse 2s infinite;
+        }
+        
+        .role-badge.user {
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+        }
+        
+        .user-email {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-right: 8px;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-indicator.online {
+            background: var(--accent-green);
+        }
+        
+        .status-indicator.offline {
+            background: var(--accent-red);
+        }
+        
+        .status-indicator.thinking {
+            background: var(--accent-gold);
+            animation: thinkPulse 0.5s infinite;
+        }
+        
+        .status-indicator.editing {
+            background: var(--accent-pink);
+            animation: editPulse 0.3s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        @keyframes thinkPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+        }
+        
+        @keyframes editPulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.3); opacity: 1; background: var(--accent-red); }
+        }
+        
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+            min-height: 0;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            scroll-behavior: smooth;
+        }
+        
+        .chat-messages::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 2px;
+        }
+        
+        .message {
+            max-width: 88%;
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            line-height: 1.6;
+            word-wrap: break-word;
+            position: relative;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        
+        .message.user {
+            margin-left: auto;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            padding: 12px 18px;
+            border-radius: 20px 20px 4px 20px;
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(74, 144, 217, 0.3);
+        }
+        
+        .message.user.admin {
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-pink));
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+        }
+        
+        .message.ai {
+            margin-right: auto;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 12px 18px;
+            border-radius: 20px 20px 20px 4px;
+            font-size: 14px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .message.ai.admin {
+            border-color: var(--accent-gold);
+            box-shadow: 0 2px 10px rgba(243, 156, 18, 0.2);
+        }
+        
+        .message.ai .timestamp {
+            font-size: 10px;
+            color: var(--text-secondary);
+            display: block;
+            margin-top: 4px;
+            opacity: 0.6;
+        }
+        
+        .message.ai .source-tag {
+            display: inline-block;
+            font-size: 10px;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-top: 6px;
+        }
+        
+        .message.ai .think-tag {
+            display: inline-block;
+            font-size: 10px;
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-top: 6px;
+            animation: thinkPulse 1s infinite;
+        }
+        
+        .message.ai .memory-tag {
+            display: inline-block;
+            font-size: 10px;
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-top: 6px;
+        }
+        
+        .message.ai .edit-tag {
+            display: inline-block;
+            font-size: 10px;
+            background: var(--accent-pink);
+            color: var(--bg-primary);
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-top: 6px;
+            animation: editPulse 1s infinite;
+        }
+        
+        .message.ai .upload-tag {
+            display: inline-block;
+            font-size: 10px;
+            background: var(--accent-green);
+            color: var(--bg-primary);
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-top: 6px;
+        }
+        
+        .message .code-block {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 8px 12px;
+            margin: 6px 0;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+        }
+        
+        .input-area {
+            padding: 10px 14px;
+            padding-bottom: calc(10px + var(--safe-bottom));
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        
+        .input-area input {
+            flex: 1;
+            padding: 10px 16px;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            border-radius: 24px;
+            color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+        
+        .input-area input:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 4px rgba(74, 144, 217, 0.15);
+        }
+        
+        .input-area input:disabled {
+            opacity: 0.5;
+        }
+        
+        .input-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: none;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+        
+        .input-btn:active {
+            transform: scale(0.9);
+        }
+        
+        .input-btn.upload-btn {
+            background: var(--accent-green);
+            color: var(--bg-primary);
+        }
+        
+        .input-btn.upload-btn:hover {
+            background: var(--accent-green);
+            opacity: 0.8;
+        }
+        
+        .send-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(74, 144, 217, 0.3);
+            flex-shrink: 0;
+        }
+        
+        .send-btn:active {
+            transform: scale(0.9);
+        }
+        
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .typing-indicator {
+            display: inline-flex;
+            gap: 4px;
+            padding: 4px 0;
+        }
+        
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-10px); opacity: 1; }
+        }
+        
+        .thinking-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            margin: 4px 0;
+        }
+        
+        .thinking-indicator .brain-icon {
+            animation: spin 2s linear infinite;
+            font-size: 16px;
+        }
+        
+        .thinking-indicator .step {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: 10px 20px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            font-size: 13px;
+            z-index: 100;
+            animation: slideUp 0.3s ease;
+            max-width: 90%;
+            text-align: center;
+            pointer-events: none;
+        }
+        
+        .toast.success { border-color: var(--accent-green); }
+        .toast.error { border-color: var(--accent-red); }
+        .toast.info { border-color: var(--accent-blue); }
+        .toast.thinking { border-color: var(--accent-gold); }
+        .toast.edit { border-color: var(--accent-pink); }
+        .toast.upload { border-color: var(--accent-green); }
+        
+        .deploy-status {
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 2px;
+            opacity: 0.7;
+        }
+        
+        .deploy-status.active {
+            color: var(--accent-green);
+            opacity: 1;
+        }
+        
+        .deploy-status.thinking {
+            color: var(--accent-gold);
+            opacity: 1;
+        }
+        
+        .deploy-status.editing {
+            color: var(--accent-pink);
+            opacity: 1;
+            animation: editPulse 1s infinite;
+        }
+        
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 14, 23, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            backdrop-filter: blur(10px);
+        }
+        
+        .login-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+        
+        .login-box .logo {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        
+        .login-box h2 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .login-box p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+        
+        .login-input {
+            width: 100%;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: var(--transition);
+        }
+        
+        .login-input:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 4px rgba(74, 144, 217, 0.15);
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+            border: none;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: var(--transition);
+            font-family: inherit;
+            margin-bottom: 12px;
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+        
+        .login-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .login-btn.google {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        
+        .login-btn.google:hover {
+            background: var(--border-color);
+            border-color: var(--accent-blue);
+        }
+        
+        .login-btn.google svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .login-footer {
+            margin-top: 16px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        /* File Upload Modal */
+        .upload-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 14, 23, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+        
+        .upload-modal.active {
+            display: flex;
+        }
+        
+        .upload-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+        
+        .upload-box h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+        
+        .upload-box p {
+            color: var(--text-secondary);
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+        
+        .file-drop-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 30px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .file-drop-zone:hover {
+            border-color: var(--accent-blue);
+            background: var(--bg-tertiary);
+        }
+        
+        .file-drop-zone.dragover {
+            border-color: var(--accent-green);
+            background: rgba(46, 204, 113, 0.1);
+        }
+        
+        .file-drop-zone .icon {
+            font-size: 40px;
+            margin-bottom: 8px;
+        }
+        
+        .file-drop-zone .text {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+        
+        .file-drop-zone .file-name {
+            color: var(--accent-green);
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .upload-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        
+        .upload-actions button {
+            padding: 10px 24px;
+            border-radius: var(--radius-md);
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+        
+        .upload-actions .btn-upload {
+            background: var(--accent-green);
+            color: var(--bg-primary);
+        }
+        
+        .upload-actions .btn-upload:hover {
+            opacity: 0.8;
+        }
+        
+        .upload-actions .btn-cancel {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+        
+        .upload-actions .btn-cancel:hover {
+            background: var(--border-color);
+        }
+        
+        .upload-progress {
+            width: 100%;
+            height: 4px;
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+            margin: 12px 0;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .upload-progress.active {
+            display: block;
+        }
+        
+        .upload-progress .bar {
+            height: 100%;
+            background: var(--accent-green);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        @media (min-width: 768px) {
+            .message { max-width: 70%; }
+            .header { padding: 14px 24px; }
+            .chat-messages { padding: 24px; }
+            .input-area { padding: 14px 24px; padding-bottom: calc(14px + var(--safe-bottom)); }
+            .header-title { font-size: 17px; }
+            .user-email { font-size: 13px; max-width: 180px; }
+        }
+        
+        @media (max-width: 480px) {
+            .header-title { font-size: 13px; }
+            .message { font-size: 13px; padding: 10px 14px; }
+            .input-area input { font-size: 13px; padding: 8px 14px; }
+            .send-btn, .input-btn { width: 38px; height: 38px; font-size: 15px; }
+            .role-badge { font-size: 8px; padding: 1px 6px; }
+            .user-email { font-size: 9px; max-width: 80px; }
+            .login-box { padding: 24px; }
+            .login-box h2 { font-size: 17px; }
+            .upload-box { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Login Overlay -->
+        <div class="login-overlay" id="loginOverlay">
+            <div class="login-box">
+                <div class="logo">🧠</div>
+                <h2>Yad AI 2.0</h2>
+                <p>Silakan login untuk melanjutkan</p>
+                
+                <input type="email" class="login-input" id="loginEmail" placeholder="Email" autocomplete="email">
+                <input type="password" class="login-input" id="loginPassword" placeholder="Password" autocomplete="current-password">
+                
+                <button class="login-btn" id="loginBtn">Login</button>
+                <button class="login-btn google" id="googleLoginBtn">
+                    <svg viewBox="0 0 48 48">
+                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
+                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+                        <path fill="#FBBC05" d="M10.53 28.59A14.5 14.5 0 0 1 9.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.99 23.99 0 0 0 0 24c0 3.77.87 7.35 2.56 10.56l7.97-5.97z"></path>
+                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.97C6.51 42.62 14.62 48 24 48z"></path>
+                    </svg>
+                    Login dengan Google
+                </button>
+                
+                <div class="login-footer">
+                    🔒 Login dengan email & password atau Google
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Modal -->
+        <div class="upload-modal" id="uploadModal">
+            <div class="upload-box">
+                <h3>📤 Upload Materi untuk AI</h3>
+                <p>Upload PDF, Word, atau TXT untuk AI pelajari</p>
+                
+                <div class="file-drop-zone" id="fileDropZone">
+                    <div class="icon">📄</div>
+                    <div class="text" id="fileDropText">Klik atau drag & drop file di sini</div>
+                    <div class="file-name" id="fileName" style="display:none"></div>
+                </div>
+                
+                <div class="upload-progress" id="uploadProgress">
+                    <div class="bar" id="progressBar"></div>
+                </div>
+                
+                <input type="file" id="fileInput" accept=".pdf,.docx,.txt" style="display:none">
+                
+                <div class="upload-actions">
+                    <button class="btn-upload" id="btnUploadFile">Upload & Pelajari</button>
+                    <button class="btn-cancel" id="btnCancelUpload">Batal</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="header">
+            <div class="header-left">
+                <div class="ai-avatar admin" id="aiAvatar">🧠</div>
+                <div class="header-title"><span>Yad AI 2.0</span></div>
+            </div>
+            <div class="header-right">
+                <span class="user-email" id="userEmail">Belum login</span>
+                <span class="role-badge admin" id="roleBadge">👑 ADMIN</span>
+                <span class="status-indicator online" id="statusIndicator" title="Status Sistem"></span>
+                <button class="auth-btn logout" id="authBtn" style="display:none">Logout</button>
+            </div>
+        </div>
+        <div class="chat-area">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ai admin">
+                    <strong>🧠 Yad AI 2.0 - Upload & Auto Admin System</strong><br><br>
+                    Sistem dengan <strong>Upload File & Auto Admin</strong>:<br><br>
+                    🔹 **Fitur baru:**<br>
+                    &nbsp;&nbsp;• 📤 Upload PDF, Word, TXT untuk AI pelajari<br>
+                    &nbsp;&nbsp;• 🔐 Login normal (email/password) + Google<br>
+                    &nbsp;&nbsp;• 👑 Auto-detect admin (ynuraini686@gmail.com)<br><br>
+                    🔹 **Fitur lengkap yang tetap ada:**<br>
+                    &nbsp;&nbsp;• 🧠 Dual Brain (Admin & User)<br>
+                    &nbsp;&nbsp;• 🔄 Self-Edit & Auto-Deploy<br>
+                    &nbsp;&nbsp;• 💾 Long-term Memory<br>
+                    &nbsp;&nbsp;• 📡 Multi-Source Search<br>
+                    &nbsp;&nbsp;• 🔐 Token Management<br>
+                    &nbsp;&nbsp;• 📊 Statistik lengkap<br><br>
+                    📝 **Status:** <span id="loginStatus">Belum login</span><br><br>
+                    Silakan login untuk memulai! 🚀
+                </div>
+            </div>
+            <div class="deploy-status" id="deployStatus">⚡ Menunggu login...</div>
+            <div class="input-area">
+                <button class="input-btn upload-btn" id="uploadBtn" title="Upload File">📤</button>
+                <input type="text" id="userInput" placeholder="Login terlebih dahulu..." autocomplete="off" enterkeyhint="send" disabled>
+                <button class="send-btn" id="sendBtn" disabled>➤</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+        
+        // ================================================================
+        // KONFIGURASI
+        // ================================================================
+        const KONFIG = {
+            firebase: {
+                apiKey: "AIzaSyAvfHxcAT2syVbrf6-TU0JBRXtNLI0AIkc",
+                authDomain: "yadstores.firebaseapp.com",
+                projectId: "yadstores",
+                storageBucket: "yadstores.firebasestorage.app",
+                messagingSenderId: "666352014774",
+                appId: "1:666352014774:web:159ab5b455efb2fb2f9d17",
+                databaseURL: "https://yadstores-default-rtdb.asia-southeast1.firebasedatabase.app"
+            },
+            github: {
+                owner: 'YADI-ganteng',
+                repo: 'NarutoRPG',
+                token: '',
+                branch: 'main'
+            },
+            ai: {
+                groq: {
+                    key: '',
+                    url: "https://api.groq.com/openai/v1/chat/completions",
+                    model: "llama3-70b-8192",
+                    priority: 1
+                },
+                deepseek: {
+                    key: '',
+                    url: "https://api.deepseek.com/v1/chat/completions",
+                    model: "deepseek-chat",
+                    priority: 2
+                },
+                openrouter: {
+                    key: '',
+                    url: "https://openrouter.ai/api/v1/chat/completions",
+                    model: "google/gemini-2.0-flash-exp:free",
+                    priority: 3
+                }
+            },
+            maxHistory: 100,
+            maxKnowledge: 500,
+            autoDeployInterval: 60000,
+            maxThinkingSteps: 12,
+            adminEmail: 'ynuraini686@gmail.com',
+            collections: {
+                tokens: 'tokens',
+                conversations: 'conversations',
+                knowledge: 'knowledge',
+                stats: 'stats',
+                versions: 'versions'
+            }
+        };
+        
+        // ================================================================
+        // STATE
+        // ================================================================
+        const STATE = {
+            sedangMemproses: false,
+            providerAI: 'local',
+            chatHistory: [],
+            knowledgeBase: [],
+            isOnline: navigator.onLine,
+            lastSync: null,
+            pendingChanges: false,
+            autoMode: true,
+            thinkingSteps: [],
+            currentStep: 0,
+            lastQuery: '',
+            lastResponse: '',
+            deployCount: 0,
+            searchCount: 0,
+            correctionCount: 0,
+            memoryCount: 0,
+            tokens: {},
+            userContext: {},
+            currentMode: 'user',
+            isAdmin: false,
+            currentVersion: '2.0.0',
+            editHistory: [],
+            selfEditEnabled: true,
+            user: null,
+            isLoggedIn: false,
+            uploadedFiles: []
+        };
+        
+        // ================================================================
+        // INISIALISASI FIREBASE
+        // ================================================================
+        let firebaseReady = false;
+        let db = null;
+        let firestore = null;
+        let auth = null;
+        
+        try {
+            firebase.initializeApp(KONFIG.firebase);
+            db = firebase.database();
+            firestore = firebase.firestore();
+            auth = firebase.auth();
+            firebaseReady = true;
+            console.log('✅ Firebase siap');
+        } catch(e) {
+            console.log('⚠️ Firebase offline mode');
+        }
+        
+        // ================================================================
+        // DOM ELEMENTS
+        // ================================================================
+        const $ = (id) => document.getElementById(id);
+        const chatMessages = $('chatMessages');
+        const userInput = $('userInput');
+        const sendBtn = $('sendBtn');
+        const statusIndicator = $('statusIndicator');
+        const deployStatus = $('deployStatus');
+        const aiAvatar = $('aiAvatar');
+        const roleBadge = $('roleBadge');
+        const authBtn = $('authBtn');
+        const userEmail = $('userEmail');
+        const loginStatus = $('loginStatus');
+        const loginOverlay = $('loginOverlay');
+        const loginEmail = $('loginEmail');
+        const loginPassword = $('loginPassword');
+        const loginBtn = $('loginBtn');
+        const googleLoginBtn = $('googleLoginBtn');
+        const uploadBtn = $('uploadBtn');
+        const uploadModal = $('uploadModal');
+        const fileDropZone = $('fileDropZone');
+        const fileDropText = $('fileDropText');
+        const fileName = $('fileName');
+        const fileInput = $('fileInput');
+        const btnUploadFile = $('btnUploadFile');
+        const btnCancelUpload = $('btnCancelUpload');
+        const uploadProgress = $('uploadProgress');
+        const progressBar = $('progressBar');
+        
+        // ================================================================
+        // UTILITY FUNCTIONS
+        // ================================================================
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substring(2);
+        }
+        
+        function getTimestamp() {
+            return new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function toast(message, type = 'info', duration = 3000) {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+            
+            const div = document.createElement('div');
+            div.className = `toast ${type}`;
+            div.textContent = message;
+            document.body.appendChild(div);
+            
+            setTimeout(() => {
+                if (div.parentNode) div.remove();
+            }, duration);
+        }
+        
+        function updateStatus(status) {
+            const statusMap = {
+                online: 'online',
+                offline: 'offline',
+                thinking: 'thinking',
+                processing: 'thinking',
+                searching: 'thinking',
+                correcting: 'thinking',
+                deploying: 'thinking',
+                memory: 'thinking',
+                editing: 'editing',
+                uploading: 'thinking'
+            };
+            
+            statusIndicator.className = `status-indicator ${statusMap[status] || status}`;
+        }
+        
+        function updateDeployStatus(message, type = 'info') {
+            deployStatus.textContent = message;
+            deployStatus.className = `deploy-status ${type}`;
+        }
+        
+        function updateUI() {
+            const isAdmin = STATE.isAdmin;
+            
+            aiAvatar.className = `ai-avatar ${isAdmin ? 'admin' : 'user'}`;
+            roleBadge.className = `role-badge ${isAdmin ? 'admin' : 'user'}`;
+            roleBadge.textContent = isAdmin ? '👑 ADMIN' : '👤 USER';
+            
+            if (STATE.user) {
+                userEmail.textContent = STATE.user.email || 'User';
+                loginStatus.textContent = `Logged in as ${STATE.user.email || 'User'}`;
+            } else {
+                userEmail.textContent = 'Belum login';
+                loginStatus.textContent = 'Belum login';
+            }
+            
+            aiAvatar.textContent = isAdmin ? '🧠' : '🤖';
+            
+            userInput.disabled = !STATE.isLoggedIn;
+            sendBtn.disabled = !STATE.isLoggedIn;
+            uploadBtn.disabled = !STATE.isLoggedIn;
+            userInput.placeholder = STATE.isLoggedIn ? 'Ketik pesan atau pertanyaan...' : 'Login terlebih dahulu...';
+            
+            if (!STATE.isLoggedIn) {
+                updateDeployStatus('🔒 Silakan login terlebih dahulu', 'info');
+            } else {
+                updateDeployStatus(isAdmin ? '⚡ Mode Admin - Full Control' : '⚡ Mode User - Limited Access', isAdmin ? 'active' : 'info');
+            }
+            
+            if (STATE.isLoggedIn) {
+                authBtn.style.display = 'inline-block';
+                authBtn.textContent = 'Logout';
+                authBtn.className = 'auth-btn logout';
+            } else {
+                authBtn.style.display = 'none';
+            }
+        }
+        
+        function tambahPesan(tipe, konten, metadata = {}) {
+            const div = document.createElement('div');
+            div.className = `message ${tipe}`;
+            if (tipe === 'ai' && metadata.isAdmin) {
+                div.classList.add('admin');
+            }
+            if (tipe === 'user' && STATE.isAdmin) {
+                div.classList.add('admin');
+            }
+            div.id = `msg-${generateId()}`;
+            
+            if (tipe === 'ai') {
+                const timestamp = getTimestamp();
+                let tags = '';
+                
+                if (metadata.source) {
+                    tags += `<span class="source-tag">📡 ${metadata.source}</span> `;
+                }
+                
+                if (metadata.thinking) {
+                    tags += `<span class="think-tag">🧠 ${metadata.thinking}</span> `;
+                }
+                
+                if (metadata.corrected) {
+                    tags += `<span class="think-tag">✨ Auto-Correct</span> `;
+                }
+                
+                if (metadata.memory) {
+                    tags += `<span class="memory-tag">💾 ${metadata.memory}</span> `;
+                }
+                
+                if (metadata.edited) {
+                    tags += `<span class="edit-tag">✏️ Self-Edit</span> `;
+                }
+                
+                if (metadata.uploaded) {
+                    tags += `<span class="upload-tag">📤 Uploaded</span> `;
+                }
+                
+                if (metadata.isAdmin) {
+                    tags += `<span class="think-tag">👑 Admin</span> `;
+                }
+                
+                div.innerHTML = `${konten}${tags}<span class="timestamp">${timestamp}</span>`;
+            } else {
+                div.innerHTML = konten;
+            }
+            
+            chatMessages.appendChild(div);
+            setTimeout(() => {
+                chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+            }, 100);
+            
+            return div;
+        }
+        
+        function showTypingIndicator() {
+            const div = document.createElement('div');
+            div.className = 'message ai';
+            if (STATE.isAdmin) {
+                div.classList.add('admin');
+            }
+            div.id = 'typingIndicator';
+            div.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+            chatMessages.appendChild(div);
+            chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+            return div;
+        }
+        
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator && indicator.parentNode) {
+                indicator.remove();
+            }
+        }
+        
+        function showThinkingStep(step, message) {
+            const div = document.createElement('div');
+            div.className = 'message ai';
+            if (STATE.isAdmin) {
+                div.classList.add('admin');
+            }
+            div.id = `think-${Date.now()}`;
+            div.innerHTML = `
+                <div class="thinking-indicator">
+                    <span class="brain-icon">🧠</span>
+                    <span class="step">[${step}/${KONFIG.maxThinkingSteps}] ${message}</span>
+                </div>
+            `;
+            chatMessages.appendChild(div);
+            chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+            return div;
+        }
+        
+        function removeThinkingStep() {
+            const steps = document.querySelectorAll('[id^="think-"]');
+            steps.forEach(el => {
+                if (el.parentNode) el.remove();
+            });
+        }
+        
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        
+        // ================================================================
+        // AUTH SYSTEM
+        // ================================================================
+        
+        function checkAdmin(email) {
+            return email === KONFIG.adminEmail;
+        }
+        
+        async function handleLogin(user) {
+            if (!user) return;
+            
+            STATE.user = user;
+            STATE.isLoggedIn = true;
+            STATE.isAdmin = checkAdmin(user.email);
+            STATE.currentMode = STATE.isAdmin ? 'admin' : 'user';
+            
+            if (firebaseReady && db) {
+                try {
+                    await db.ref(`users/${user.uid}`).set({
+                        email: user.email,
+                        displayName: user.displayName || '',
+                        role: STATE.isAdmin ? 'admin' : 'user',
+                        lastLogin: new Date().toISOString(),
+                        photoURL: user.photoURL || ''
+                    });
+                } catch(e) {
+                    console.log('⚠️ Gagal save user:', e.message);
+                }
+            }
+            
+            if (STATE.isAdmin) {
+                await loadTokens();
+            }
+            
+            await loadKnowledge();
+            
+            loginOverlay.style.display = 'none';
+            updateUI();
+            
+            const welcomeMsg = STATE.isAdmin 
+                ? `✅ Login berhasil sebagai **ADMIN**!\n\n👑 Selamat datang, **${user.email}**\n\nAnda memiliki akses penuh ke sistem:\n• Kelola token\n• Edit HTML\n• Deploy ke GitHub\n• Upload file untuk AI pelajari\n• Semua command admin\n\nSilakan gunakan command /help untuk melihat semua opsi! 🚀`
+                : `✅ Login berhasil sebagai **USER**!\n\n👤 Halo, **${user.email}**\n\nAnda dapat menggunakan:\n• Chat dengan AI\n• Pencarian multi-sumber\n• Memori jangka panjang\n• Command dasar (/help, /stats, /clear)\n\nSelamat menggunakan! 😊`;
+            
+            tambahPesan('ai', welcomeMsg, { isAdmin: STATE.isAdmin, source: 'System' });
+            
+            toast(`✅ Selamat datang, ${user.email}!`, 'success');
+            updateDeployStatus(`✅ Logged in as ${user.email} - ${STATE.isAdmin ? 'ADMIN' : 'USER'}`, STATE.isAdmin ? 'active' : 'info');
+            
+            if (STATE.isAdmin) {
+                setInterval(autoDeploy, KONFIG.autoDeployInterval);
+            }
+        }
+        
+        async function handleLogout() {
+            try {
+                if (auth) {
+                    await auth.signOut();
+                }
+                
+                STATE.user = null;
+                STATE.isLoggedIn = false;
+                STATE.isAdmin = false;
+                STATE.currentMode = 'user';
+                STATE.tokens = {};
+                
+                localStorage.removeItem('yad_tokens');
+                
+                loginOverlay.style.display = 'flex';
+                updateUI();
+                
+                chatMessages.innerHTML = '';
+                tambahPesan('ai', '👋 Anda telah logout. Silakan login kembali untuk menggunakan Yad AI.', { isAdmin: false, source: 'System' });
+                
+                toast('👋 Logout berhasil!', 'info');
+                updateDeployStatus('🔒 Silakan login kembali', 'info');
+                
+            } catch(e) {
+                console.log('❌ Logout error:', e.message);
+                toast('❌ Gagal logout', 'error');
+            }
+        }
+        
+        // ================================================================
+        // DATABASE OPERATIONS
+        // ================================================================
+        
+        async function loadTokens() {
+            if (!STATE.isAdmin) return {};
+            
+            try {
+                if (!firebaseReady) {
+                    const tokens = localStorage.getItem('yad_tokens');
+                    if (tokens) {
+                        STATE.tokens = JSON.parse(tokens);
+                        updateAIKeys();
+                        return STATE.tokens;
+                    }
+                    return {};
+                }
+                
+                const snapshot = await db.ref('tokens').once('value');
+                const tokens = snapshot.val() || {};
+                STATE.tokens = tokens;
+                updateAIKeys();
+                localStorage.setItem('yad_tokens', JSON.stringify(tokens));
+                return tokens;
+            } catch(e) {
+                console.log('⚠️ Gagal load tokens:', e.message);
+                const tokens = localStorage.getItem('yad_tokens');
+                if (tokens) {
+                    STATE.tokens = JSON.parse(tokens);
+                    updateAIKeys();
+                }
+                return STATE.tokens;
+            }
+        }
+        
+        async function saveToken(name, value) {
+            if (!STATE.isAdmin) return false;
+            
+            try {
+                STATE.tokens[name] = value;
+                if (firebaseReady) {
+                    await db.ref(`tokens/${name}`).set(value);
+                }
+                localStorage.setItem('yad_tokens', JSON.stringify(STATE.tokens));
+                updateAIKeys();
+                return true;
+            } catch(e) {
+                console.log('❌ Gagal save token:', e.message);
+                return false;
+            }
+        }
+        
+        async function removeToken(name) {
+            if (!STATE.isAdmin) return false;
+            
+            try {
+                delete STATE.tokens[name];
+                if (firebaseReady) {
+                    await db.ref(`tokens/${name}`).remove();
+                }
+                localStorage.setItem('yad_tokens', JSON.stringify(STATE.tokens));
+                updateAIKeys();
+                return true;
+            } catch(e) {
+                console.log('❌ Gagal remove token:', e.message);
+                return false;
+            }
+        }
+        
+        async function listTokens() {
+            if (!STATE.isAdmin) return '❌ Hanya Admin yang bisa melihat token!';
+            
+            await loadTokens();
+            const keys = Object.keys(STATE.tokens);
+            if (keys.length === 0) {
+                return '📭 Belum ada token yang disimpan.';
+            }
+            
+            let result = '📋 **Daftar Token:**\n\n';
+            keys.forEach(key => {
+                const value = STATE.tokens[key];
+                const masked = value ? value.substring(0, 4) + '...' + value.substring(value.length - 4) : '❌';
+                result += `• **${key}**: \`${masked}\`\n`;
+            });
+            
+            return result;
+        }
+        
+        function updateAIKeys() {
+            if (STATE.tokens.groq_key) KONFIG.ai.groq.key = STATE.tokens.groq_key;
+            if (STATE.tokens.deepseek_key) KONFIG.ai.deepseek.key = STATE.tokens.deepseek_key;
+            if (STATE.tokens.openrouter_key) KONFIG.ai.openrouter.key = STATE.tokens.openrouter_key;
+            if (STATE.tokens.github_token) KONFIG.github.token = STATE.tokens.github_token;
+        }
+        
+        // ================================================================
+        // KNOWLEDGE & MEMORY
+        // ================================================================
+        
+        async function saveConversation(message, response, metadata = {}) {
+            try {
+                const data = {
+                    message: message,
+                    response: response,
+                    timestamp: new Date().toISOString(),
+                    source: metadata.source || 'AI',
+                    provider: metadata.provider || STATE.providerAI,
+                    mode: STATE.currentMode,
+                    userEmail: STATE.user ? STATE.user.email : 'unknown',
+                    metadata: metadata
+                };
+                
+                if (firebaseReady) {
+                    const ref = db.ref('conversations').push();
+                    await ref.set(data);
+                }
+                
+                const history = JSON.parse(localStorage.getItem('yad_conversations') || '[]');
+                history.push(data);
+                if (history.length > 100) history.shift();
+                localStorage.setItem('yad_conversations', JSON.stringify(history));
+                
+                STATE.memoryCount++;
+                await updateStats('conversations', 1);
+                return true;
+            } catch(e) {
+                console.log('⚠️ Gagal save conversation:', e.message);
+                return false;
+            }
+        }
+        
+        async function saveKnowledge(question, answer, tags = []) {
+            try {
+                const data = {
+                    question: question,
+                    answer: answer,
+                    tags: tags,
+                    timestamp: new Date().toISOString(),
+                    source: 'AI Generated',
+                    mode: STATE.currentMode,
+                    userEmail: STATE.user ? STATE.user.email : 'unknown',
+                    usageCount: 0
+                };
+                
+                if (firebaseReady) {
+                    const ref = db.ref('knowledge').push();
+                    await ref.set(data);
+                }
+                
+                const knowledge = JSON.parse(localStorage.getItem('yad_knowledge') || '[]');
+                knowledge.push(data);
+                if (knowledge.length > KONFIG.maxKnowledge) knowledge.shift();
+                localStorage.setItem('yad_knowledge', JSON.stringify(knowledge));
+                
+                STATE.knowledgeBase.push(data);
+                await updateStats('knowledge', 1);
+                return true;
+            } catch(e) {
+                console.log('⚠️ Gagal save knowledge:', e.message);
+                return false;
+            }
+        }
+        
+        async function loadKnowledge() {
+            try {
+                if (firebaseReady) {
+                    const snapshot = await db.ref('knowledge')
+                        .orderByKey()
+                        .limitToLast(KONFIG.maxKnowledge)
+                        .once('value');
+                    
+                    const data = snapshot.val() || {};
+                    const items = Object.values(data);
+                    STATE.knowledgeBase = items;
+                    return items;
+                }
+                
+                const knowledge = JSON.parse(localStorage.getItem('yad_knowledge') || '[]');
+                STATE.knowledgeBase = knowledge;
+                return knowledge;
+            } catch(e) {
+                console.log('⚠️ Gagal load knowledge:', e.message);
+                return [];
+            }
+        }
+        
+        async function updateStats(type, value = 1) {
+            try {
+                if (firebaseReady) {
+                    const ref = db.ref(`stats/${type}`);
+                    const snapshot = await ref.once('value');
+                    const current = snapshot.val() || 0;
+                    await ref.set(current + value);
+                }
+                
+                if (type === 'deploy') STATE.deployCount += value;
+                if (type === 'search') STATE.searchCount += value;
+                if (type === 'correction') STATE.correctionCount += value;
+                if (type === 'conversations') STATE.memoryCount += value;
+            } catch(e) {
+                console.log('⚠️ Gagal update stats:', e.message);
+            }
+        }
+        
+        async function getStats() {
+            try {
+                let stats = {
+                    deployCount: STATE.deployCount,
+                    searchCount: STATE.searchCount,
+                    correctionCount: STATE.correctionCount,
+                    memoryCount: STATE.memoryCount,
+                    knowledgeCount: STATE.knowledgeBase.length,
+                    tokenCount: Object.keys(STATE.tokens).length,
+                    mode: STATE.currentMode,
+                    version: STATE.currentVersion,
+                    editHistory: STATE.editHistory.length,
+                    userEmail: STATE.user ? STATE.user.email : 'Not logged in',
+                    isAdmin: STATE.isAdmin,
+                    uploadedFiles: STATE.uploadedFiles.length
+                };
+                
+                if (firebaseReady) {
+                    const snapshot = await db.ref('stats').once('value');
+                    const data = snapshot.val() || {};
+                    stats = { ...stats, ...data };
+                }
+                
+                return stats;
+            } catch(e) {
+                console.log('⚠️ Gagal get stats:', e.message);
+                return {
+                    deployCount: STATE.deployCount,
+                    searchCount: STATE.searchCount,
+                    correctionCount: STATE.correctionCount,
+                    memoryCount: STATE.memoryCount,
+                    knowledgeCount: STATE.knowledgeBase.length,
+                    tokenCount: Object.keys(STATE.tokens).length,
+                    mode: STATE.currentMode,
+                    version: STATE.currentVersion,
+                    editHistory: STATE.editHistory.length,
+                    userEmail: STATE.user ? STATE.user.email : 'Not logged in',
+                    isAdmin: STATE.isAdmin,
+                    uploadedFiles: STATE.uploadedFiles.length
+                };
+            }
+        }
+        
+        // ================================================================
+        // GITHUB OPERATIONS & SELF-EDIT (Hanya Admin)
+        // ================================================================
+        
+        async function bacaDariGitHub() {
+            if (!STATE.isAdmin) return [];
+            
+            try {
+                if (!KONFIG.github.token) {
+                    console.log('⚠️ Token GitHub tidak ditemukan');
+                    return [];
+                }
+                
+                const url = `https://api.github.com/repos/${KONFIG.github.owner}/${KONFIG.github.repo}/contents/database/knowledge_base.json`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `token ${KONFIG.github.token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'User-Agent': 'YadAI'
+                    }
+                });
+                
+                if (!response.ok) {
+                    return [];
+                }
+                
+                const data = await response.json();
+                const konten = JSON.parse(atob(data.content));
+                return Array.isArray(konten) ? konten : [konten];
+                
+            } catch(e) {
+                console.log('❌ GitHub read error:', e.message);
+                return [];
+            }
+        }
+        
+        async function tulisKeGitHub(data, path = 'database/knowledge_base.json') {
+            if (!STATE.isAdmin) return false;
+            
+            try {
+                if (!KONFIG.github.token) {
+                    toast('⚠️ Token GitHub tidak ditemukan!', 'error');
+                    return false;
+                }
+                
+                const correctedData = await autoCorrection(data);
+                
+                const checkUrl = `https://api.github.com/repos/${KONFIG.github.owner}/${KONFIG.github.repo}/contents/${path}`;
+                let sha = null;
+                
+                try {
+                    const checkResponse = await fetch(checkUrl, {
+                        headers: {
+                            'Authorization': `token ${KONFIG.github.token}`,
+                            'Accept': 'application/vnd.github.v3+json',
+                            'User-Agent': 'YadAI'
+                        }
+                    });
+                    if (checkResponse.ok) {
+                        const fileData = await checkResponse.json();
+                        sha = fileData.sha;
+                    }
+                } catch(e) {}
+                
+                const konten = btoa(unescape(encodeURIComponent(JSON.stringify(correctedData, null, 2))));
+                
+                const body = {
+                    message: `Auto-Deploy: Update knowledge base - ${new Date().toISOString()}`,
+                    content: konten,
+                    branch: KONFIG.github.branch
+                };
+                
+                if (sha) body.sha = sha;
+                
+                const response = await fetch(checkUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${KONFIG.github.token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json',
+                        'User-Agent': 'YadAI'
+                    },
+                    body: JSON.stringify(body)
+                });
+                
+                if (response.ok) {
+                    STATE.lastSync = new Date().toISOString();
+                    STATE.pendingChanges = false;
+                    await updateStats('deploy', 1);
+                    toast('✅ Deploy berhasil dengan auto-correction!', 'success');
+                    updateDeployStatus('✅ Deploy sukses - ' + new Date().toLocaleTimeString(), 'active');
+                    return true;
+                } else {
+                    const err = await response.json();
+                    toast(`❌ Gagal deploy: ${err.message || 'Unknown error'}`, 'error');
+                    return false;
+                }
+                
+            } catch(e) {
+                console.log('❌ GitHub write error:', e.message);
+                toast(`❌ Error: ${e.message}`, 'error');
+                return false;
+            }
+        }
+        
+        // ================================================================
+        // SELF-EDIT SYSTEM (Hanya Admin)
+        // ================================================================
+        
+        async function selfEditHTML(newContent) {
+            if (!STATE.isAdmin) {
+                return '❌ Hanya Admin yang bisa melakukan self-edit!';
+            }
+            
+            try {
+                updateStatus('editing');
+                updateDeployStatus('✏️ Self-Edit in progress...', 'editing');
+                toast('✏️ AI sedang mengedit dirinya sendiri...', 'edit');
+                
+                const currentHTML = document.documentElement.outerHTML;
+                STATE.editHistory.push({
+                    timestamp: new Date().toISOString(),
+                    version: STATE.currentVersion,
+                    content: currentHTML,
+                    editedBy: STATE.user ? STATE.user.email : 'Admin'
+                });
+                
+                if (firebaseReady) {
+                    const ref = db.ref('versions').push();
+                    await ref.set({
+                        version: STATE.currentVersion,
+                        timestamp: new Date().toISOString(),
+                        content: currentHTML,
+                        editedBy: STATE.user ? STATE.user.email : 'Admin'
+                    });
+                }
+                
+                const versionParts = STATE.currentVersion.split('.');
+                versionParts[2] = parseInt(versionParts[2]) + 1;
+                STATE.currentVersion = versionParts.join('.');
+                
+                localStorage.setItem('yad_version', STATE.currentVersion);
+                localStorage.setItem('yad_edit_history', JSON.stringify(STATE.editHistory));
+                
+                const deploySuccess = await tulisKeGitHub({
+                    version: STATE.currentVersion,
+                    timestamp: new Date().toISOString(),
+                    content: newContent,
+                    editHistory: STATE.editHistory
+                }, 'database/versions.json');
+                
+                updateStatus('online');
+                updateDeployStatus('✅ Self-Edit selesai - v' + STATE.currentVersion, 'active');
+                
+                return `✅ Self-Edit berhasil! Versi: ${STATE.currentVersion}\n\nPerubahan telah disimpan dan dideploy ke GitHub.`;
+                
+            } catch(e) {
+                console.log('❌ Self-Edit error:', e.message);
+                updateStatus('online');
+                updateDeployStatus('❌ Self-Edit gagal', 'error');
+                return `❌ Gagal melakukan self-edit: ${e.message}`;
+            }
+        }
+        
+        // ================================================================
+        // AUTO-CORRECTION
+        // ================================================================
+        
+        async function autoCorrection(data) {
+            if (!STATE.autoMode) return data;
+            
+            console.log('🔍 Auto-Correction dimulai...');
+            
+            const unique = [];
+            const seen = new Set();
+            
+            for (const item of data) {
+                const key = (item.pertanyaan || item.question || '').toLowerCase().trim();
+                if (!key) continue;
+                
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    unique.push(item);
+                }
+            }
+            
+            const corrected = unique.map(item => ({
+                id: item.id || generateId(),
+                pertanyaan: item.pertanyaan || item.question || '',
+                jawaban: item.jawaban || item.answer || item.konten || '',
+                tags: Array.isArray(item.tags) ? item.tags : [],
+                timestamp: item.timestamp || new Date().toISOString(),
+                source: item.source || 'local',
+                metadata: {
+                    ...(item.metadata || {}),
+                    correctedAt: new Date().toISOString(),
+                    correctedBy: 'Auto-Correction'
+                }
+            }));
+            
+            const limited = corrected.slice(-KONFIG.maxKnowledge);
+            
+            const result = {
+                version: STATE.currentVersion,
+                totalItems: limited.length,
+                lastUpdate: new Date().toISOString(),
+                data: limited
+            };
+            
+            console.log(`✅ Auto-Correction selesai: ${data.length} -> ${limited.length} data`);
+            return result;
+        }
+        
+        // ================================================================
+        // AI SEARCH & THINKING
+        // ================================================================
+        
+        async function cariOnline(query) {
+            const hasil = {
+                duckduckgo: null,
+                wikipedia: null,
+                analisis: 'tidak_ditemukan'
+            };
+            
+            try {
+                const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.AbstractText && data.AbstractText.length > 20) {
+                        hasil.duckduckgo = {
+                            sumber: 'DuckDuckGo',
+                            judul: data.Heading || query,
+                            konten: data.AbstractText,
+                            url: data.AbstractURL || ''
+                        };
+                    }
+                }
+            } catch(e) {}
+            
+            try {
+                const response = await fetch(`https://id.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.extract && data.extract.length > 30) {
+                        hasil.wikipedia = {
+                            sumber: 'Wikipedia Indonesia',
+                            judul: data.title,
+                            konten: data.extract,
+                            url: data.content_urls?.desktop?.page || ''
+                        };
+                    }
+                }
+            } catch(e) {}
+            
+            if (hasil.duckduckgo && hasil.wikipedia) {
+                hasil.analisis = 'informasi_lengkap';
+            } else if (hasil.duckduckgo || hasil.wikipedia) {
+                hasil.analisis = 'informasi_terbatas';
+            }
+            
+            return hasil;
+        }
+        
+        async function tanyaAIEksternal(provider, pertanyaan, konteks = []) {
+            const config = KONFIG.ai[provider];
+            if (!config || !config.key) return null;
+            
+            try {
+                const messages = [
+                    {
+                        role: 'system',
+                        content: `Kamu adalah Yad AI 2.0, asisten yang ramah. Mode saat ini: ${STATE.currentMode}. ${
+                            STATE.isAdmin 
+                            ? 'Kamu adalah Admin dengan akses penuh ke sistem.' 
+                            : 'Kamu melayani pengguna dengan ramah dan membantu.'
+                        }`
+                    },
+                    ...konteks.slice(-KONFIG.maxHistory).map(m => ({
+                        role: m.role === 'user' ? 'user' : 'assistant',
+                        content: m.content
+                    })),
+                    {
+                        role: 'user',
+                        content: pertanyaan
+                    }
+                ];
+                
+                const response = await fetch(config.url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${config.key}`
+                    },
+                    body: JSON.stringify({
+                        model: config.model,
+                        messages: messages,
+                        max_tokens: 1200,
+                        temperature: 0.7
+                    })
+                });
+                
+                if (!response.ok) return null;
+                
+                const data = await response.json();
+                return data.choices?.[0]?.message?.content || null;
+                
+            } catch(e) {
+                console.log(`❌ ${provider} error:`, e.message);
+                return null;
+            }
+        }
+        
+        async function tanyaAIWithFallback(pertanyaan, konteks = []) {
+            const providers = Object.keys(KONFIG.ai).sort((a, b) => KONFIG.ai[a].priority - KONFIG.ai[b].priority);
+            
+            for (const provider of providers) {
+                const response = await tanyaAIEksternal(provider, pertanyaan, konteks);
+                if (response) {
+                    STATE.providerAI = provider;
+                    return response;
+                }
+            }
+            
+            return null;
+        }
+        
+        // ================================================================
+        // AUTO-THINKING SYSTEM
+        // ================================================================
+        
+        async function autoThink(query) {
+            STATE.currentStep = 0;
+            updateStatus('thinking');
+            updateDeployStatus('🧠 Auto-Thinking...', 'thinking');
+            
+            showThinkingStep(++STATE.currentStep, 'Menganalisis pertanyaan');
+            await sleep(200);
+            
+            showThinkingStep(++STATE.currentStep, 'Mencari di knowledge base');
+            await sleep(200);
+            
+            const lokalResult = cariLokal(query);
+            
+            showThinkingStep(++STATE.currentStep, 'Mencari di GitHub');
+            await sleep(200);
+            
+            let githubData = [];
+            if (STATE.isAdmin) {
+                try {
+                    githubData = await bacaDariGitHub();
+                    STATE.searchCount++;
+                } catch(e) {}
+            }
+            
+            showThinkingStep(++STATE.currentStep, 'Mencari di sumber online');
+            await sleep(200);
+            
+            const onlineResult = await cariOnline(query);
+            STATE.searchCount++;
+            
+            showThinkingStep(++STATE.currentStep, 'Menggunakan AI eksternal');
+            await sleep(200);
+            
+            const aiResponse = await tanyaAIWithFallback(query, STATE.chatHistory);
+            
+            showThinkingStep(++STATE.currentStep, 'Mengevaluasi hasil');
+            await sleep(200);
+            
+            showThinkingStep(++STATE.currentStep, 'Mensintesis jawaban');
+            await sleep(200);
+            
+            showThinkingStep(++STATE.currentStep, 'Auto-Correction');
+            await sleep(200);
+            
+            showThinkingStep(++STATE.currentStep, 'Menyimpan ke memori');
+            await sleep(200);
+            
+            showThinkingStep(++STATE.currentStep, '✅ Selesai!');
+            await sleep(200);
+            
+            removeThinkingStep();
+            updateStatus('online');
+            
+            let bestResult = null;
+            
+            if (lokalResult && lokalResult.relevansi > 0.7) {
+                bestResult = {
+                    konten: lokalResult.konten,
+                    source: 'Lokal',
+                    metadata: { thinking: 'Knowledge Base', memory: 'Local DB' }
+                };
+            } else if (githubData.length > 0) {
+                const githubResult = cariLokal.call({ knowledgeBase: githubData }, query);
+                if (githubResult && githubResult.relevansi > 0.6) {
+                    bestResult = {
+                        konten: githubResult.konten,
+                        source: 'GitHub',
+                        metadata: { thinking: 'GitHub', memory: 'Remote DB' }
+                    };
+                }
+            } else if (onlineResult.analisis === 'informasi_lengkap') {
+                bestResult = {
+                    konten: onlineResult.wikipedia.konten,
+                    source: 'Wikipedia',
+                    metadata: { thinking: 'Online Search', memory: 'Web' }
+                };
+            } else if (onlineResult.duckduckgo) {
+                bestResult = {
+                    konten: onlineResult.duckduckgo.konten,
+                    source: 'DuckDuckGo',
+                    metadata: { thinking: 'Online Search', memory: 'Web' }
+                };
+            } else if (aiResponse) {
+                bestResult = {
+                    konten: aiResponse,
+                    source: `AI (${STATE.providerAI})`,
+                    metadata: { thinking: 'AI Provider', memory: 'External AI' }
+                };
+            } else {
+                const defaultResponse = dapatkanJawabanDefault(query);
+                bestResult = {
+                    konten: defaultResponse,
+                    source: 'Default',
+                    metadata: { thinking: 'Default Response', memory: 'Built-in' }
+                };
+            }
+            
+            return bestResult;
+        }
+        
+        function cariLokal(query) {
+            const keywords = query.toLowerCase().split(/\s+/).filter(k => k.length > 2);
+            if (keywords.length === 0) return null;
+            
+            let bestMatch = null;
+            let bestScore = 0;
+            
+            for (const item of STATE.knowledgeBase) {
+                let score = 0;
+                const text = (item.pertanyaan + ' ' + item.jawaban + ' ' + (item.tags || []).join(' ')).toLowerCase();
+                
+                for (const keyword of keywords) {
+                    const count = (text.match(new RegExp(keyword, 'g')) || []).length;
+                    score += count * (keyword.length / 10);
+                }
+                
+                const normalized = Math.min(score / 5, 1);
+                
+                if (normalized > bestScore) {
+                    bestScore = normalized;
+                    bestMatch = {
+                        konten: item.jawaban || item.konten || '',
+                        relevansi: normalized,
+                        source: item.source || 'local',
+                        tags: item.tags || []
+                    };
+                }
+            }
+            
+            return bestMatch && bestScore > 0.3 ? bestMatch : null;
+        }
+        
+        function dapatkanJawabanDefault(query) {
+            const sapaan = ['hai', 'halo', 'hi', 'hello', 'assalamualaikum', 'pagi', 'siang', 'sore', 'malam'];
+            const kabar = ['apa kabar', 'gimana kabar', 'kabar'];
+            const terimakasih = ['terima kasih', 'makasih', 'thanks', 'thx'];
+            
+            for (const kata of sapaan) {
+                if (query.includes(kata)) {
+                    const responses = [
+                        'Halo! Ada yang bisa aku bantu? 😊',
+                        'Hai! Senang bisa ngobrol sama kamu.',
+                        'Halo! Yad AI siap membantu.',
+                        'Assalamualaikum! Ada yang bisa aku bantu?'
+                    ];
+                    return responses[Math.floor(Math.random() * responses.length)];
+                }
+            }
+            
+            for (const kata of kabar) {
+                if (query.includes(kata)) {
+                    return 'Alhamdulillah baik! Ada yang bisa aku bantu? 😊';
+                }
+            }
+            
+            for (const kata of terimakasih) {
+                if (query.includes(kata)) {
+                    return 'Sama-sama! Senang bisa membantu. 🙏';
+                }
+            }
+            
+            return 'Maaf, saya belum menemukan jawaban yang tepat. Bisa tanyakan dengan cara lain? 🤔';
+        }
+        
+        // ================================================================
+        // HANDLE COMMANDS
+        // ================================================================
+        
+        async function handleCommand(command) {
+            const cmd = command.toLowerCase().trim();
+            const parts = cmd.split(' ');
+            const mainCmd = parts[0];
+            
+            if (mainCmd === '/help') {
+                return getHelpText();
+            }
+            
+            if (mainCmd === '/stats') {
+                const stats = await getStats();
+                return `📊 **Statistik:**\n\n` +
+                    `• Versi: ${stats.version}\n` +
+                    `• Mode: ${stats.mode}\n` +
+                    `• User: ${stats.userEmail}\n` +
+                    `• Role: ${stats.isAdmin ? '👑 Admin' : '👤 User'}\n` +
+                    `• Deploy: ${stats.deployCount}x\n` +
+                    `• Search: ${stats.searchCount}x\n` +
+                    `• Correction: ${stats.correctionCount}x\n` +
+                    `• Memory: ${stats.memoryCount}x\n` +
+                    `• Knowledge: ${stats.knowledgeCount} item\n` +
+                    `• Token: ${stats.tokenCount} aktif\n` +
+                    `• Edit History: ${stats.editHistory || 0}x\n` +
+                    `• Uploaded Files: ${stats.uploadedFiles || 0} file`;
+            }
+            
+            if (mainCmd === '/clear') {
+                chatMessages.innerHTML = '';
+                STATE.chatHistory = [];
+                tambahPesan('ai', '🗑️ Chat telah dibersihkan!');
+                return null;
+            }
+            
+            if (!STATE.isAdmin) {
+                return '❌ Command ini hanya untuk Admin!';
+            }
+            
+            if (mainCmd === '/token') {
+                const subCmd = parts[1];
+                if (subCmd === 'list') {
+                    return await listTokens();
+                } else if (subCmd === 'add' && parts[2] && parts[3]) {
+                    const name = parts[2];
+                    const value = parts[3];
+                    const success = await saveToken(name, value);
+                    return success ? `✅ Token ${name} berhasil disimpan!` : '❌ Gagal menyimpan token.';
+                } else if (subCmd === 'remove' && parts[2]) {
+                    const name = parts[2];
+                    const success = await removeToken(name);
+                    return success ? `✅ Token ${name} berhasil dihapus!` : '❌ Gagal menghapus token.';
+                }
+                return '❌ Gunakan: /token list | /token add [nama] [value] | /token remove [nama]';
+            }
+            
+            if (mainCmd === '/edit') {
+                if (parts.length < 2) {
+                    return '❌ Masukkan kode yang akan diedit. Contoh: /edit <kode_html>';
+                }
+                const newContent = command.substring('/edit '.length);
+                return await selfEditHTML(newContent);
+            }
+            
+            if (mainCmd === '/deploy') {
+                const data = STATE.knowledgeBase;
+                const success = await tulisKeGitHub(data);
+                return success ? '✅ Deploy berhasil!' : '❌ Gagal deploy!';
+            }
+            
+            if (mainCmd === '/memory') {
+                const conversations = await loadConversations(20);
+                if (conversations.length === 0) {
+                    return '📭 Belum ada data memori.';
+                }
+                
+                let result = '💾 **Memori AI (20 terakhir):**\n\n';
+                conversations.slice(-10).forEach((conv, i) => {
+                    result += `**${i+1}.** ${conv.message.substring(0, 50)}...\n`;
+                });
+                return result;
+            }
+            
+            if (mainCmd === '/version') {
+                return `📌 **Versi saat ini:** ${STATE.currentVersion}\n` +
+                    `• Edit History: ${STATE.editHistory.length}x\n` +
+                    `• Last Edit: ${STATE.editHistory.length > 0 ? new Date(STATE.editHistory[STATE.editHistory.length-1].timestamp).toLocaleString() : 'Belum ada'}`;
+            }
+            
+            if (mainCmd === '/whoami') {
+                return `👤 **Info User:**\n\n` +
+                    `• Email: ${STATE.user ? STATE.user.email : 'Not logged in'}\n` +
+                    `• Role: ${STATE.isAdmin ? '👑 ADMIN' : '👤 USER'}\n` +
+                    `• Mode: ${STATE.currentMode}\n` +
+                    `• Logged in: ${STATE.isLoggedIn ? '✅ Yes' : '❌ No'}`;
+            }
+            
+            if (mainCmd === '/upload') {
+                return '📤 **Cara Upload File:**\n\n' +
+                    `Klik tombol 📤 di pojok kiri input chat.\n` +
+                    `Upload file PDF, Word, atau TXT.\n` +
+                    `AI akan membaca dan mempelajari materi tersebut.\n\n` +
+                    `File akan disimpan di database dan AI akan mengingatnya!`;
+            }
+            
+            return '❌ Command tidak dikenal. Ketik /help untuk bantuan.';
+        }
+        
+        function getHelpText() {
+            if (STATE.isAdmin) {
+                return `📚 **Bantuan Yad AI 2.0 (Admin)**\n\n` +
+                    `**Command Admin:**\n` +
+                    `• /token list - Lihat token\n` +
+                    `• /token add [nama] [value] - Tambah token\n` +
+                    `• /token remove [nama] - Hapus token\n` +
+                    `• /edit [kode] - Edit HTML sendiri\n` +
+                    `• /deploy - Deploy ke GitHub\n` +
+                    `• /memory - Lihat memori AI\n` +
+                    `• /version - Lihat versi\n` +
+                    `• /whoami - Info user\n` +
+                    `• /upload - Cara upload file\n\n` +
+                    `**Command Umum:**\n` +
+                    `• /help - Bantuan ini\n` +
+                    `• /stats - Lihat statistik\n` +
+                    `• /clear - Bersihkan chat\n\n` +
+                    `💡 Anda adalah ADMIN dengan akses penuh!`;
+            } else {
+                return `📚 **Bantuan Yad AI 2.0 (User)**\n\n` +
+                    `**Command User:**\n` +
+                    `• /help - Bantuan ini\n` +
+                    `• /stats - Lihat statistik\n` +
+                    `• /clear - Bersihkan chat\n` +
+                    `• /whoami - Info user\n\n` +
+                    `💡 Anda adalah USER dengan akses terbatas.\n` +
+                    `🔒 Hanya Admin yang bisa mengelola token dan sistem.`;
+            }
+        }
+        
+        async function loadConversations(limit = 20) {
+            try {
+                if (firebaseReady) {
+                    const snapshot = await db.ref('conversations')
+                        .orderByKey()
+                        .limitToLast(limit)
+                        .once('value');
+                    
+                    const data = snapshot.val() || {};
+                    return Object.values(data);
+                }
+                
+                const history = JSON.parse(localStorage.getItem('yad_conversations') || '[]');
+                return history.slice(-limit);
+            } catch(e) {
+                console.log('⚠️ Gagal load conversations:', e.message);
+                return [];
+            }
+        }
+        
+        // ================================================================
+        // FILE UPLOAD SYSTEM
+        // ================================================================
+        
+        let selectedFile = null;
+        let fileContent = '';
+        
+        function openUploadModal() {
+            if (!STATE.isLoggedIn) {
+                toast('⚠️ Login terlebih dahulu!', 'error');
+                return;
+            }
+            uploadModal.classList.add('active');
+            resetUploadModal();
+        }
+        
+        function closeUploadModal() {
+            uploadModal.classList.remove('active');
+            resetUploadModal();
+        }
+        
+        function resetUploadModal() {
+            selectedFile = null;
+            fileContent = '';
+            fileDropText.textContent = 'Klik atau drag & drop file di sini';
+            fileName.style.display = 'none';
+            uploadProgress.classList.remove('active');
+            progressBar.style.width = '0%';
+            fileInput.value = '';
+        }
+        
+        function handleFile(file) {
+            if (!file) return;
+            
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (!['pdf', 'docx', 'txt'].includes(ext)) {
+                toast('❌ Format file tidak didukung! Gunakan PDF, DOCX, atau TXT', 'error');
+                return;
+            }
+            
+            selectedFile = file;
+            fileDropText.textContent = '📄 File terpilih:';
+            fileName.textContent = file.name + ` (${(file.size / 1024).toFixed(1)} KB)`;
+            fileName.style.display = 'block';
+            toast(`📄 File "${file.name}" siap diupload`, 'info');
+        }
+        
+        async function processAndUploadFile() {
+            if (!selectedFile) {
+                toast('⚠️ Pilih file terlebih dahulu!', 'error');
+                return;
+            }
+            
+            btnUploadFile.disabled = true;
+            uploadProgress.classList.add('active');
+            progressBar.style.width = '20%';
+            updateStatus('uploading');
+            toast('📤 Memproses file...', 'upload');
+            
+            try {
+                const ext = selectedFile.name.split('.').pop().toLowerCase();
+                let text = '';
+                
+                progressBar.style.width = '40%';
+                
+                if (ext === 'txt') {
+                    text = await selectedFile.text();
+                } else if (ext === 'pdf') {
+                    const arrayBuffer = await selectedFile.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                    let fullText = '';
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const content = await page.getTextContent();
+                        const strings = content.items.map(item => item.str);
+                        fullText += strings.join(' ') + '\n';
+                    }
+                    text = fullText;
+                } else if (ext === 'docx') {
+                    const arrayBuffer = await selectedFile.arrayBuffer();
+                    const result = await mammoth.extractRawText({ arrayBuffer });
+                    text = result.value;
+                }
+                
+                progressBar.style.width = '70%';
+                
+                if (!text || text.trim().length < 10) {
+                    throw new Error('File kosong atau tidak bisa dibaca');
+                }
+                
+                // Simpan ke knowledge base
+                const summary = text.substring(0, 500) + (text.length > 500 ? '...' : '');
+                const tags = ['uploaded', ext, selectedFile.name];
+                
+                await saveKnowledge(
+                    `Materi dari file: ${selectedFile.name}`,
+                    `📄 **File:** ${selectedFile.name}\n\n**Konten:**\n${text}`,
+                    tags
+                );
+                
+                STATE.uploadedFiles.push({
+                    name: selectedFile.name,
+                    size: selectedFile.size,
+                    type: ext,
+                    timestamp: new Date().toISOString(),
+                    length: text.length
+                });
+                
+                progressBar.style.width = '100%';
+                
+                setTimeout(() => {
+                    uploadProgress.classList.remove('active');
+                    progressBar.style.width = '0%';
+                }, 500);
+                
+                updateStatus('online');
+                btnUploadFile.disabled = false;
+                closeUploadModal();
+                
+                // Tampilkan hasil di chat
+                const resultMsg = `✅ **File berhasil diupload dan dipelajari!**\n\n` +
+                    `📄 **File:** ${selectedFile.name}\n` +
+                    `📊 **Ukuran:** ${(selectedFile.size / 1024).toFixed(1)} KB\n` +
+                    `📝 **Jumlah karakter:** ${text.length}\n` +
+                    `📌 **Tags:** ${tags.join(', ')}\n\n` +
+                    `📖 **Ringkasan konten (500 karakter pertama):**\n\n${summary}`;
+                
+                tambahPesan('ai', resultMsg, { 
+                    isAdmin: STATE.isAdmin, 
+                    source: 'Upload System',
+                    uploaded: true
+                });
+                
+                toast('✅ File berhasil dipelajari AI!', 'success');
+                updateDeployStatus('📤 File uploaded - AI telah mempelajari materi', 'active');
+                
+                STATE.pendingChanges = true;
+                
+            } catch(e) {
+                console.log('❌ Upload error:', e.message);
+                toast(`❌ Gagal upload: ${e.message}`, 'error');
+                updateStatus('online');
+                btnUploadFile.disabled = false;
+                uploadProgress.classList.remove('active');
+                progressBar.style.width = '0%';
+            }
+        }
+        
+        // ================================================================
+        // MAIN PROCESS
+        // ================================================================
+        
+        async function kirimPesan() {
+            if (STATE.sedangMemproses || !STATE.isLoggedIn) return;
+            
+            const teks = userInput.value.trim();
+            if (!teks) return;
+            
+            STATE.sedangMemproses = true;
+            userInput.value = '';
+            sendBtn.disabled = true;
+            userInput.disabled = true;
+            
+            tambahPesan('user', escapeHtml(teks));
+            
+            const typingDiv = showTypingIndicator();
+            
+            try {
+                if (teks.startsWith('/')) {
+                    removeTypingIndicator();
+                    const result = await handleCommand(teks);
+                    if (result) {
+                        tambahPesan('ai', result, { 
+                            isAdmin: STATE.isAdmin,
+                            source: 'Command'
+                        });
+                    }
+                } else {
+                    const result = await autoThink(teks);
+                    
+                    removeTypingIndicator();
+                    
+                    if (result) {
+                        const div = tambahPesan('ai', result.konten, { 
+                            ...result.metadata,
+                            isAdmin: STATE.isAdmin,
+                            source: result.source
+                        });
+                        
+                        STATE.chatHistory.push({ role: 'user', content: teks });
+                        STATE.chatHistory.push({ role: 'assistant', content: result.konten });
+                        
+                        if (STATE.chatHistory.length > KONFIG.maxHistory * 2) {
+                            STATE.chatHistory = STATE.chatHistory.slice(-KONFIG.maxHistory * 2);
+                        }
+                        
+                        await saveConversation(teks, result.konten, result.metadata);
+                        
+                        if (result.source && result.source.includes('AI')) {
+                            await saveKnowledge(teks, result.konten, [result.source]);
+                            STATE.pendingChanges = true;
+                        }
+                    }
+                }
+            } catch(e) {
+                removeTypingIndicator();
+                tambahPesan('ai', '❌ Maaf, terjadi kesalahan. Bisa coba lagi? 🙏', {
+                    isAdmin: STATE.isAdmin
+                });
+                console.error('❌ Error:', e);
+            }
+            
+            STATE.sedangMemproses = false;
+            sendBtn.disabled = false;
+            userInput.disabled = false;
+            userInput.focus();
+        }
+        
+        // ================================================================
+        // AUTO-DEPLOY SYSTEM (Hanya Admin)
+        // ================================================================
+        
+        async function autoDeploy() {
+            if (!STATE.autoMode || !STATE.isAdmin) return;
+            
+            try {
+                if (STATE.pendingChanges && STATE.isOnline && KONFIG.github.token) {
+                    updateDeployStatus('🔄 Auto-Deploy in progress...', 'thinking');
+                    toast('🔄 Auto-Deploy dimulai...', 'thinking');
+                    
+                    const data = STATE.knowledgeBase;
+                    const success = await tulisKeGitHub(data);
+                    
+                    if (success) {
+                        STATE.pendingChanges = false;
+                        updateDeployStatus('✅ Auto-Deploy berhasil!', 'active');
+                    } else {
+                        updateDeployStatus('❌ Auto-Deploy gagal', 'error');
+                    }
+                }
+            } catch(e) {
+                console.log('❌ Auto-Deploy error:', e.message);
+                updateDeployStatus('❌ Auto-Deploy error', 'error');
+            }
+        }
+        
+        // ================================================================
+        // EVENT LISTENERS
+        // ================================================================
+        
+        // Auth
+        loginBtn.addEventListener('click', async function() {
+            const email = loginEmail.value.trim();
+            const password = loginPassword.value.trim();
+            
+            if (!email || !password) {
+                toast('⚠️ Masukkan email dan password!', 'error');
+                return;
+            }
+            
+            try {
+                if (!auth) {
+                    toast('❌ Firebase Auth tidak tersedia', 'error');
+                    return;
+                }
+                
+                const result = await auth.signInWithEmailAndPassword(email, password);
+                await handleLogin(result.user);
+                
+            } catch(e) {
+                console.log('❌ Login error:', e.message);
+                if (e.code === 'auth/user-not-found') {
+                    toast('❌ Email tidak terdaftar', 'error');
+                } else if (e.code === 'auth/wrong-password') {
+                    toast('❌ Password salah', 'error');
+                } else {
+                    toast(`❌ Gagal login: ${e.message}`, 'error');
+                }
+            }
+        });
+        
+        googleLoginBtn.addEventListener('click', async function() {
+            try {
+                if (!auth) {
+                    toast('❌ Firebase Auth tidak tersedia', 'error');
+                    return;
+                }
+                
+                const provider = new firebase.auth.GoogleAuthProvider();
+                provider.setCustomParameters({
+                    prompt: 'select_account'
+                });
+                
+                const result = await auth.signInWithPopup(provider);
+                await handleLogin(result.user);
+                
+            } catch(e) {
+                console.log('❌ Login error:', e.message);
+                if (e.code === 'auth/popup-closed-by-user') {
+                    toast('⏱️ Login dibatalkan', 'info');
+                } else {
+                    toast(`❌ Gagal login: ${e.message}`, 'error');
+                }
+            }
+        });
+        
+        authBtn.addEventListener('click', handleLogout);
+        
+        if (auth) {
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    await handleLogin(user);
+                } else {
+                    if (STATE.isLoggedIn) {
+                        handleLogout();
+                    }
+                }
+            });
+        }
+        
+        // Chat
+        sendBtn.addEventListener('click', kirimPesan);
+        
+        userInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                kirimPesan();
+            }
+        });
+        
+        // Upload
+        uploadBtn.addEventListener('click', openUploadModal);
+        
+        fileDropZone.addEventListener('click', () => fileInput.click());
+        
+        fileDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileDropZone.classList.add('dragover');
+        });
+        
+        fileDropZone.addEventListener('dragleave', () => {
+            fileDropZone.classList.remove('dragover');
+        });
+        
+        fileDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileDropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+        
+        btnUploadFile.addEventListener('click', processAndUploadFile);
+        
+        btnCancelUpload.addEventListener('click', closeUploadModal);
+        
+        // Close modal on click outside
+        uploadModal.addEventListener('click', (e) => {
+            if (e.target === uploadModal) {
+                closeUploadModal();
+            }
+        });
+        
+        // ================================================================
+        // INISIALISASI
+        // ================================================================
+        
+        async function init() {
+            console.log('🧠 Yad AI 2.0 - Upload & Auto Admin System');
+            console.log('👑 Admin email: ' + KONFIG.adminEmail);
+            
+            const savedVersion = localStorage.getItem('yad_version');
+            if (savedVersion) {
+                STATE.currentVersion = savedVersion;
+            }
+            
+            const history = localStorage.getItem('yad_edit_history');
+            if (history) {
+                STATE.editHistory = JSON.parse(history);
+            }
+            
+            updateUI();
+            
+            if (auth && auth.currentUser) {
+                await handleLogin(auth.currentUser);
+            }
+            
+            // Auto-save interval
+            setInterval(() => {
+                if (STATE.knowledgeBase.length > 0) {
+                    localStorage.setItem('yad_knowledge', JSON.stringify(STATE.knowledgeBase.slice(-KONFIG.maxKnowledge)));
+                }
+                if (STATE.chatHistory.length > 0) {
+                    localStorage.setItem('yad_history', JSON.stringify(STATE.chatHistory.slice(-KONFIG.maxHistory * 2)));
+                }
+                localStorage.setItem('yad_version', STATE.currentVersion);
+            }, 30000);
+            
+            // PDF.js worker
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+        
+        init();
+        
+        // ================================================================
+        // EXPOSE FUNCTIONS GLOBAL
+        // ================================================================
+        window.YadAI = {
+            STATE: STATE,
+            KONFIG: KONFIG,
+            init: init,
+            kirimPesan: kirimPesan,
+            autoDeploy: autoDeploy,
+            selfEditHTML: selfEditHTML,
+            getStats: getStats,
+            loadTokens: loadTokens,
+            saveToken: saveToken,
+            removeToken: removeToken,
+            handleLogin: handleLogin,
+            handleLogout: handleLogout,
+            openUploadModal: openUploadModal,
+            processAndUploadFile: processAndUploadFile
+        };
+        
+    })();
+    </script>
+</body>
+</html>

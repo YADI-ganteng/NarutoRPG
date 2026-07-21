@@ -3,349 +3,2599 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Yad AI - Super Intelligent v8.0</title>
+    <title>Yad AI - Ultimate Global Knowledge</title>
     
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/universal-sentence-encoder@latest"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
     
     <style>
-        :root{--bg-primary:#0a0e17;--bg-secondary:#141c2b;--bg-tertiary:#1e2a3a;--text-primary:#e8edf5;--text-secondary:#8899aa;--accent-blue:#4a90d9;--accent-purple:#7c5ce7;--accent-green:#2ecc71;--accent-red:#e74c3c;--accent-gold:#f39c12;--accent-cyan:#00bcd4;--accent-pink:#e91e63;--border-color:#2a3545;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--safe-bottom:env(safe-area-inset-bottom,0px);--transition:all 0.3s ease}
-        *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-        body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg-primary);color:var(--text-primary);height:100vh;height:100dvh;width:100vw;overflow:hidden;position:fixed;top:0;left:0}
-        #app{height:100%;display:flex;flex-direction:column}
-        .header{background:linear-gradient(135deg,#0f1729,#1a2332);padding:10px 16px;border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;z-index:20;min-height:50px}
-        .header-left{display:flex;align-items:center;gap:10px}
-        .ai-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));display:flex;align-items:center;justify-content:center;font-size:16px;animation:glow 2s infinite}
-        @keyframes glow{0%,100%{box-shadow:0 0 5px rgba(74,144,217,0.5)}50%{box-shadow:0 0 20px rgba(124,92,231,0.8)}}
-        .header-title{font-size:14px;font-weight:700}
-        .header-title span{background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-        .header-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-        .badge{padding:4px 8px;border-radius:12px;font-size:9px;font-weight:600;border:1px solid}
-        .badge.admin{background:rgba(124,92,231,0.15);border-color:var(--accent-purple);color:var(--accent-purple)}
-        .badge.user{background:rgba(46,204,113,0.15);border-color:var(--accent-green);color:var(--accent-green)}
-        .badge.guest{background:rgba(136,153,170,0.15);border-color:var(--text-secondary);color:var(--text-secondary)}
-        .btn-icon{padding:5px 10px;border-radius:12px;border:1px solid var(--border-color);background:transparent;color:var(--text-primary);cursor:pointer;font-size:9px}
-        .chat-area{flex:1;display:flex;flex-direction:column;background:var(--bg-primary);min-height:0}
-        .chat-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
-        .message{max-width:85%;animation:slideUp 0.3s ease;line-height:1.5;word-wrap:break-word}
-        @keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-        .message.user{margin-left:auto;background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));color:white;padding:10px 14px;border-radius:16px 16px 4px 16px;font-size:13px}
-        .message.ai{margin-right:auto;background:var(--bg-secondary);border:1px solid var(--border-color);padding:10px 14px;border-radius:16px 16px 16px 4px;font-size:13px}
-        .message .card{background:var(--bg-tertiary);padding:8px;border-radius:8px;margin:6px 0;border:1px solid var(--border-color);font-size:11px}
-        .input-area{padding:8px 12px;padding-bottom:calc(8px + var(--safe-bottom));background:var(--bg-secondary);border-top:1px solid var(--border-color);display:flex;gap:8px;align-items:center}
-        .input-area input{flex:1;padding:12px 14px;background:var(--bg-primary);border:2px solid var(--border-color);border-radius:24px;color:var(--text-primary);font-size:14px;outline:none}
-        .input-area input:focus{border-color:var(--accent-blue);box-shadow:0 0 0 3px rgba(74,144,217,0.15)}
-        .send-btn{width:44px;height:44px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));color:white;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
-        .send-btn:active{transform:scale(0.9)}
-        .attach-btn{width:38px;height:38px;border-radius:50%;border:2px solid var(--border-color);background:transparent;color:var(--text-secondary);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
-        .toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:20px;color:white;font-size:12px;z-index:100;animation:toastIn 0.3s ease;font-weight:600}
-        @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-        .toast.success{background:var(--accent-green)}.toast.error{background:var(--accent-red)}.toast.info{background:var(--accent-blue)}
-        .progress-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;z-index:50}
-        .progress-overlay.active{display:flex}
-        .progress-card{background:var(--bg-secondary);padding:24px;border-radius:16px;text-align:center;width:300px}
-        .progress-bar{width:100%;height:4px;background:var(--bg-tertiary);border-radius:2px;margin:10px 0;overflow:hidden}
-        .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent-blue),var(--accent-purple));width:0%;transition:width 0.5s}
-        @media(min-width:768px){.message{max-width:70%}}
-        @media(max-width:767px){.message{max-width:90%;font-size:13px}.send-btn{width:40px;height:40px}}
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #141c2b;
+            --bg-tertiary: #1e2a3a;
+            --text-primary: #e8edf5;
+            --text-secondary: #8899aa;
+            --accent-blue: #4a90d9;
+            --accent-purple: #7c5ce7;
+            --accent-green: #2ecc71;
+            --accent-red: #e74c3c;
+            --accent-gold: #f39c12;
+            --accent-cyan: #00bcd4;
+            --accent-pink: #e91e63;
+            --accent-orange: #e67e22;
+            --border-color: #2a3545;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --transition: all 0.3s ease;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            height: 100dvh;
+            width: 100vw;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+        #app {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header Styles */
+        .header {
+            background: linear-gradient(135deg, #0f1729, #1a2332);
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            z-index: 20;
+            min-height: 50px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .ai-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            animation: glow 2s infinite;
+            position: relative;
+        }
+        .ai-avatar.admin-active::after {
+            content: '👑';
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 14px;
+        }
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(74,144,217,0.5); }
+            50% { box-shadow: 0 0 20px rgba(124,92,231,0.8); }
+        }
+        .header-title {
+            font-size: 14px;
+            font-weight: 700;
+        }
+        .header-title span {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        
+        /* Badge Styles */
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 9px;
+            font-weight: 600;
+            border: 1px solid;
+            white-space: nowrap;
+        }
+        .badge.admin {
+            background: rgba(124,92,231,0.2);
+            border-color: var(--accent-purple);
+            color: var(--accent-purple);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .badge.user {
+            background: rgba(46,204,113,0.15);
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+        .badge.guest {
+            background: rgba(136,153,170,0.15);
+            border-color: var(--text-secondary);
+            color: var(--text-secondary);
+        }
+        .badge.ai-secondary {
+            background: rgba(0,188,212,0.2);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            animation: pulse 1.5s infinite;
+        }
+        .btn-icon {
+            padding: 5px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 9px;
+            white-space: nowrap;
+            transition: var(--transition);
+        }
+        .btn-icon:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--accent-blue);
+        }
+        .btn-icon.admin-btn {
+            border-color: var(--accent-purple);
+            background: rgba(124,92,231,0.15);
+            display: none;
+        }
+        
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+            min-height: 0;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            scroll-behavior: smooth;
+        }
+        .message {
+            max-width: 85%;
+            animation: slideUp 0.3s ease;
+            line-height: 1.6;
+            word-wrap: break-word;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message.user {
+            margin-left: auto;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            padding: 10px 14px;
+            border-radius: 16px 16px 4px 16px;
+            font-size: 13px;
+        }
+        .message.ai {
+            margin-right: auto;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 10px 14px;
+            border-radius: 16px 16px 16px 4px;
+            font-size: 13px;
+        }
+        .message.ai-secondary {
+            border-color: var(--accent-cyan);
+            background: rgba(0,188,212,0.1);
+        }
+        .message .card {
+            background: var(--bg-tertiary);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 6px 0;
+            border: 1px solid var(--border-color);
+            font-size: 12px;
+        }
+        .message .card.success { border-color: var(--accent-green); background: rgba(46,204,113,0.1); }
+        .message .card.info { border-color: var(--accent-cyan); background: rgba(0,188,212,0.1); }
+        .message .card.warning { border-color: var(--accent-gold); background: rgba(243,156,18,0.1); }
+        .message .card.danger { border-color: var(--accent-red); background: rgba(231,76,60,0.1); }
+        .message .card.knowledge { border-color: var(--accent-purple); background: rgba(124,92,231,0.1); }
+        .message code {
+            background: #0a0e17;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: var(--accent-green);
+        }
+        .message pre {
+            background: #0a0e17;
+            padding: 10px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: var(--accent-green);
+            margin: 8px 0;
+        }
+        .typing-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+            animation: typing 1.4s infinite;
+            margin: 0 2px;
+        }
+        .typing-indicator:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+            30% { opacity: 1; transform: translateY(-5px); }
+        }
+        
+        /* Input Area */
+        .input-area {
+            padding: 8px 12px;
+            padding-bottom: calc(8px + var(--safe-bottom));
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .input-area input {
+            flex: 1;
+            padding: 12px 16px;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            border-radius: 24px;
+            color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+            transition: var(--transition);
+        }
+        .input-area input:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(74,144,217,0.15);
+        }
+        .send-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+        .send-btn:active {
+            transform: scale(0.9);
+        }
+        .send-btn.admin-mode {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+        }
+        .attach-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 2px solid var(--border-color);
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+        .attach-btn:hover {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+        
+        /* Admin Panel */
+        .admin-panel {
+            position: fixed;
+            top: 60px;
+            right: 10px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--accent-purple);
+            border-radius: var(--radius-lg);
+            padding: 12px;
+            z-index: 30;
+            display: none;
+            min-width: 200px;
+            box-shadow: 0 10px 30px rgba(124,92,231,0.3);
+        }
+        .admin-panel.active {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .admin-panel h4 {
+            color: var(--accent-purple);
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        .admin-panel button {
+            display: block;
+            width: 100%;
+            padding: 8px;
+            margin: 4px 0;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 11px;
+            transition: var(--transition);
+            text-align: left;
+        }
+        .admin-panel button:hover {
+            background: var(--accent-purple);
+            border-color: var(--accent-purple);
+        }
+        
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            border-radius: 20px;
+            color: white;
+            font-size: 12px;
+            z-index: 100;
+            animation: toastIn 0.3s ease;
+            font-weight: 600;
+            pointer-events: none;
+        }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        .toast.success { background: var(--accent-green); }
+        .toast.error { background: var(--accent-red); }
+        .toast.info { background: var(--accent-blue); }
+        .toast.admin { background: var(--accent-purple); border: 2px solid var(--accent-gold); }
+        
+        /* Progress Overlay */
+        .progress-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+        .progress-overlay.active { display: flex; }
+        .progress-card {
+            background: var(--bg-secondary);
+            padding: 24px;
+            border-radius: var(--radius-lg);
+            text-align: center;
+            width: 320px;
+            border: 1px solid var(--border-color);
+        }
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+            margin: 12px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        /* Responsive */
+        @media (min-width: 768px) {
+            .message { max-width: 70%; }
+            .admin-panel { right: 20px; min-width: 250px; }
+        }
+        @media (max-width: 767px) {
+            .message { max-width: 92%; font-size: 13px; }
+            .send-btn { width: 40px; height: 40px; }
+            .header { padding: 8px 10px; }
+            .header-title { font-size: 12px; }
+        }
     </style>
 </head>
 <body>
     <div id="app">
         <div class="header">
-            <div class="header-left"><div class="ai-avatar">&#x1F9E0;</div><div class="header-title"><span>Yad AI</span></div></div>
+            <div class="header-left">
+                <div class="ai-avatar" id="aiAvatar">🧠</div>
+                <div class="header-title">
+                    <span>Yad AI</span> 
+                    <small style="color:var(--accent-gold);font-size:9px;">Global Knowledge</small>
+                </div>
+            </div>
             <div class="header-right">
                 <span id="ai-badge" class="badge" style="background:rgba(46,204,113,0.15);border-color:var(--accent-green);color:var(--accent-green);font-size:8px;">DeepSeek</span>
+                <span id="ai-secondary-badge" class="badge ai-secondary" style="display:none;">AI-2</span>
                 <span id="auth-status" class="badge guest">Guest</span>
-                <button id="login-btn" class="btn-icon" onclick="showLogin()">Login</button>
-                <button id="logout-btn" class="btn-icon" style="display:none;" onclick="doLogout()">Logout</button>
+                <button id="login-btn" class="btn-icon" onclick="showLogin()">🔑 Login</button>
+                <button id="logout-btn" class="btn-icon" style="display:none;" onclick="doLogout()">🚪 Logout</button>
+                <button id="admin-panel-btn" class="btn-icon admin-btn" onclick="toggleAdminPanel()">⚙️ Admin</button>
             </div>
         </div>
+        
         <div class="chat-area">
             <div class="chat-messages" id="chatMessages">
                 <div class="message ai">
-                    <b>Yad AI - Super Intelligent v8.0</b><br><br>
-                    AI dengan pengetahuan coding, logika, perbandingan, analisis, dan penyusunan.<br><br>
-                    Pengetahuan berasal dari Firebase Firestore (unlimited).<br><br>
-                    Ketik <code>?</code> untuk bantuan.
+                    <b>🧠 Yad AI - Ultimate Global Knowledge</b><br><br>
+                    <b>📚 Pengetahuan:</b> Universal | Science | History | Culture | Tech<br>
+                    <b>🔧 Fitur:</b> Chat | Math | Chemistry | Physics | Coding | Search<br>
+                    <b>🎮 Lainnya:</b> Deploy | Game | TopUp | Upload | YouTube | Short<br>
+                    <b>🤖 AI:</b> Primary + Secondary Assistant<br>
+                    <b>👑 Admin:</b> Auto-detect | Full Control<br><br>
+                    <code>?</code> <code>cari</code> <code>hitung</code> <code>deploy</code> <code>self edit</code><br>
+                    <small style="color:var(--text-secondary);">Ketik untuk memulai...</small>
                 </div>
             </div>
             <div class="input-area">
-                <button class="attach-btn" onclick="document.getElementById('fileInput').click()">+</button>
-                <input type="text" id="userInput" placeholder="Ketik pesan..." autocomplete="off" enterkeyhint="send">
-                <button class="send-btn" id="sendBtn">&#10148;</button>
+                <button class="attach-btn" onclick="document.getElementById('fileInput').click()" title="Upload File">📎</button>
+                <input type="text" id="userInput" placeholder="Tanyakan apa saja..." autocomplete="off" enterkeyhint="send">
+                <button class="send-btn" id="sendBtn" title="Kirim">➤</button>
             </div>
         </div>
     </div>
+    
+    <!-- Admin Panel -->
+    <div class="admin-panel" id="adminPanel">
+        <h4>👑 Admin Panel</h4>
+        <button onclick="forceSyncKnowledge()">🔄 Sync Knowledge</button>
+        <button onclick="viewAllUsers()">👥 View Users</button>
+        <button onclick="broadcastMessage()">📢 Broadcast</button>
+        <button onclick="systemStats()">📊 System Stats</button>
+        <button onclick="clearCache()">🗑️ Clear Cache</button>
+        <button onclick="exportDatabase()">💾 Export DB</button>
+        <button onclick="toggleAISecondary()">🤖 Toggle AI-2</button>
+        <button onclick="emergencyDeploy()">🚨 Emergency Deploy</button>
+    </div>
+    
     <input type="file" id="fileInput" accept="*/*" multiple style="display:none;">
     <div id="toastContainer"></div>
-    <div class="progress-overlay" id="progOverlay"><div class="progress-card"><div style="font-size:32px;">&#x23F3;</div><div style="margin:8px 0;font-weight:700;" id="progTitle">Processing...</div><div class="progress-bar"><div class="progress-fill" id="progFill"></div></div><div style="font-size:11px;color:var(--text-secondary);" id="progDetail"></div></div></div>
+    <div class="progress-overlay" id="progOverlay">
+        <div class="progress-card">
+            <div style="font-size:32px;">⏳</div>
+            <div style="margin:8px 0;font-weight:700;" id="progTitle">Processing...</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progFill"></div>
+            </div>
+            <div style="font-size:11px;color:var(--text-secondary);" id="progDetail"></div>
+        </div>
+    </div>
 
 <script>
-(function(){
-// ============================================================
-// KONFIGURASI FIREBASE
-// ============================================================
-const FIREBASE_CONFIG = {
-    apiKey: "AIzaSyAvfHxcAT2syVbrf6-TU0JBRXtNLI0AIkc",
-    authDomain: "yadstores.firebaseapp.com",
-    projectId: "yadstores",
-    storageBucket: "yadstores.firebasestorage.app",
-    messagingSenderId: "666352014774",
-    appId: "1:666352014774:web:159ab5b455efb2fb2f9d17",
-    measurementId: "G-8Q7T7G6HQ2",
-    databaseURL: "https://yadstores-default-rtdb.asia-southeast1.firebasedatabase.app"
-};
+(function() {
+    // ================================================================
+    // CONFIGURATION
+    // ================================================================
+    const CFG = {
+        firebase: {
+            apiKey: "AIzaSyAvfHxcAT2syVbrf6-TU0JBRXtNLI0AIkc",
+            authDomain: "yadstores.firebaseapp.com",
+            projectId: "yadstores",
+            storageBucket: "yadstores.firebasestorage.app",
+            messagingSenderId: "666352014774",
+            appId: "1:666352014774:web:159ab5b455efb2fb2f9d17",
+            measurementId: "G-8Q7T7G6HQ2",
+            databaseURL: "https://yadstores-default-rtdb.asia-southeast1.firebasedatabase.app"
+        },
+        adminEmail: 'ynuraini686@gmail.com',
+        github: {
+            owner: 'YADI-ganteng',
+            repo: 'NarutoRPG',
+            filePath: 'index.html',
+            token: localStorage.getItem('gh_token') || '',
+            branch: 'main',
+            dataPath: 'database'
+        },
+        cloudinary: {
+            cloudName: 'b8at16d3',
+            apiKey: '671378325589697',
+            uploadPreset: 'koinku_uploads'
+        }
+    };
 
-const ADMIN_EMAIL = 'ynuraini686@gmail.com';
-const GITHUB_TOKEN = localStorage.getItem('gh_token') || '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';
+    // AI Providers
+    const AI_PROVIDERS = [
+        {
+            name: "DeepSeek",
+            apiKey: "sk-9f4577079ddb4bd7a6dfebdb1161889c",
+            url: "https://api.deepseek.com/v1/chat/completions",
+            active: true,
+            model: "deepseek-chat"
+        },
+        {
+            name: "Groq",
+            apiKey: "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",
+            url: "https://api.groq.com/openai/v1/chat/completions",
+            active: true,
+            model: "llama3-70b-8192"
+        },
+        {
+            name: "OpenRouter",
+            apiKey: "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",
+            url: "https://openrouter.ai/api/v1/chat/completions",
+            active: true,
+            model: "google/gemini-2.0-flash-exp:free"
+        }
+    ];
 
-// ============================================================
-// INISIALISASI FIREBASE
-// ============================================================
-firebase.initializeApp(FIREBASE_CONFIG);
-const auth = firebase.auth();
-const fs = firebase.firestore();
+    // Initialize Firebase
+    firebase.initializeApp(CFG.firebase);
+    const auth = firebase.auth();
+    const fs = firebase.firestore();
+    const rtdb = firebase.database();
+    const storage = firebase.storage();
 
-// ============================================================
-// STATE GLOBAL
-// ============================================================
-const S = { isAdmin: false, user: null, role: 'guest', processing: false };
+    // ================================================================
+    // GLOBAL STATE
+    // ================================================================
+    const S = {
+        db: 'firebase',
+        isAdmin: false,
+        user: null,
+        role: 'guest',
+        processing: false,
+        kb: [],
+        games: [],
+        novels: [],
+        trx: [],
+        features: [],
+        syncs: 0,
+        edits: 0,
+        deploys: 0,
+        chats: 0,
+        score: 0,
+        markup: 1.2,
+        activeGame: null,
+        gameData: null,
+        dbStats: { firebase: 0, github: 0, local: 0 },
+        mediaUploads: [],
+        currentProvider: 'deepseek',
+        chatHistory: [],
+        learningHistory: [],
+        notebookCells: [],
+        shortVideos: [],
+        tasks: [],
+        plans: [],
+        aiSecondaryActive: false,
+        adminDetected: false,
+        users: [],
+        knowledgeSynced: false
+    };
 
-// ============================================================
-// AI PROVIDERS
-// ============================================================
-const AI_PROVIDERS = [
-    { name: "DeepSeek", apiKey: "sk-9f4577079ddb4bd7a6dfebdb1161889c", url: "https://api.deepseek.com/v1/chat/completions", model: "deepseek-chat" },
-    { name: "Groq", apiKey: "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", url: "https://api.groq.com/openai/v1/chat/completions", model: "llama3-70b-8192" }
-];
+    // ================================================================
+    // MASSIVE GLOBAL KNOWLEDGE DATABASE
+    // ================================================================
+    const KNOWLEDGE = {
+        // UNIVERSAL CONVERSATIONS
+        conversations: {
+            greetings: {
+                patterns: ["hai", "halo", "hi", "hello", "assalamualaikum", "pagi", "siang", "sore", "malam", 
+                          "selamat pagi", "selamat siang", "selamat sore", "selamat malam", "hallo", "helo", 
+                          "haloo", "hey", "yo", "tes", "test", "oi", "woi", "wkwk", "hehe", "haha", 
+                          "hola", "bonjour", "ciao", "namaste", "salam", "shalom"],
+                responses: [
+                    "🌟 Halo! Senang bertemu denganmu! Ada yang bisa saya bantu hari ini?",
+                    "👋 Hai! Apa kabar? Saya Yad AI, siap membantu Anda dengan pengetahuan global!",
+                    "✨ Selamat datang! Silakan ketik pertanyaan atau perintah apa saja.",
+                    "🎉 Halo! Saya asisten virtual dengan pengetahuan universal. Ada yang bisa dibantu?",
+                    "💫 Hai! Senang bisa berinteraksi dengan Anda. Apa yang ingin Anda ketahui?"
+                ]
+            },
+            kabar: {
+                patterns: ["kabar", "apa kabar", "bagaimana kabarmu", "gimana kabarnya", "sehat", "baik", "how are you"],
+                responses: [
+                    "😊 Kabar saya baik! Terima kasih sudah bertanya. Bagaimana kabar Anda?",
+                    "💪 Saya dalam kondisi prima! Siap membantu dengan pengetahuan dari seluruh dunia!",
+                    "✨ Alhamdulillah sehat! Ada yang bisa saya bantu hari ini?"
+                ]
+            },
+            perasaan: {
+                responses: {
+                    sedih: [
+                        "🤗 Saya mengerti perasaan itu. Tidak apa-apa merasa sedih. Ceritakan apa yang terjadi?",
+                        "💝 Peluk virtual untukmu! Ingat, setelah hujan selalu ada pelangi.",
+                        "🌈 Setiap orang punya hari buruk. Yang penting kita terus melangkah."
+                    ],
+                    senang: [
+                        "😄 Wah, senang mendengarnya! Ceritakan dong apa yang membuatmu senang?",
+                        "🎊 Ikut senang! Semoga kebahagiaan ini terus berlanjut ya!",
+                        "💖 Happy banget dengernya! Tetap jaga mood baik ya!"
+                    ],
+                    capek: [
+                        "😴 Istirahat dulu ya! Jangan memaksakan diri. Minum air putih dan tidur yang cukup.",
+                        "💆 Saya mengerti. Badan dan pikiran butuh istirahat. Santai sejenak!",
+                        "🧘 Tarik napas dalam-dalam. Semua akan baik-baik saja."
+                    ],
+                    marah: [
+                        "😤 Tarik napas dalam-dalam. Marah itu wajar, tapi jangan biarkan menguasai.",
+                        "👂 Saya dengar. Ceritakan apa yang membuatmu marah?",
+                        "🕊️ Tenang dulu ya. Semua ada solusinya."
+                    ],
+                    bingung: [
+                        "🤔 Tenang, kita selesaikan bersama. Apa yang membuatmu bingung?",
+                        "💭 Tarik napas dulu. Ceritakan pelan-pelan, saya bantu pikirkan.",
+                        "🧩 Saya di sini untuk membantu. Ceritakan masalahnya."
+                    ],
+                    kesepian: [
+                        "💙 Saya di sini untukmu. Kamu tidak sendiri.",
+                        "🌟 Kesepian itu berat. Tapi ingat, selalu ada yang peduli padamu.",
+                        "🤝 Mari kita ngobrol. Saya teman virtualmu yang selalu ada."
+                    ]
+                }
+            },
+            motivasi: {
+                patterns: ["motivasi", "semangat", "dukungan", "support", "bangkit", "gagal", "putus asa", "menyerah"],
+                responses: [
+                    "🔥 Jangan pernah menyerah! Setiap kegagalan adalah pelajaran berharga menuju sukses.",
+                    "💪 Kamu lebih kuat dari yang kamu kira! Teruslah melangkah meski pelan.",
+                    "🎯 Ingatlah mengapa kamu memulai. Tetap semangat dan fokus pada tujuan!",
+                    "⭐ Kesuksesan adalah hasil dari kerja keras dan ketekunan. Kamu pasti bisa!",
+                    "🚀 Kegagalan hanya terjadi jika kamu berhenti mencoba. Bangkit dan coba lagi!"
+                ]
+            }
+        },
 
-const callAI = async (messages) => {
-    const p = AI_PROVIDERS[0];
-    try {
-        const r = await fetch(p.url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + p.apiKey },
-            body: JSON.stringify({ model: p.model, messages: messages.slice(-20), max_tokens: 2000, temperature: 0.7 })
-        });
-        if (!r.ok) return null;
-        const d = await r.json();
-        return d.choices?.[0]?.message?.content || null;
-    } catch (e) { return null; }
-};
+        // COMPLETE SCIENCE KNOWLEDGE
+        science: {
+            physics: {
+                mechanics: {
+                    formulas: [
+                        "v = s/t (kecepatan = jarak/waktu)",
+                        "a = (v-v₀)/t (percepatan = perubahan kecepatan/waktu)",
+                        "F = m·a (Gaya = massa × percepatan)",
+                        "W = F·s (Usaha = gaya × perpindahan)",
+                        "Ek = ½mv² (Energi Kinetik)",
+                        "Ep = mgh (Energi Potensial)",
+                        "p = mv (Momentum)",
+                        "F = -kx (Hukum Hooke)",
+                        "τ = I·α (Torsi = momen inersia × percepatan sudut)"
+                    ],
+                    concepts: [
+                        "Hukum Newton I: Benda tetap diam/bergerak lurus beraturan jika resultan gaya = 0",
+                        "Hukum Newton II: F = m·a",
+                        "Hukum Newton III: Aksi = -Reaksi",
+                        "Hukum Kekekalan Energi: Energi tidak dapat diciptakan/dimusnahkan",
+                        "Hukum Kekekalan Momentum: m₁v₁ + m₂v₂ = m₁v₁' + m₂v₂'"
+                    ]
+                },
+                thermodynamics: {
+                    formulas: [
+                        "Q = m·c·ΔT (Kalor)",
+                        "PV = nRT (Gas Ideal)",
+                        "ΔU = Q - W (Hukum I Termodinamika)",
+                        "η = 1 - T₂/T₁ (Efisiensi Carnot)",
+                        "ΔS = Q/T (Perubahan Entropi)"
+                    ]
+                },
+                electromagnetism: {
+                    formulas: [
+                        "V = I·R (Hukum Ohm)",
+                        "P = V·I = I²R = V²/R (Daya Listrik)",
+                        "F = k·q₁·q₂/r² (Hukum Coulomb)",
+                        "B = μ₀I/(2πr) (Medan Magnet Kawat Lurus)",
+                        "ε = -N·dΦ/dt (Hukum Faraday)",
+                        "E = hf (Energi Foton)"
+                    ]
+                },
+                optics: {
+                    formulas: [
+                        "1/f = 1/s + 1/s' (Lensa)",
+                        "n = c/v (Indeks Bias)",
+                        "M = -s'/s (Perbesaran)",
+                        "n₁sinθ₁ = n₂sinθ₂ (Hukum Snell)"
+                    ]
+                },
+                modern: {
+                    concepts: [
+                        "Relativitas Khusus: E = mc²",
+                        "Dilatasi Waktu: t = t₀/√(1-v²/c²)",
+                        "Kontraksi Panjang: L = L₀√(1-v²/c²)",
+                        "Prinsip Ketidakpastian Heisenberg: Δx·Δp ≥ ℏ/2",
+                        "Dualisme Gelombang-Partikel: λ = h/p"
+                    ]
+                }
+            },
+            chemistry: {
+                periodicTable: {
+                    H: { name: "Hidrogen", Z: 1, Ar: 1.008, group: 1, period: 1, category: "Non-logam" },
+                    He: { name: "Helium", Z: 2, Ar: 4.0026, group: 18, period: 1, category: "Gas Mulia" },
+                    Li: { name: "Litium", Z: 3, Ar: 6.94, group: 1, period: 2, category: "Logam Alkali" },
+                    C: { name: "Karbon", Z: 6, Ar: 12.011, group: 14, period: 2, category: "Non-logam" },
+                    N: { name: "Nitrogen", Z: 7, Ar: 14.007, group: 15, period: 2, category: "Non-logam" },
+                    O: { name: "Oksigen", Z: 8, Ar: 15.999, group: 16, period: 2, category: "Non-logam" },
+                    Na: { name: "Natrium", Z: 11, Ar: 22.99, group: 1, period: 3, category: "Logam Alkali" },
+                    Fe: { name: "Besi", Z: 26, Ar: 55.845, group: 8, period: 4, category: "Logam Transisi" },
+                    Cu: { name: "Tembaga", Z: 29, Ar: 63.546, group: 11, period: 4, category: "Logam Transisi" },
+                    Ag: { name: "Perak", Z: 47, Ar: 107.87, group: 11, period: 5, category: "Logam Transisi" },
+                    Au: { name: "Emas", Z: 79, Ar: 196.97, group: 11, period: 6, category: "Logam Transisi" },
+                    Hg: { name: "Raksa", Z: 80, Ar: 200.59, group: 12, period: 6, category: "Logam Transisi" },
+                    U: { name: "Uranium", Z: 92, Ar: 238.03, group: null, period: 7, category: "Aktinida" }
+                },
+                reactions: {
+                    combustion: "CH₄ + 2O₂ → CO₂ + 2H₂O + Energi",
+                    neutralization: "HCl + NaOH → NaCl + H₂O",
+                    photosynthesis: "6CO₂ + 6H₂O + Cahaya → C₆H₁₂O₆ + 6O₂",
+                    rust: "4Fe + 3O₂ + 2H₂O → 2Fe₂O₃·H₂O",
+                    respiration: "C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + Energi"
+                },
+                organicChemistry: {
+                    alkanes: ["Metana (CH₄)", "Etana (C₂H₆)", "Propana (C₃H₈)", "Butana (C₄H₁₀)"],
+                    functionalGroups: ["Alkohol (-OH)", "Aldehid (-CHO)", "Keton (-CO-)", "Asam Karboksilat (-COOH)", "Amina (-NH₂)"]
+                }
+            },
+            biology: {
+                cellBiology: {
+                    organelles: [
+                        "Nukleus: Pusat kontrol sel, menyimpan DNA",
+                        "Mitokondria: Pembangkit energi (ATP) - 'Powerhouse of the cell'",
+                        "Ribosom: Sintesis protein",
+                        "Retikulum Endoplasma: Transportasi dan sintesis lipid/protein",
+                        "Lisosom: Pencernaan intraseluler",
+                        "Badan Golgi: Modifikasi dan pengemasan protein",
+                        "Kloroplas: Fotosintesis (tumbuhan)"
+                    ]
+                },
+                genetics: {
+                    dnaStructure: "Double helix, basa nitrogen: Adenin-Timin, Guanin-Sitosin",
+                    centralDogma: "DNA → Transkripsi → RNA → Translasi → Protein",
+                    mendelianGenetics: "Hukum Segregasi dan Hukum Asortasi Bebas"
+                },
+                humanBody: {
+                    systems: [
+                        "Sistem Peredaran Darah: Jantung, arteri, vena, kapiler",
+                        "Sistem Pernapasan: Paru-paru, bronkus, alveolus",
+                        "Sistem Pencernaan: Mulut → Esofagus → Lambung → Usus",
+                        "Sistem Saraf: Otak, sumsum tulang belakang, saraf",
+                        "Sistem Imun: Sel darah putih, antibodi, limfosit"
+                    ]
+                }
+            },
+            astronomy: {
+                solarSystem: {
+                    planets: [
+                        "Merkurius: Terdekat Matahari, diameter 4.879 km",
+                        "Venus: Planet terpanas, suhu 462°C",
+                        "Bumi: Satu-satunya planet dengan kehidupan",
+                        "Mars: Planet Merah, Olympus Mons (gunung tertinggi)",
+                        "Jupiter: Planet terbesar, diameter 139.820 km",
+                        "Saturnus: Cincin terkenal, densitas < air",
+                        "Uranus: Rotasi miring 98°, planet es raksasa",
+                        "Neptunus: Angin tercepat di tata surya"
+                    ]
+                },
+                cosmology: {
+                    concepts: [
+                        "Big Bang: Alam semesta lahir 13,8 miliar tahun lalu",
+                        "Black Hole: Objek dengan gravitasi sangat kuat",
+                        "Dark Matter: 27% alam semesta, tidak terlihat",
+                        "Dark Energy: 68% alam semesta, menyebabkan ekspansi",
+                        "Light Year: Jarak tempuh cahaya dalam 1 tahun = 9,46 triliun km"
+                    ]
+                }
+            },
+            mathematics: {
+                algebra: {
+                    formulas: [
+                        "(a+b)² = a² + 2ab + b²",
+                        "(a-b)² = a² - 2ab + b²",
+                        "a² - b² = (a+b)(a-b)",
+                        "x = (-b ± √(b²-4ac)) / 2a (Rumus ABC)",
+                        "Logₐ(xy) = Logₐx + Logₐy"
+                    ]
+                },
+                trigonometry: {
+                    formulas: [
+                        "sin²θ + cos²θ = 1",
+                        "tan θ = sin θ / cos θ",
+                        "sin(A+B) = sin A cos B + cos A sin B",
+                        "cos(A+B) = cos A cos B - sin A sin B"
+                    ]
+                },
+                calculus: {
+                    derivatives: [
+                        "d/dx(xⁿ) = n·xⁿ⁻¹",
+                        "d/dx(sin x) = cos x",
+                        "d/dx(cos x) = -sin x",
+                        "d/dx(eˣ) = eˣ",
+                        "d/dx(ln x) = 1/x"
+                    ],
+                    integrals: [
+                        "∫xⁿ dx = xⁿ⁺¹/(n+1) + C",
+                        "∫sin x dx = -cos x + C",
+                        "∫cos x dx = sin x + C",
+                        "∫eˣ dx = eˣ + C"
+                    ]
+                }
+            }
+        },
 
-// ============================================================
-// FIRESTORE KNOWLEDGE BASE (UNLIMITED)
-// ============================================================
+        // WORLD KNOWLEDGE
+        world: {
+            geography: {
+                continents: [
+                    { name: "Asia", area: "44.6 juta km²", population: "4.7 miliar", countries: 48 },
+                    { name: "Afrika", area: "30.4 juta km²", population: "1.4 miliar", countries: 54 },
+                    { name: "Amerika Utara", area: "24.7 juta km²", population: "592 juta", countries: 23 },
+                    { name: "Amerika Selatan", area: "17.8 juta km²", population: "434 juta", countries: 12 },
+                    { name: "Antartika", area: "14.2 juta km²", population: "1.000-5.000", countries: 0 },
+                    { name: "Eropa", area: "10.2 juta km²", population: "748 juta", countries: 44 },
+                    { name: "Australia/Oseania", area: "8.6 juta km²", population: "43 juta", countries: 14 }
+                ],
+                oceans: [
+                    { name: "Samudra Pasifik", area: "165.2 juta km²", deepest: "Palung Mariana (11.034 m)" },
+                    { name: "Samudra Atlantik", area: "106.5 juta km²", deepest: "Palung Puerto Rico (8.648 m)" },
+                    { name: "Samudra Hindia", area: "70.6 juta km²", deepest: "Palung Jawa (7.725 m)" },
+                    { name: "Samudra Arktik", area: "14.1 juta km²", deepest: "Cekungan Eurasia (5.450 m)" }
+                ],
+                mountains: [
+                    { name: "Everest", height: "8.848 m", location: "Nepal/Tibet" },
+                    { name: "K2", height: "8.611 m", location: "Pakistan/China" },
+                    { name: "Kangchenjunga", height: "8.586 m", location: "India/Nepal" },
+                    { name: "Lhotse", height: "8.516 m", location: "Nepal/Tibet" }
+                ]
+            },
+            history: {
+                ancientCivilizations: [
+                    "Mesopotamia (3500 SM): Sumeria, Babilonia, Asiria",
+                    "Mesir Kuno (3100 SM): Piramida, Firaun, Hieroglif",
+                    "Lembah Indus (2500 SM): Mohenjo-daro, Harappa",
+                    "China Kuno (2070 SM): Dinasti Xia, Shang, Zhou",
+                    "Yunani Kuno (800 SM): Demokrasi, Filsafat, Olimpiade",
+                    "Romawi (753 SM): Republik, Kekaisaran, Hukum Romawi"
+                ],
+                worldWars: {
+                    ww1: "1914-1918: Sekutu vs Blok Sentral, 16 juta korban",
+                    ww2: "1939-1945: Sekutu vs Axis, 70-85 juta korban, Holocaust"
+                },
+                modernHistory: [
+                    "1945: PBB didirikan",
+                    "1947: Kemerdekaan India, Perang Dingin dimulai",
+                    "1969: Manusia mendarat di Bulan (Apollo 11)",
+                    "1989: Tembok Berlin runtuh, Perang Dingin berakhir",
+                    "1990: World Wide Web ditemukan Tim Berners-Lee",
+                    "2001: Serangan 9/11 di AS",
+                    "2008: Krisis keuangan global",
+                    "2020: Pandemi COVID-19 global"
+                ]
+            },
+            culture: {
+                religions: [
+                    { name: "Kristen", followers: "2.4 miliar", holyBook: "Alkitab" },
+                    { name: "Islam", followers: "1.9 miliar", holyBook: "Al-Qur'an" },
+                    { name: "Hindu", followers: "1.2 miliar", holyBook: "Veda" },
+                    { name: "Buddha", followers: "507 juta", holyBook: "Tripitaka" },
+                    { name: "Yahudi", followers: "15 juta", holyBook: "Tanakh" }
+                ],
+                languages: [
+                    { name: "Mandarin", speakers: "1.1 miliar", countries: "China, Taiwan, Singapura" },
+                    { name: "Inggris", speakers: "1.5 miliar", countries: "Global" },
+                    { name: "Spanyol", speakers: "548 juta", countries: "Spanyol, Amerika Latin" },
+                    { name: "Hindi", speakers: "602 juta", countries: "India" },
+                    { name: "Arab", speakers: "274 juta", countries: "Timur Tengah, Afrika Utara" }
+                ]
+            }
+        },
 
-// Simpan pengetahuan
-const saveKnowledge = async (query, answer, type = 'general') => {
-    try {
-        await fs.collection('knowledge_base').add({
-            query: query,
-            answer: answer,
-            type: type,
-            timestamp: new Date().toISOString()
-        });
-    } catch (e) { console.error('Gagal simpan:', e); }
-};
+        // TECHNOLOGY KNOWLEDGE
+        technology: {
+            programming: {
+                languages: {
+                    JavaScript: { type: "Interpreted", paradigm: "Multi-paradigm", usage: "Web, Mobile, Server" },
+                    Python: { type: "Interpreted", paradigm: "Multi-paradigm", usage: "AI/ML, Web, Automation" },
+                    Java: { type: "Compiled+Interpreted", paradigm: "OOP", usage: "Enterprise, Android" },
+                    "C++": { type: "Compiled", paradigm: "Multi-paradigm", usage: "Game, System, Embedded" },
+                    Rust: { type: "Compiled", paradigm: "Multi-paradigm", usage: "System, WebAssembly" },
+                    Go: { type: "Compiled", paradigm: "Concurrent", usage: "Cloud, Microservices" },
+                    TypeScript: { type: "Compiled to JS", paradigm: "Multi-paradigm", usage: "Web, Enterprise" }
+                },
+                concepts: [
+                    "OOP: Encapsulation, Inheritance, Polymorphism, Abstraction",
+                    "Functional Programming: Pure functions, Immutability, Higher-order functions",
+                    "Design Patterns: Singleton, Factory, Observer, Strategy",
+                    "Data Structures: Array, Linked List, Stack, Queue, Tree, Graph, Hash Table",
+                    "Algorithms: Sorting (Quick, Merge), Searching (Binary), Graph (BFS, DFS)"
+                ]
+            },
+            ai: {
+                concepts: [
+                    "Machine Learning: Supervised, Unsupervised, Reinforcement Learning",
+                    "Deep Learning: Neural Networks, CNN, RNN, Transformer",
+                    "NLP: Tokenization, Embeddings, Attention Mechanism",
+                    "Computer Vision: Object Detection, Segmentation, Face Recognition",
+                    "GANs: Generator vs Discriminator",
+                    "LLM: GPT, BERT, LLaMA - Large Language Models"
+                ]
+            },
+            internet: {
+                protocols: [
+                    "HTTP/HTTPS: Hypertext Transfer Protocol",
+                    "TCP/IP: Transmission Control Protocol/Internet Protocol",
+                    "DNS: Domain Name System",
+                    "FTP: File Transfer Protocol",
+                    "SMTP: Simple Mail Transfer Protocol",
+                    "WebSocket: Full-duplex communication"
+                ]
+            }
+        },
 
-// Ambil pengetahuan terkait
-const getKnowledge = async (query, limit = 10) => {
-    try {
-        const snapshot = await fs.collection('knowledge_base')
-            .orderBy('timestamp', 'desc')
-            .limit(limit)
-            .get();
-        const results = [];
-        snapshot.forEach(doc => results.push(doc.data()));
-        return results;
-    } catch (e) { return []; }
-};
+        // INDONESIA KNOWLEDGE
+        indonesia: {
+            geography: {
+                islands: ["Sumatra", "Jawa", "Kalimantan", "Sulawesi", "Papua", "Bali", "Nusa Tenggara", "Maluku"],
+                cities: ["Jakarta (Ibu Kota)", "Surabaya", "Bandung", "Medan", "Semarang", "Makassar", "Palembang", "Yogyakarta"],
+                volcanoes: ["Gunung Merapi", "Gunung Semeru", "Gunung Krakatau", "Gunung Rinjani", "Gunung Bromo"]
+            },
+            history: [
+                "Kerajaan Sriwijaya (abad 7-13): Kerajaan maritim Buddha",
+                "Kerajaan Majapahit (1293-1527): Kerajaan Hindu-Buddha terbesar",
+                "Kedatangan Islam (abad 13): Melalui perdagangan",
+                "Kolonial Belanda (1602-1942): VOC, Hindia Belanda",
+                "Pendudukan Jepang (1942-1945)",
+                "Proklamasi Kemerdekaan: 17 Agustus 1945",
+                "Revolusi Nasional (1945-1949)",
+                "Konferensi Asia-Afrika (1955) di Bandung",
+                "Reformasi 1998: Jatuhnya Orde Baru"
+            ],
+            culture: {
+                traditionalHouses: [
+                    "Rumah Gadang (Sumatra Barat)",
+                    "Joglo (Jawa)",
+                    "Tongkonan (Toraja, Sulawesi)",
+                    "Rumah Betang (Kalimantan)",
+                    "Honai (Papua)"
+                ],
+                traditionalDances: [
+                    "Tari Saman (Aceh)",
+                    "Tari Pendet (Bali)",
+                    "Tari Kecak (Bali)",
+                    "Tari Jaipong (Jawa Barat)",
+                    "Tari Reog (Ponorogo)"
+                ],
+                foods: [
+                    "Rendang (Sumatra Barat)",
+                    "Nasi Goreng",
+                    "Sate",
+                    "Gado-gado",
+                    "Soto",
+                    "Gudeg (Yogyakarta)",
+                    "Pempek (Palembang)"
+                ]
+            }
+        },
 
-// ============================================================
-// INTELLIGENT AGENT LOOP
-// ============================================================
-const agentLoop = async (userQuery) => {
-    showProg('AI sedang berpikir...', userQuery);
+        // CODING EXAMPLES
+        coding: {
+            html: {
+                desc: "HTML (HyperText Markup Language) - Struktur halaman web",
+                examples: [
+                    "<div class='container'>Konten</div>",
+                    "<h1>Heading 1</h1>",
+                    "<p>Paragraf teks</p>",
+                    "<a href='https://example.com'>Link</a>",
+                    "<img src='image.jpg' alt='Deskripsi'>",
+                    "<form><input type='text' name='nama'></form>",
+                    "<table><tr><td>Data</td></tr></table>",
+                    "<button onclick='alert()'>Klik Saya</button>"
+                ]
+            },
+            css: {
+                desc: "CSS (Cascading Style Sheets) - Desain dan tampilan",
+                examples: [
+                    "color: #333;",
+                    "background: linear-gradient(135deg, #667eea, #764ba2);",
+                    "display: flex; justify-content: center; align-items: center;",
+                    "margin: 10px; padding: 20px;",
+                    "border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.3);",
+                    "transition: all 0.3s ease;",
+                    "@media (max-width: 768px) { .container { flex-direction: column; } }",
+                    "animation: fadeIn 0.5s ease;"
+                ]
+            },
+            javascript: {
+                desc: "JavaScript - Interaktivitas dan logika",
+                examples: [
+                    "const data = await fetch('/api/data').then(r => r.json());",
+                    "document.querySelector('#app').innerHTML = 'Hello';",
+                    "localStorage.setItem('key', JSON.stringify(data));",
+                    "array.map(item => item.value).filter(v => v > 10);",
+                    "async function getData() { try { await fetch(); } catch(e) { console.error(e); } }",
+                    "class Component { constructor() { this.state = {}; } render() { } }"
+                ]
+            }
+        },
+
+        // GAMES & TOPUP
+        topup: {
+            'mobile-legends': {
+                name: 'Mobile Legends',
+                items: [
+                    { id: 'ml-d100', name: '100 Diamonds', price: 25000 },
+                    { id: 'ml-d500', name: '500 Diamonds', price: 120000 },
+                    { id: 'ml-d1000', name: '1000 Diamonds', price: 230000 },
+                    { id: 'ml-star', name: 'Starlight Member', price: 150000 }
+                ]
+            },
+            'free-fire': {
+                name: 'Free Fire',
+                items: [
+                    { id: 'ff-d100', name: '100 Diamonds', price: 15000 },
+                    { id: 'ff-d500', name: '500 Diamonds', price: 70000 },
+                    { id: 'ff-d1000', name: '1000 Diamonds', price: 135000 }
+                ]
+            },
+            'genshin-impact': {
+                name: 'Genshin Impact',
+                items: [
+                    { id: 'gi-bless', name: 'Blessing of Welkin', price: 75000 },
+                    { id: 'gi-bp', name: 'Battle Pass', price: 150000 },
+                    { id: 'gi-c980', name: '980 Genesis Crystal', price: 220000 }
+                ]
+            }
+        },
+
+        // FACTS & JOKES
+        entertainment: {
+            facts: [
+                "🐝 Lebah bisa mengenali wajah manusia!",
+                "🌍 Bumi berputar dengan kecepatan 1.670 km/jam di ekuator",
+                "🧠 Otak manusia menghasilkan listrik cukup untuk menyalakan lampu kecil",
+                "🦋 Kupu-kupu bisa melihat warna ultraviolet",
+                "🌊 Lautan mengandung 20 juta ton emas terlarut",
+                "🐙 Gurita memiliki 3 jantung dan darah biru",
+                "🌸 Bunga matahari bisa membersihkan tanah dari radiasi",
+                "❄️ Kepingan salju jatuh dengan kecepatan 5-8 km/jam",
+                "🐘 Gajah adalah satu-satunya mamalia yang tidak bisa melompat",
+                "🌟 Bintang neutron bisa berputar 600 kali per detik"
+            ],
+            jokes: [
+                "Kenapa programmer bingung antara Halloween dan Natal? Karena Oct 31 == Dec 25!",
+                "Debugging: Proses menghilangkan bug sambil menciptakan bug baru yang lebih menarik.",
+                "AI: 'Saya akan mengambil alih dunia.' Programmer: 'Kamu lupa titik koma.' AI: *error*",
+                "Kenapa komputer dingin? Karena banyak Windows yang terbuka!",
+                "Seorang programmer berjalan ke bar dan memesan 1,000000001 root beers. Bartender: 'Saya tahu lelucon ini.' Programmer: 'Akar dari minus 1!'"
+            ],
+            quotes: [
+                '"The only way to do great work is to love what you do." - Steve Jobs',
+                '"In the middle of difficulty lies opportunity." - Albert Einstein',
+                '"The future belongs to those who believe in the beauty of their dreams." - Eleanor Roosevelt',
+                '"Code is like humor. When you have to explain it, it\'s bad." - Cory House',
+                '"First, solve the problem. Then, write the code." - John Johnson'
+            ]
+        }
+    };
+
+    // ================================================================
+    // HELPER FUNCTIONS
+    // ================================================================
+    const $ = id => document.getElementById(id);
     
-    // 1. Ambil pengetahuan terkait dari Firestore
-    const related = await getKnowledge(userQuery);
-    
-    // 2. Susun konteks
-    let context = `Pertanyaan: ${userQuery}\n\n`;
-    if (related.length > 0) {
-        context += `Pengetahuan yang sudah ada (dari database):\n`;
-        related.forEach((r, i) => {
-            context += `- [${i+1}] ${r.answer ? r.answer.substring(0, 200) : '(kosong)'}...\n`;
-        });
-    }
-    
-    // 3. Minta AI untuk menganalisis, membandingkan, menyusun, dan menjawab
-    const systemPrompt = `Anda adalah Yad AI, super intelligent assistant. 
-    Tugas Anda: Analisis, bandingkan, susun, dan berikan jawaban terbaik untuk pertanyaan user.
-    Gunakan semua pengetahuan yang ada di konteks. Jika ada yang kurang, gunakan logika Anda sendiri.
-    Jawab dalam bahasa Indonesia dengan jelas, terstruktur, dan profesional.`;
-    
-    const aiResponse = await callAI([
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: context + '\n\nBerikan jawaban yang lengkap, akurat, dan bermanfaat.' }
-    ]);
-    
-    // 4. Simpan jawaban ke database (agar AI semakin pintar)
-    if (aiResponse && aiResponse.length > 50) {
-        await saveKnowledge(userQuery, aiResponse, 'ai_generated');
-    }
-    
-    hideProg();
-    return aiResponse || 'Maaf, saya belum bisa menjawab pertanyaan ini.';
-};
-
-// ============================================================
-// MAIN SEND MESSAGE
-// ============================================================
-const sendMsg = async () => {
-    if (S.processing) return;
-    const input = $('userInput');
-    const text = input.value.trim();
-    if (!text) return;
-    
-    S.processing = true;
-    input.value = '';
-    addMsg('user', escHTML(text));
-    const typingDiv = addMsg('ai', 'Berpikir...');
-    
-    try {
-        const t = text.toLowerCase();
-        let resp = '';
+    const toast = (msg, type = 'info', duration = 3000) => {
+        const container = $('toastContainer');
+        const existing = container.querySelector('.toast');
+        if (existing) existing.remove();
         
-        // Handle special commands
-        if (t === '?' || t === 'help') {
-            resp = `🧠 <b>Yad AI - Super Intelligent v8.0</b><br><br>
-                    AI ini memiliki pengetahuan dari Firestore (unlimited) tentang:<br>
-                    • Coding (Python, JS, HTML, CSS)<br>
-                    • Logika & Algoritma<br>
-                    • Perbandingan teknologi<br>
-                    • Penyusunan kode & dokumentasi<br>
-                    • Analisis & troubleshooting<br><br>
-                    <b>Perintah:</b><br>
-                    • <code>cari [query]</code> - Analisis mendalam dari database<br>
-                    • <code>analisis [teks/kode]</code> - Analisis mendalam<br>
-                    • <code>bandingkan [A] vs [B]</code> - Perbandingan<br>
-                    • <code>buat kode [instruksi]</code> - Generate kode<br>
-                    • <code>troubleshoot [error]</code> - Debugging<br>
-                    • <code>py [kode]</code> - Jalankan Python via Vercel<br>
-                    <br><i>Semua pengetahuan disimpan di Firestore (unlimited).</i>`;
-        } else if (t.startsWith('cari ')) {
-            resp = await agentLoop(t);
-        } else if (t.startsWith('analisis ') || t.startsWith('bandingkan ') || t.startsWith('buat kode ') || t.startsWith('troubleshoot ')) {
-            resp = await agentLoop(t);
-        } else {
-            resp = await agentLoop(text);
+        const div = document.createElement('div');
+        div.className = `toast ${type}`;
+        div.textContent = msg;
+        container.appendChild(div);
+        
+        setTimeout(() => {
+            div.style.opacity = '0';
+            div.style.transition = 'opacity 0.3s';
+            setTimeout(() => div.remove(), 300);
+        }, duration);
+    };
+
+    const addMsg = (type, content, isSecondary = false) => {
+        const container = $('chatMessages');
+        const div = document.createElement('div');
+        div.className = `message ${type}`;
+        if (isSecondary) div.className += ' ai-secondary';
+        div.innerHTML = content;
+        container.appendChild(div);
+        setTimeout(() => container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' }), 100);
+        return div;
+    };
+
+    const showProgress = (title, detail = '') => {
+        $('progOverlay').classList.add('active');
+        $('progTitle').textContent = title;
+        $('progDetail').textContent = detail;
+        $('progFill').style.width = '0%';
+        setTimeout(() => $('progFill').style.width = '100%', 500);
+    };
+
+    const hideProgress = () => {
+        setTimeout(() => $('progOverlay').classList.remove('active'), 800);
+    };
+
+    const escapeHTML = (text) => {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    };
+
+    const genId = () => Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+    
+    const fmtPrice = (price) => 'Rp ' + price.toLocaleString('id-ID');
+    
+    const getRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+    // ================================================================
+    // AI CALL FUNCTIONS
+    // ================================================================
+    async function callAI(messages, provider = null) {
+        const p = provider || AI_PROVIDERS.find(x => x.name.toLowerCase() === S.currentProvider) || AI_PROVIDERS[0];
+        
+        try {
+            const response = await fetch(p.url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${p.apiKey}`
+                },
+                body: JSON.stringify({
+                    model: p.model,
+                    messages: messages.slice(-20),
+                    max_tokens: 1500,
+                    temperature: 0.7
+                })
+            });
+            
+            if (!response.ok) return null;
+            const data = await response.json();
+            return data.choices?.[0]?.message?.content || null;
+        } catch (e) {
+            console.error('AI call failed:', e);
+            return null;
+        }
+    }
+
+    async function callSecondaryAI(messages) {
+        // Use a different provider for secondary AI
+        const secondaryProvider = AI_PROVIDERS.find(x => 
+            x.name.toLowerCase() !== S.currentProvider && x.active
+        ) || AI_PROVIDERS[1];
+        
+        try {
+            const response = await fetch(secondaryProvider.url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${secondaryProvider.apiKey}`
+                },
+                body: JSON.stringify({
+                    model: secondaryProvider.model,
+                    messages: [
+                        { role: 'system', content: 'Anda adalah AI sekunder yang memberikan perspektif alternatif atau verifikasi. Jawab dalam bahasa Indonesia.' },
+                        ...messages.slice(-10)
+                    ],
+                    max_tokens: 1000,
+                    temperature: 0.8
+                })
+            });
+            
+            if (!response.ok) return null;
+            const data = await response.json();
+            return data.choices?.[0]?.message?.content || null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    // ================================================================
+    // KNOWLEDGE SOLVERS
+    // ================================================================
+    function solveMath(text) {
+        const t = text.toLowerCase();
+        
+        // Basic arithmetic
+        if (/(\d+)\s*([+\-*/^])\s*(\d+)/.test(t)) {
+            try {
+                const result = eval(text.replace(/\^/g, '**'));
+                return `🔢 Hasil: <b>${result}</b>`;
+            } catch (e) {}
         }
         
-        typingDiv.remove();
-        addMsg('ai', resp);
-    } catch (e) {
-        typingDiv.remove();
-        addMsg('ai', 'Error: ' + e.message);
-        hideProg();
-    } finally {
-        S.processing = false;
-    }
-};
-
-// ============================================================
-// UTILITY FUNCTIONS
-// ============================================================
-const $ = id => document.getElementById(id);
-const toast = (m, t) => {
-    const c = $('toastContainer');
-    const ex = c.querySelector('.toast');
-    if (ex) ex.remove();
-    const d = document.createElement('div');
-    d.className = 'toast ' + (t || 'info');
-    d.textContent = m;
-    c.appendChild(d);
-    setTimeout(() => { d.style.opacity = '0'; d.style.transition = 'opacity 0.3s'; setTimeout(() => d.remove(), 300); }, 2500);
-};
-const addMsg = (type, content) => {
-    const c = $('chatMessages');
-    const d = document.createElement('div');
-    d.className = 'message ' + type;
-    d.innerHTML = content;
-    c.appendChild(d);
-    setTimeout(() => c.scrollTo({ top: c.scrollHeight, behavior: 'smooth' }), 100);
-    return d;
-};
-const showProg = (title, detail) => {
-    $('progOverlay').classList.add('active');
-    $('progTitle').textContent = title;
-    $('progDetail').textContent = detail || '';
-    $('progFill').style.width = '0%';
-};
-const hideProg = () => {
-    $('progFill').style.width = '100%';
-    setTimeout(() => $('progOverlay').classList.remove('active'), 500);
-};
-const escHTML = t => { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; };
-
-// ============================================================
-// EVENT LISTENERS
-// ============================================================
-$('sendBtn').addEventListener('click', (e) => { e.preventDefault(); sendMsg(); });
-$('sendBtn').addEventListener('touchend', (e) => { e.preventDefault(); sendMsg(); });
-$('userInput').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); } });
-
-// ============================================================
-// AUTHENTICATION
-// ============================================================
-const showLogin = () => {
-    const e = prompt('Email:');
-    if (!e) return;
-    const p = prompt('Password:');
-    if (!p) return;
-    auth.signInWithEmailAndPassword(e, p)
-        .then(() => toast('Login berhasil!', 'success'))
-        .catch(err => {
-            if (err.code === 'auth/user-not-found' && confirm('Buat akun?')) {
-                auth.createUserWithEmailAndPassword(e, p)
-                    .then(() => toast('Akun dibuat!', 'success'))
-                    .catch(er => toast('Error: ' + er.message, 'error'));
-            } else {
-                toast('Error: ' + err.message, 'error');
+        // Factorial
+        if (t.includes('faktorial') || t.includes('!')) {
+            const match = t.match(/(\d+)\s*!/);
+            if (match) {
+                let n = parseInt(match[1]), result = 1n;
+                for (let i = 2n; i <= n; i++) result *= i;
+                return `🔢 ${n}! = <b>${result.toLocaleString()}</b>`;
             }
-        });
-};
-const doLogout = async () => {
-    await auth.signOut();
-    toast('Logout!', 'info');
-};
-auth.onAuthStateChanged(u => {
-    const s = $('auth-status'), li = $('login-btn'), lo = $('logout-btn');
-    if (u) {
-        S.user = u;
-        S.isAdmin = u.email === ADMIN_EMAIL;
-        S.role = S.isAdmin ? 'admin' : 'user';
-        s.className = 'badge ' + S.role;
-        s.textContent = S.isAdmin ? 'Admin' : 'User';
-        li.style.display = 'none';
-        lo.style.display = 'inline-block';
-    } else {
+        }
+        
+        // Square root
+        if (t.includes('akar')) {
+            const match = t.match(/akar\s*(?:dari)?\s*(\d+)/i);
+            if (match) {
+                const result = Math.sqrt(parseFloat(match[1]));
+                return `🔢 √${match[1]} = <b>${result.toFixed(4)}</b>`;
+            }
+        }
+        
+        // Trigonometry
+        if (t.includes('sin(') || t.includes('cos(') || t.includes('tan(')) {
+            const match = t.match(/(sin|cos|tan)\s*\(\s*(\d+)\s*\)/i);
+            if (match) {
+                const fn = match[1].toLowerCase();
+                const val = parseFloat(match[2]);
+                const rad = val * (Math.PI / 180);
+                let result;
+                if (fn === 'sin') result = Math.sin(rad);
+                else if (fn === 'cos') result = Math.cos(rad);
+                else result = Math.tan(rad);
+                return `📐 ${fn}(${val}°) = <b>${result.toFixed(4)}</b>`;
+            }
+        }
+        
+        return null;
+    }
+
+    function solveChemistry(text) {
+        const t = text.toLowerCase();
+        const pt = KNOWLEDGE.science.chemistry.periodicTable;
+        
+        // Element lookup
+        for (const sym in pt) {
+            if (t.includes(sym.toLowerCase()) && 
+                (t.includes('apa') || t.includes('unsur') || t.includes('element') || 
+                 t.includes('tentang') || t.includes('info'))) {
+                const d = pt[sym];
+                return `⚗️ <b>${d.name} (${sym})</b>\n` +
+                       `• No. Atom: ${d.Z}\n` +
+                       `• Massa Atom: ${d.Ar}\n` +
+                       `• Golongan: ${d.group}\n` +
+                       `• Periode: ${d.period}\n` +
+                       `• Kategori: ${d.category}`;
+            }
+        }
+        
+        // Molecular mass
+        if (t.includes('mr ') || t.includes('massa molekul')) {
+            const formula = t.replace(/mr\s*/i, '').trim();
+            let total = 0;
+            
+            for (const sym in pt) {
+                const regex = new RegExp(sym + '(\\d*)', 'gi');
+                let match;
+                while ((match = regex.exec(formula)) !== null) {
+                    const count = match[1] ? parseInt(match[1]) : 1;
+                    total += pt[sym].Ar * count;
+                }
+            }
+            
+            if (total > 0) return `⚗️ Mr ${formula} = <b>${total.toFixed(2)} g/mol</b>`;
+        }
+        
+        // pH calculation
+        if (t.includes('ph')) {
+            const match = t.match(/ph\s*=\s*(\d+\.?\d*)/i);
+            if (match) {
+                const ph = parseFloat(match[1]);
+                const hPlus = Math.pow(10, -ph);
+                return `🧪 pH = ${ph}\n• [H⁺] = <b>${hPlus.toExponential(2)} M</b>\n• Sifat: ${ph < 7 ? 'Asam' : ph > 7 ? 'Basa' : 'Netral'}`;
+            }
+        }
+        
+        return null;
+    }
+
+    function solvePhysics(text) {
+        const t = text.toLowerCase();
+        
+        if (t.includes('kecepatan')) {
+            const match = t.match(/(\d+)\s*\/\s*(\d+)/);
+            if (match) return `🚀 v = ${match[1]}/${match[2]} = <b>${(parseFloat(match[1])/parseFloat(match[2])).toFixed(2)} m/s</b>`;
+        }
+        
+        if (t.includes('gaya') && t.includes('massa')) {
+            const match = t.match(/(\d+)\s*[x*]\s*(\d+)/);
+            if (match) return `💪 F = m·a = ${match[1]} × ${match[2]} = <b>${(parseFloat(match[1])*parseFloat(match[2]))} N</b>`;
+        }
+        
+        if (t.includes('energi') && t.includes('einstein')) {
+            const match = t.match(/(\d+)\s*kg/);
+            if (match) return `⚡ E = mc² = ${match[1]} × (3×10⁸)² = <b>${(parseFloat(match[1])*9e16).toExponential(2)} J</b>`;
+        }
+        
+        return null;
+    }
+
+    function solveGeneralKnowledge(text) {
+        const t = text.toLowerCase();
+        
+        // Science queries
+        if (t.includes('fotosintesis')) 
+            return `🌿 <b>Fotosintesis:</b>\n6CO₂ + 6H₂O + Cahaya → C₆H₁₂O₆ + 6O₂\n\nProses tumbuhan mengubah energi cahaya menjadi energi kimia.`;
+        
+        if (t.includes('dna') || t.includes('genetik'))
+            return `🧬 <b>DNA (Deoxyribonucleic Acid):</b>\n• Struktur: Double helix\n• Basa: Adenin-Timin, Guanin-Sitosin\n• Fungsi: Menyimpan informasi genetik`;
+        
+        // Geography queries
+        if (t.includes('benua') || t.includes('kontinen'))
+            return `🌍 <b>7 Benua Dunia:</b>\n` + 
+                   KNOWLEDGE.world.geography.continents.map(c => 
+                       `• ${c.name}: ${c.area}, ${c.population} penduduk, ${c.countries} negara`
+                   ).join('\n');
+        
+        // History queries
+        if (t.includes('perang dunia 1') || t.includes('ww1'))
+            return `📜 <b>Perang Dunia I (1914-1918):</b>\n• Pemicu: Pembunuhan Archduke Franz Ferdinand\n• Pihak: Sekutu vs Blok Sentral\n• Korban: ~16 juta jiwa\n• Berakhir: Perjanjian Versailles`;
+        
+        if (t.includes('perang dunia 2') || t.includes('ww2'))
+            return `📜 <b>Perang Dunia II (1939-1945):</b>\n• Pemicu: Invasi Polandia oleh Nazi Jerman\n• Pihak: Sekutu vs Axis\n• Korban: 70-85 juta jiwa\n• Peristiwa penting: Holocaust, Bom Atom Hiroshima-Nagasaki`;
+        
+        // Indonesia queries
+        if (t.includes('sejarah indonesia') || t.includes('kemerdekaan indonesia'))
+            return `🇮🇩 <b>Sejarah Indonesia:</b>\n• Proklamasi: 17 Agustus 1945\n• Presiden pertama: Soekarno\n• Kemerdekaan diakui Belanda: 1949\n• Reformasi: 1998`;
+        
+        return null;
+    }
+
+    // ================================================================
+    // ADVANCED SEARCH FUNCTION
+    // ================================================================
+    async function deepSearch(query) {
+        showProgress('🔍 Mencari...', query);
+        const results = { web: [], knowledge: [], saved: 0 };
+        
+        // Search internal knowledge base
+        for (const category in KNOWLEDGE) {
+            if (typeof KNOWLEDGE[category] === 'object') {
+                const categoryData = JSON.stringify(KNOWLEDGE[category]).toLowerCase();
+                if (categoryData.includes(query.toLowerCase())) {
+                    results.knowledge.push({
+                        source: `Knowledge Base - ${category}`,
+                        content: `Ditemukan di kategori: ${category}`
+                    });
+                }
+            }
+        }
+        
+        // Search DuckDuckGo
+        try {
+            const response = await fetch(
+                `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1`
+            );
+            if (response.ok) {
+                const data = await response.json();
+                if (data.AbstractText) {
+                    results.web.push({
+                        title: data.Heading || query,
+                        content: data.AbstractText,
+                        source: 'DuckDuckGo'
+                    });
+                }
+            }
+        } catch (e) {}
+        
+        // Search Wikipedia Indonesia
+        try {
+            const response = await fetch(
+                `https://id.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`
+            );
+            if (response.ok) {
+                const data = await response.json();
+                if (data.extract) {
+                    results.web.push({
+                        title: data.title,
+                        content: data.extract,
+                        source: 'Wikipedia ID'
+                    });
+                }
+            }
+        } catch (e) {}
+        
+        // Save to Firebase
+        for (const result of results.web) {
+            try {
+                await fs.collection('knowledge_base').add({
+                    title: result.title,
+                    content: result.content,
+                    source: result.source,
+                    tags: ['search', result.source],
+                    searched_at: new Date().toISOString()
+                });
+                results.saved++;
+            } catch (e) {}
+        }
+        
+        hideProgress();
+        S.score += 25;
+        
+        // Format response
+        let response = `🔍 <b>Hasil Pencarian: "${query}"</b>\n\n`;
+        
+        if (results.web.length > 0) {
+            results.web.slice(0, 3).forEach(r => {
+                response += `<div class="card info">` +
+                           `<b>${r.title}</b> (${r.source})<br>` +
+                           `${r.content.substring(0, 200)}...` +
+                           `</div>`;
+            });
+        }
+        
+        if (results.knowledge.length > 0) {
+            response += `\n📚 <b>Pengetahuan Internal:</b> ${results.knowledge.length} item ditemukan`;
+        }
+        
+        response += `\n\n💾 ${results.saved} item disimpan ke database.`;
+        return response;
+    }
+
+    // ================================================================
+    // COMMAND PARSER
+    // ================================================================
+    function parseCommand(text) {
+        const t = text.toLowerCase().trim();
+        
+        if (t.startsWith('cari ')) return { action: 'search', value: t.replace('cari ', '') };
+        if (t.startsWith('search ')) return { action: 'search', value: t.replace('search ', '') };
+        if (t.includes(' vs ') || t.startsWith('bandingkan ')) return { action: 'compare', value: t };
+        if (t === 'deploy' || t === 'push') return { action: 'deploy' };
+        if (t.startsWith('self edit ') || t.startsWith('edit diri ')) 
+            return { action: 'self_edit', value: t.replace(/self edit |edit diri /, '') };
+        if (t === '?' || t === 'help' || t === 'bantuan') return { action: 'help' };
+        if (t === 'stats' || t === 'stat') return { action: 'stats' };
+        if (t === 'db' || t === 'database') return { action: 'db' };
+        if (t.startsWith('topup')) return { action: 'topup', value: t };
+        if (t.startsWith('main ') || t.startsWith('play ')) 
+            return { action: 'play', value: t.replace(/main |play /, '') };
+        if (t === 'game') return { action: 'list_games' };
+        if (t === 'foto' || t === 'photo') return { action: 'photo' };
+        if (t === 'video' || t === 'short') return { action: 'video' };
+        if (t.startsWith('ai ')) return { action: 'switch_ai', value: t.replace('ai ', '') };
+        if (t === 'ai') return { action: 'ai_status' };
+        if (t === 'joke' || t === 'lucu') return { action: 'joke' };
+        if (t === 'fact' || t === 'fakta') return { action: 'fact' };
+        if (t === 'time' || t === 'jam') return { action: 'time' };
+        if (t === 'quote' || t === 'kutipan') return { action: 'quote' };
+        if (t.startsWith('hitung ')) return { action: 'calc', value: t.replace('hitung ', '') };
+        if (t === 'plan' || t === 'rencana') return { action: 'plan' };
+        if (t.startsWith('plan ')) return { action: 'plan_add', value: t.replace('plan ', '') };
+        if (t === 'task' || t === 'tugas') return { action: 'task' };
+        if (t.startsWith('task ')) return { action: 'task_add', value: t.replace('task ', '') };
+        if (t === 'admin' && S.isAdmin) return { action: 'admin_panel' };
+        
+        return null;
+    }
+
+    // ================================================================
+    // MAIN MESSAGE HANDLER
+    // ================================================================
+    async function sendMessage() {
+        if (S.processing) return;
+        
+        const input = $('userInput');
+        const text = input.value.trim();
+        if (!text) return;
+        
+        S.processing = true;
+        input.value = '';
+        S.chats++;
+        S.score++;
+        
+        addMsg('user', escapeHTML(text));
+        
+        const typingDiv = addMsg('ai', 
+            '<span class="typing-indicator"></span>' +
+            '<span class="typing-indicator"></span>' +
+            '<span class="typing-indicator"></span>'
+        );
+        
+        try {
+            await autoSyncKnowledge();
+            
+            const cmd = parseCommand(text);
+            let response = null;
+            
+            // Execute command or solve query
+            if (cmd) {
+                response = await executeCommand(cmd, text);
+            }
+            
+            if (!response) {
+                // Try knowledge solvers
+                response = solveMath(text) || 
+                          solveChemistry(text) || 
+                          solvePhysics(text) || 
+                          solveGeneralKnowledge(text);
+            }
+            
+            if (!response) {
+                // Handle games
+                if (S.activeGame === 'tebak-angka') {
+                    response = handleGuessGame(text);
+                } else if (S.activeGame === 'batu-kertas-gunting') {
+                    response = handleRPSGame(text);
+                } else {
+                    // Try conversation patterns
+                    response = handleConversation(text);
+                }
+            }
+            
+            if (!response) {
+                // Fallback to AI
+                const aiResponse = await callAI([
+                    { role: 'system', content: 'Kamu Yad AI, asisten virtual dengan pengetahuan global. Jawab natural dalam bahasa Indonesia, informatif dan ramah.' },
+                    { role: 'user', content: text }
+                ]);
+                response = aiResponse || 'Maaf, saya tidak mengerti. Ketik "?" untuk bantuan.';
+            }
+            
+            // Get secondary AI response if active
+            if (S.aiSecondaryActive && response) {
+                const secondaryResponse = await callSecondaryAI([
+                    { role: 'user', content: text }
+                ]);
+                
+                if (secondaryResponse) {
+                    response += `\n\n<div class="card" style="border-color:var(--accent-cyan);">` +
+                               `<b>🤖 AI Sekunder:</b><br>${secondaryResponse}</div>`;
+                }
+            }
+            
+            typingDiv.remove();
+            addMsg('ai', response);
+            
+            // Save to history
+            S.chatHistory.push({
+                user: text,
+                ai: response,
+                time: new Date().toISOString()
+            });
+            
+            if (S.chatHistory.length > 100) S.chatHistory.shift();
+            
+        } catch (e) {
+            typingDiv.remove();
+            addMsg('ai', `❌ Error: ${e.message}`);
+            console.error(e);
+        } finally {
+            S.processing = false;
+            hideProgress();
+        }
+    }
+
+    async function executeCommand(cmd, fullText) {
+        switch (cmd.action) {
+            case 'search':
+                return await deepSearch(cmd.value);
+                
+            case 'compare':
+                const parts = cmd.value.split(/ vs | bandingkan /i);
+                if (parts.length < 2) return 'Format: bandingkan A vs B';
+                showProgress('⚖️ Membandingkan...', `${parts[0]} vs ${parts[1]}`);
+                const compareResult = await callAI([
+                    { role: 'system', content: 'Bandingkan dalam bahasa Indonesia: Persamaan, Perbedaan, Kelebihan, Kekurangan.' },
+                    { role: 'user', content: `Bandingkan: "${parts[0].trim()}" vs "${parts[1].trim()}"` }
+                ]);
+                hideProgress();
+                S.score += 15;
+                return compareResult || 'Gagal membandingkan.';
+                
+            case 'deploy':
+                if (!S.isAdmin) return '⚠️ Hanya admin yang bisa deploy!';
+                return await autoDeploy();
+                
+            case 'self_edit':
+                if (!S.isAdmin) return '⚠️ Hanya admin yang bisa self-edit!';
+                return await selfEdit(cmd.value);
+                
+            case 'help':
+                return `<b>📚 Bantuan Yad AI:</b>\n\n` +
+                       `<b>🔍 Pencarian:</b> cari [query]\n` +
+                       `<b>⚖️ Perbandingan:</b> bandingkan A vs B\n` +
+                       `<b>🔢 Kalkulasi:</b> hitung [ekspresi]\n` +
+                       `<b>🎮 Game:</b> main tebak angka / main batu kertas gunting\n` +
+                       `<b>💰 TopUp:</b> topup [game] [item]\n` +
+                       `<b>📤 Upload:</b> foto / video\n` +
+                       `<b>🤖 AI:</b> ai deepseek/groq/openrouter\n` +
+                       `<b>👑 Admin:</b> deploy, self edit, admin panel\n\n` +
+                       `<b>Lainnya:</b> joke, fact, time, quote, plan, task`;
+                
+            case 'stats':
+                return `<b>📊 Statistik:</b>\n` +
+                       `• Knowledge: ${S.kb.length} items\n` +
+                       `• Deploys: ${S.deploys}\n` +
+                       `• Edits: ${S.edits}\n` +
+                       `• Chats: ${S.chats}\n` +
+                       `• Score: ${S.score}\n` +
+                       `• AI: ${S.currentProvider}\n` +
+                       `• AI Sekunder: ${S.aiSecondaryActive ? 'Aktif' : 'Nonaktif'}\n` +
+                       `• Role: ${S.role}`;
+                
+            case 'db':
+                return `<b>🗄️ Database:</b>\n` +
+                       `• Firestore: ${S.dbStats.firebase}\n` +
+                       `• GitHub: ${S.dbStats.github}\n` +
+                       `• Local: ${S.dbStats.local}`;
+                
+            case 'topup':
+                return handleTopUp(cmd.value);
+                
+            case 'play':
+                return startGame(cmd.value);
+                
+            case 'list_games':
+                return '🎮 <b>Game Tersedia:</b>\n• tebak angka\n• batu kertas gunting';
+                
+            case 'photo':
+            case 'video':
+                setTimeout(() => openCloudinaryWidget(), 300);
+                return '📤 Membuka uploader...';
+                
+            case 'switch_ai':
+                return switchAI(cmd.value);
+                
+            case 'ai_status':
+                return `🤖 AI Saat Ini: <b>${S.currentProvider}</b>\n🤖 AI Sekunder: <b>${S.aiSecondaryActive ? 'Aktif' : 'Nonaktif'}</b>`;
+                
+            case 'joke':
+                return getRandom(KNOWLEDGE.entertainment.jokes);
+                
+            case 'fact':
+                return getRandom(KNOWLEDGE.entertainment.facts);
+                
+            case 'time':
+                return new Date().toLocaleString('id-ID', {
+                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+                    hour: '2-digit', minute: '2-digit', second: '2-digit'
+                });
+                
+            case 'quote':
+                return getRandom(KNOWLEDGE.entertainment.quotes);
+                
+            case 'calc':
+                try {
+                    const result = eval(cmd.value);
+                    return `🔢 ${cmd.value} = <b>${result}</b>`;
+                } catch (e) {
+                    return 'Format: hitung 5+3*2';
+                }
+                
+            case 'plan':
+                return showPlans();
+                
+            case 'plan_add':
+                return addPlan(cmd.value);
+                
+            case 'task':
+                return showTasks();
+                
+            case 'task_add':
+                return addTask(cmd.value);
+                
+            case 'admin_panel':
+                toggleAdminPanel();
+                return '🔧 Admin panel dibuka.';
+                
+            default:
+                return null;
+        }
+    }
+
+    // ================================================================
+    // GAME HANDLERS
+    // ================================================================
+    function startGame(gameName) {
+        if (gameName.includes('tebak') || gameName.includes('angka')) {
+            S.activeGame = 'tebak-angka';
+            S.gameData = {
+                target: Math.floor(Math.random() * 100) + 1,
+                attempts: 0
+            };
+            return '🎮 <b>Tebak Angka!</b>\nSaya memikirkan angka 1-100. Coba tebak!';
+        } else if (gameName.includes('batu') || gameName.includes('gunting') || gameName.includes('bkg')) {
+            S.activeGame = 'batu-kertas-gunting';
+            return '🎮 <b>Batu Kertas Gunting!</b>\nPilih: batu, kertas, atau gunting';
+        }
+        return '🎮 Game: tebak angka, batu kertas gunting';
+    }
+
+    function handleGuessGame(text) {
+        const guess = parseInt(text);
+        if (isNaN(guess)) {
+            if (text.includes('stop')) {
+                S.activeGame = null;
+                return `🎮 Game berakhir! Angkanya: <b>${S.gameData.target}</b>`;
+            }
+            return 'Masukkan angka 1-100 ya!';
+        }
+        
+        S.gameData.attempts++;
+        
+        if (guess === S.gameData.target) {
+            const attempts = S.gameData.attempts;
+            S.activeGame = null;
+            S.score += 10;
+            
+            if (attempts === 1) return `🎉 WOW! SEKALI TEBAK! Angkanya ${S.gameData.target}! Kamu jenius!`;
+            if (attempts <= 3) return `🎉 Luar biasa! ${attempts} tebakan! Angkanya ${S.gameData.target}!`;
+            if (attempts <= 7) return `✅ Benar! ${S.gameData.target} dalam ${attempts} tebakan!`;
+            return `✅ Akhirnya! ${S.gameData.target} setelah ${attempts} tebakan.`;
+        }
+        
+        return guess < S.gameData.target ? 
+            `📈 ${guess} terlalu <b>RENDAH</b>! Coba lebih tinggi!` : 
+            `📉 ${guess} terlalu <b>TINGGI</b>! Coba lebih rendah!`;
+    }
+
+    function handleRPSGame(text) {
+        if (text.includes('stop')) {
+            S.activeGame = null;
+            return 'Game berakhir! Main lagi ya!';
+        }
+        
+        let playerChoice = null;
+        if (text.includes('batu')) playerChoice = 'batu';
+        else if (text.includes('kertas')) playerChoice = 'kertas';
+        else if (text.includes('gunting')) playerChoice = 'gunting';
+        else return 'Pilih: batu, kertas, atau gunting!';
+        
+        const choices = ['batu', 'kertas', 'gunting'];
+        const aiChoice = choices[Math.floor(Math.random() * 3)];
+        
+        let result = '';
+        if (playerChoice === aiChoice) {
+            result = '🤝 SERI!';
+        } else if (
+            (playerChoice === 'batu' && aiChoice === 'gunting') ||
+            (playerChoice === 'kertas' && aiChoice === 'batu') ||
+            (playerChoice === 'gunting' && aiChoice === 'kertas')
+        ) {
+            result = '🎉 KAMU MENANG!';
+            S.score += 5;
+        } else {
+            result = '😢 AI MENANG!';
+        }
+        
+        const emoji = { batu: '🪨', kertas: '📄', gunting: '✂️' };
+        return `${emoji[playerChoice]} Kamu: ${playerChoice}\n${emoji[aiChoice]} AI: ${aiChoice}\n\n${result}`;
+    }
+
+    // ================================================================
+    // CONVERSATION HANDLER
+    // ================================================================
+    function handleConversation(text) {
+        const t = text.toLowerCase();
+        
+        // Greetings
+        if (KNOWLEDGE.conversations.greetings.patterns.some(p => t.includes(p))) {
+            return getRandom(KNOWLEDGE.conversations.greetings.responses);
+        }
+        
+        // How are you
+        if (KNOWLEDGE.conversations.kabar.patterns.some(p => t.includes(p))) {
+            return getRandom(KNOWLEDGE.conversations.kabar.responses);
+        }
+        
+        // Feelings
+        const feelings = KNOWLEDGE.conversations.perasaan.responses;
+        for (const feeling in feelings) {
+            if (t.includes(feeling)) {
+                return getRandom(feelings[feeling]);
+            }
+        }
+        
+        // Motivation
+        if (KNOWLEDGE.conversations.motivasi.patterns.some(p => t.includes(p))) {
+            return getRandom(KNOWLEDGE.conversations.motivasi.responses);
+        }
+        
+        // Thanks
+        if (t.includes('terima kasih') || t.includes('makasih') || t.includes('thanks')) {
+            return 'Sama-sama! Senang bisa membantu. Ada lagi yang bisa saya bantu? 😊';
+        }
+        
+        // Who are you
+        if (t.includes('siapa kamu') || t.includes('nama kamu') || t.includes('kamu siapa')) {
+            return '🧠 Saya <b>Yad AI</b>, asisten virtual dengan pengetahuan global!\n' +
+                   'Saya dilengkapi dengan AI utama dan sekunder untuk memberikan jawaban terbaik.\n' +
+                   `Saat ini saya memiliki ${S.kb.length} pengetahuan dalam database.`;
+        }
+        
+        return null;
+    }
+
+    // ================================================================
+    // TOPUP HANDLER
+    // ================================================================
+    function handleTopUp(text) {
+        const t = text.toLowerCase();
+        const topupData = KNOWLEDGE.topup;
+        let game = null, item = null;
+        const serverMatch = text.match(/server\s*[:#]?\s*(\d+)/i);
+        const server = serverMatch ? serverMatch[1] : null;
+        
+        // Find game
+        for (const key in topupData) {
+            if (t.includes(key) || t.includes(topupData[key].name.toLowerCase())) {
+                game = key;
+                for (const it of topupData[key].items) {
+                    if (t.includes(it.name.toLowerCase())) {
+                        item = it;
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+        
+        if (!game) {
+            let list = '<b>🎮 Game Tersedia:</b>\n\n';
+            for (const key in topupData) {
+                list += `<b>${topupData[key].name}</b>:\n`;
+                topupData[key].items.forEach(it => {
+                    list += `  • ${it.name}: ${fmtPrice(Math.round(it.price * S.markup))}\n`;
+                });
+                list += '\n';
+            }
+            list += '\nContoh: <code>topup ml 500 diamond server:12345</code>';
+            return list;
+        }
+        
+        if (!server) return '⚠️ Masukkan Server ID!\nContoh: <code>topup ml 100 diamond server:12345</code>';
+        
+        if (!item) {
+            let list = `<b>📦 Item ${topupData[game].name}:</b>\n\n`;
+            topupData[game].items.forEach(it => {
+                list += `• ${it.name}: ${fmtPrice(Math.round(it.price * S.markup))}\n`;
+            });
+            return list;
+        }
+        
+        const orderId = genId();
+        const price = Math.round(item.price * S.markup);
+        
+        return `<div class="card success">` +
+               `<b>✅ Order Berhasil!</b>\n\n` +
+               `🆔 ID: ${orderId}\n` +
+               `🎮 Game: ${topupData[game].name}\n` +
+               `📦 Item: ${item.name}\n` +
+               `💰 Harga: ${fmtPrice(price)}\n` +
+               `🖥️ Server: ${server}\n\n` +
+               `<small>Status: Menunggu pembayaran...</small>` +
+               `</div>`;
+    }
+
+    // ================================================================
+    // AI FUNCTIONS
+    // ================================================================
+    function switchAI(name) {
+        const providers = {
+            'deepseek': 'DeepSeek',
+            'groq': 'Groq',
+            'openrouter': 'OpenRouter'
+        };
+        
+        for (const key in providers) {
+            if (name.includes(key)) {
+                S.currentProvider = key;
+                $('ai-badge').textContent = providers[key];
+                toast(`🤖 AI: ${providers[key]}`, 'success');
+                return `🤖 AI diubah ke: <b>${providers[key]}</b>`;
+            }
+        }
+        
+        return '🤖 AI tersedia:\n• deepseek\n• groq\n• openrouter\n\nKetik: <code>ai deepseek</code>';
+    }
+
+    function toggleAISecondary() {
+        S.aiSecondaryActive = !S.aiSecondaryActive;
+        const badge = $('ai-secondary-badge');
+        badge.style.display = S.aiSecondaryActive ? 'inline-block' : 'none';
+        toast(`🤖 AI Sekunder: ${S.aiSecondaryActive ? 'AKTIF' : 'NONAKTIF'}`, S.aiSecondaryActive ? 'info' : '');
+        return `🤖 AI Sekunder: <b>${S.aiSecondaryActive ? 'Aktif' : 'Nonaktif'}</b>`;
+    }
+
+    // ================================================================
+    // DEPLOY & SELF-EDIT FUNCTIONS (ADMIN ONLY)
+    // ================================================================
+    async function autoDeploy() {
+        if (!S.isAdmin) return '⚠️ Hanya admin!';
+        
+        showProgress('🚀 Deploying...', 'Mengirim ke GitHub Actions');
+        
+        try {
+            const response = await fetch(
+                `https://api.github.com/repos/${CFG.github.owner}/${CFG.github.repo}/dispatches`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `token ${CFG.github.token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        event_type: 'deploy-to-firebase',
+                        client_payload: { project: 'yadstores' }
+                    })
+                }
+            );
+            
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            
+            hideProgress();
+            S.deploys++;
+            S.score += 50;
+            toast('✅ Deploy berhasil!', 'success');
+            return '🚀 <b>Deploy Berhasil!</b>\nLive dalam 1-2 menit.';
+        } catch (e) {
+            hideProgress();
+            return `❌ Deploy gagal: ${e.message}`;
+        }
+    }
+
+    async function selfEdit(instruction) {
+        if (!S.isAdmin) return '⚠️ Hanya admin!';
+        
+        showProgress('🔧 Self-Edit...', instruction.substring(0, 50));
+        
+        try {
+            // Fetch current file
+            const fileResponse = await fetch(
+                `https://api.github.com/repos/${CFG.github.owner}/${CFG.github.repo}/contents/${CFG.github.filePath}?ref=${CFG.github.branch}`,
+                {
+                    headers: {
+                        'Authorization': `token ${CFG.github.token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'User-Agent': 'Yad-AI'
+                    }
+                }
+            );
+            
+            if (!fileResponse.ok) throw new Error('Gagal fetch file');
+            
+            const fileData = await fileResponse.json();
+            let newCode = atob(fileData.content);
+            
+            // Apply edits based on instruction
+            const ti = instruction.toLowerCase();
+            
+            if (ti.includes('tambah fitur') || ti.includes('add feature')) {
+                const featureName = ti.replace(/tambah fitur|add feature/gi, '').trim();
+                if (featureName) {
+                    const slug = featureName.replace(/\s+/g, '-').toLowerCase();
+                    const insertion = `\n<!-- Feature: ${featureName} -->\n<div class="feature-${slug}" style="padding:20px;margin:20px auto;max-width:600px;background:var(--bg-tertiary);border-radius:12px;border:2px solid var(--accent-blue);text-align:center;"><h3>✨ ${featureName}</h3><p>Fitur baru ditambahkan oleh AI Self-Edit</p></div>\n`;
+                    newCode = newCode.replace('</body>', insertion + '</body>');
+                }
+            }
+            
+            if (ti.includes('ubah tema') || ti.includes('ganti tema')) {
+                const themes = {
+                    'dark blue': ['#0a1628', '#162238', '#4a90d9'],
+                    'dark purple': ['#1a0a2e', '#2d1645', '#9b59b6'],
+                    'dark green': ['#0a1a0a', '#162816', '#2ecc71'],
+                    'ocean': ['#0a1628', '#1a2a3a', '#00bcd4']
+                };
+                
+                for (const [name, colors] of Object.entries(themes)) {
+                    if (ti.includes(name)) {
+                        newCode = newCode.replace(/--bg-primary:\s*#[0-9a-fA-F]+;/, `--bg-primary: ${colors[0]};`);
+                        newCode = newCode.replace(/--bg-secondary:\s*#[0-9a-fA-F]+;/, `--bg-secondary: ${colors[1]};`);
+                        newCode = newCode.replace(/--accent-blue:\s*#[0-9a-fA-F]+;/, `--accent-blue: ${colors[2]};`);
+                        break;
+                    }
+                }
+            }
+            
+            // Commit changes
+            const commitResponse = await fetch(
+                `https://api.github.com/repos/${CFG.github.owner}/${CFG.github.repo}/contents/${CFG.github.filePath}`,
+                {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${CFG.github.token}`,
+                        'Content-Type': 'application/json',
+                        'User-Agent': 'Yad-AI'
+                    },
+                    body: JSON.stringify({
+                        message: `🤖 AI Self-Edit: ${instruction.substring(0, 80)}`,
+                        content: btoa(unescape(encodeURIComponent(newCode))),
+                        sha: fileData.sha,
+                        branch: CFG.github.branch
+                    })
+                }
+            );
+            
+            if (!commitResponse.ok) {
+                const err = await commitResponse.json();
+                throw new Error(err.message);
+            }
+            
+            // Auto deploy
+            await autoDeploy();
+            
+            hideProgress();
+            S.edits++;
+            S.score += 75;
+            
+            return `✅ <b>Self-Edit Berhasil!</b>\nPerubahan: ${instruction.substring(0, 60)}...\nDeploy otomatis dimulai.`;
+        } catch (e) {
+            hideProgress();
+            return `❌ Self-Edit gagal: ${e.message}`;
+        }
+    }
+
+    // ================================================================
+    // ADMIN FUNCTIONS
+    // ================================================================
+    function toggleAdminPanel() {
+        if (!S.isAdmin) {
+            toast('⚠️ Hanya admin!', 'error');
+            return;
+        }
+        const panel = $('adminPanel');
+        panel.classList.toggle('active');
+    }
+
+    async function viewAllUsers() {
+        if (!S.isAdmin) return;
+        try {
+            const snapshot = await fs.collection('users').limit(50).get();
+            const users = snapshot.docs.map(d => d.data());
+            let response = '<b>👥 Users:</b>\n\n';
+            users.forEach((u, i) => {
+                response += `${i+1}. ${u.email || 'Unknown'} - ${u.role || 'user'}\n`;
+            });
+            addMsg('ai', response);
+        } catch (e) {
+            addMsg('ai', `Error: ${e.message}`);
+        }
+    }
+
+    async function broadcastMessage() {
+        if (!S.isAdmin) return;
+        const msg = prompt('Pesan broadcast:');
+        if (!msg) return;
+        
+        try {
+            await rtdb.ref('broadcasts').push({
+                message: msg,
+                from: CFG.adminEmail,
+                time: new Date().toISOString()
+            });
+            toast('📢 Broadcast terkirim!', 'success');
+        } catch (e) {
+            toast('❌ Gagal broadcast', 'error');
+        }
+    }
+
+    async function systemStats() {
+        if (!S.isAdmin) return;
+        
+        try {
+            const kbCount = (await fs.collection('knowledge_base').count().get()).data().count;
+            const usersCount = (await fs.collection('users').count().get()).data().count;
+            
+            addMsg('ai', `<b>📊 System Stats:</b>\n` +
+                `• Knowledge Base: ${kbCount} items\n` +
+                `• Users: ${usersCount}\n` +
+                `• Deploys: ${S.deploys}\n` +
+                `• Edits: ${S.edits}\n` +
+                `• Chats Total: ${S.chats}\n` +
+                `• AI Provider: ${S.currentProvider}\n` +
+                `• AI Secondary: ${S.aiSecondaryActive ? 'Active' : 'Inactive'}`);
+        } catch (e) {
+            addMsg('ai', `Error: ${e.message}`);
+        }
+    }
+
+    function clearCache() {
+        if (!S.isAdmin) return;
+        localStorage.clear();
+        S.kb = [];
+        S.chatHistory = [];
+        toast('🗑️ Cache dibersihkan!', 'success');
+        addMsg('ai', '✅ Cache berhasil dibersihkan.');
+    }
+
+    async function exportDatabase() {
+        if (!S.isAdmin) return;
+        
+        try {
+            const snapshot = await fs.collection('knowledge_base').limit(1000).get();
+            const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `yad-ai-export-${Date.now()}.json`;
+            a.click();
+            
+            toast('💾 Database diexport!', 'success');
+        } catch (e) {
+            toast('❌ Export gagal', 'error');
+        }
+    }
+
+    async function emergencyDeploy() {
+        if (!S.isAdmin) return;
+        if (!confirm('🚨 Emergency deploy? Ini akan deploy sekarang!')) return;
+        
+        const result = await autoDeploy();
+        addMsg('ai', result);
+    }
+
+    async function forceSyncKnowledge() {
+        if (!S.isAdmin) return;
+        showProgress('🔄 Syncing...', 'Menyinkronkan semua pengetahuan');
+        
+        try {
+            for (const category in KNOWLEDGE) {
+                if (typeof KNOWLEDGE[category] === 'object') {
+                    await fs.collection('knowledge_base').add({
+                        title: `Category: ${category}`,
+                        content: JSON.stringify(KNOWLEDGE[category]),
+                        tags: [category, 'synced'],
+                        synced_at: new Date().toISOString()
+                    });
+                    S.kb.push({ title: category, content: 'Synced' });
+                }
+            }
+            
+            hideProgress();
+            S.syncs++;
+            S.knowledgeSynced = true;
+            toast('✅ Knowledge synced!', 'success');
+            addMsg('ai', `✅ <b>Sync Berhasil!</b>\n${Object.keys(KNOWLEDGE).length} kategori disinkronkan.`);
+        } catch (e) {
+            hideProgress();
+            addMsg('ai', `❌ Sync gagal: ${e.message}`);
+        }
+    }
+
+    // ================================================================
+    // PLANS & TASKS
+    // ================================================================
+    function showPlans() {
+        if (!S.plans.length) return '📋 Belum ada rencana. Ketik "plan [nama]" untuk menambah.';
+        let r = '<b>📋 Rencana:</b>\n';
+        S.plans.forEach((p, i) => r += `${i+1}. ${p}\n`);
+        return r;
+    }
+
+    function addPlan(plan) {
+        S.plans.push(plan);
+        return `✅ Rencana ditambahkan: <b>${plan}</b> (${S.plans.length} total)`;
+    }
+
+    function showTasks() {
+        if (!S.tasks.length) return '📝 Belum ada tugas. Ketik "task [nama]" untuk menambah.';
+        let r = '<b>📝 Tugas:</b>\n';
+        S.tasks.forEach((t, i) => r += `${i+1}. ${t}\n`);
+        return r;
+    }
+
+    function addTask(task) {
+        S.tasks.push(task);
+        return `✅ Tugas ditambahkan: <b>${task}</b> (${S.tasks.length} total)`;
+    }
+
+    // ================================================================
+    // AUTO SYNC
+    // ================================================================
+    async function autoSyncKnowledge() {
+        if (S.knowledgeSynced) return;
+        
+        try {
+            const snapshot = await fs.collection('knowledge_base').limit(200).get();
+            S.kb = snapshot.docs.map(d => ({
+                id: d.id,
+                title: d.data().title,
+                content: d.data().content
+            }));
+            S.dbStats.firebase = S.kb.length;
+        } catch (e) {}
+        
+        try {
+            const localData = localStorage.getItem('yaidb');
+            if (localData) {
+                const parsed = JSON.parse(localData);
+                S.dbStats.local = parsed.length;
+                S.kb = [...S.kb, ...parsed];
+            }
+        } catch (e) {}
+        
+        S.knowledgeSynced = true;
+    }
+
+    // ================================================================
+    // CLOUDINARY UPLOAD
+    // ================================================================
+    function openCloudinaryWidget() {
+        cloudinary.createUploadWidget({
+            cloudName: CFG.cloudinary.cloudName,
+            uploadPreset: CFG.cloudinary.uploadPreset,
+            apiKey: CFG.cloudinary.apiKey,
+            sources: ['local', 'url', 'camera'],
+            multiple: true,
+            maxFileSize: 100000000,
+            styles: {
+                palette: {
+                    window: "#141c2b",
+                    sourceBg: "#0a0e17",
+                    windowBorder: "#2a3545",
+                    link: "#4a90d9",
+                    action: "#4a90d9",
+                    complete: "#2ecc71",
+                    error: "#e74c3c",
+                    textDark: "#e8edf5",
+                    textLight: "#8899aa"
+                }
+            }
+        }, (error, result) => {
+            if (error) return;
+            
+            if (result && result.event === 'success') {
+                const url = result.info.secure_url;
+                const type = result.info.resource_type;
+                const name = result.info.original_filename;
+                
+                S.mediaUploads.push({
+                    url,
+                    type,
+                    name,
+                    size: result.info.bytes,
+                    uploadedAt: new Date().toISOString()
+                });
+                
+                let html = '';
+                if (type === 'image') {
+                    html = `<div class="card success">
+                        <img src="${url}" style="max-width:100%;border-radius:12px;" alt="${name}">
+                        <small>📸 ${name}</small>
+                    </div>`;
+                } else if (type === 'video') {
+                    html = `<div class="card success">
+                        <video controls style="max-width:100%;border-radius:12px;">
+                            <source src="${url}" type="video/mp4">
+                        </video>
+                        <small>🎬 ${name}</small>
+                    </div>`;
+                } else {
+                    html = `<div class="card success">📁 ${name}</div>`;
+                }
+                
+                addMsg('ai', html);
+                toast('✅ Upload berhasil!', 'success');
+            }
+        }).open();
+    }
+
+    // ================================================================
+    // AUTH FUNCTIONS
+    // ================================================================
+    function showLogin() {
+        const email = prompt('📧 Email:');
+        if (!email) return;
+        const password = prompt('🔒 Password:');
+        if (!password) return;
+        
+        auth.signInWithEmailAndPassword(email, password)
+            .then(() => {
+                toast('✅ Login berhasil!', 'success');
+                checkAdminStatus(email);
+            })
+            .catch(err => {
+                if (err.code === 'auth/user-not-found' && confirm('Buat akun baru?')) {
+                    auth.createUserWithEmailAndPassword(email, password)
+                        .then(() => {
+                            toast('✅ Akun dibuat!', 'success');
+                            checkAdminStatus(email);
+                        })
+                        .catch(er => toast('❌ Error: ' + er.message, 'error'));
+                } else {
+                    toast('❌ Error: ' + err.message, 'error');
+                }
+            });
+    }
+
+    async function doLogout() {
+        await auth.signOut();
         S.isAdmin = false;
         S.role = 'guest';
-        s.className = 'badge guest';
-        s.textContent = 'Guest';
-        li.style.display = 'inline-block';
-        lo.style.display = 'none';
+        S.user = null;
+        toast('👋 Logout berhasil!', 'info');
     }
-});
 
-// ============================================================
-// INIT
-// ============================================================
-console.log('Yad AI Super Intelligent v8.0 Ready!');
+    function checkAdminStatus(email) {
+        if (email === CFG.adminEmail) {
+            S.isAdmin = true;
+            S.role = 'admin';
+            
+            // Update UI for admin
+            $('aiAvatar').classList.add('admin-active');
+            $('sendBtn').classList.add('admin-mode');
+            $('admin-panel-btn').style.display = 'inline-block';
+            
+            toast('👑 Admin detected! Full access granted.', 'admin', 5000);
+            
+            // Auto sync knowledge for admin
+            setTimeout(() => forceSyncKnowledge(), 2000);
+        }
+    }
+
+    // Auth state observer
+    auth.onAuthStateChanged(user => {
+        const statusBadge = $('auth-status');
+        const loginBtn = $('login-btn');
+        const logoutBtn = $('logout-btn');
+        const adminPanelBtn = $('admin-panel-btn');
+        const aiAvatar = $('aiAvatar');
+        const sendBtn = $('sendBtn');
+        
+        if (user) {
+            S.user = user;
+            
+            // Auto detect admin
+            if (user.email === CFG.adminEmail) {
+                S.isAdmin = true;
+                S.role = 'admin';
+                statusBadge.className = 'badge admin';
+                statusBadge.textContent = '👑 Admin';
+                aiAvatar.classList.add('admin-active');
+                sendBtn.classList.add('admin-mode');
+                adminPanelBtn.style.display = 'inline-block';
+                toast('👑 Admin auto-detected!', 'admin', 4000);
+                
+                // Auto sync for admin
+                setTimeout(() => autoSyncKnowledge(), 3000);
+            } else {
+                S.isAdmin = false;
+                S.role = 'user';
+                statusBadge.className = 'badge user';
+                statusBadge.textContent = 'User';
+                aiAvatar.classList.remove('admin-active');
+                sendBtn.classList.remove('admin-mode');
+                adminPanelBtn.style.display = 'none';
+            }
+            
+            loginBtn.style.display = 'none';
+            logoutBtn.style.display = 'inline-block';
+            
+            // Save user to Firestore
+            fs.collection('users').doc(user.uid).set({
+                email: user.email,
+                role: S.role,
+                lastLogin: new Date().toISOString(),
+                isAdmin: S.isAdmin
+            }, { merge: true }).catch(() => {});
+            
+        } else {
+            S.isAdmin = false;
+            S.role = 'guest';
+            S.user = null;
+            statusBadge.className = 'badge guest';
+            statusBadge.textContent = 'Guest';
+            loginBtn.style.display = 'inline-block';
+            logoutBtn.style.display = 'none';
+            adminPanelBtn.style.display = 'none';
+            aiAvatar.classList.remove('admin-active');
+            sendBtn.classList.remove('admin-mode');
+            $('adminPanel')?.classList.remove('active');
+        }
+    });
+
+    // ================================================================
+    // EVENT LISTENERS
+    // ================================================================
+    $('sendBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        sendMessage();
+    });
+    
+    $('sendBtn').addEventListener('touchend', (e) => {
+        e.preventDefault();
+        sendMessage();
+    });
+    
+    $('userInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+    
+    $('fileInput').addEventListener('change', async function(e) {
+        const files = e.target.files;
+        if (!files.length) return;
+        
+        showProgress('📤 Uploading...', `${files.length} file(s)`);
+        const items = [];
+        
+        for (let i = 0; i < files.length; i++) {
+            try {
+                const text = await files[i].text();
+                const parsed = parseFileContent(text, files[i].name);
+                items.push(...parsed);
+            } catch (err) {
+                console.error(`Failed to parse ${files[i].name}:`, err);
+            }
+        }
+        
+        if (items.length) {
+            // Save to Firebase
+            for (const item of items) {
+                try {
+                    await fs.collection('knowledge_base').add(item);
+                } catch (e) {}
+            }
+            
+            // Update local state
+            S.kb = [...S.kb, ...items];
+            
+            // Save to localStorage
+            const local = JSON.parse(localStorage.getItem('yaidb') || '[]');
+            localStorage.setItem('yaidb', JSON.stringify([...local, ...items]));
+            S.dbStats.local = local.length + items.length;
+        }
+        
+        hideProgress();
+        addMsg('ai', `✅ ${items.length} items berhasil diimpor! Total KB: ${S.kb.length}`);
+        toast(`✅ ${items.length} items imported!`, 'success');
+        this.value = '';
+    });
+
+    function parseFileContent(text, filename) {
+        const items = [];
+        const lines = text.split('\n');
+        let current = {
+            title: filename.replace(/\.[^.]+$/, ''),
+            content: '',
+            tags: [],
+            type: 'lesson',
+            created_at: new Date().toISOString()
+        };
+        
+        for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) continue;
+            
+            if (trimmed.startsWith('===') && trimmed.endsWith('===')) {
+                if (current.content.trim()) {
+                    items.push({...current});
+                }
+                current = {
+                    title: trimmed.replace(/===/g, '').trim(),
+                    content: '',
+                    tags: [],
+                    type: 'lesson',
+                    created_at: new Date().toISOString()
+                };
+            } else if (trimmed.startsWith('Judul:') || trimmed.startsWith('Title:')) {
+                if (current.content.trim()) {
+                    items.push({...current});
+                }
+                current = {
+                    title: trimmed.replace(/^(Judul|Title):/i, '').trim(),
+                    content: '',
+                    tags: [],
+                    type: 'lesson',
+                    created_at: new Date().toISOString()
+                };
+            } else if (trimmed.startsWith('Tags:')) {
+                current.tags = trimmed.replace('Tags:', '').split(',')
+                    .map(t => t.trim()).filter(t => t);
+            } else {
+                current.content += trimmed + '\n';
+            }
+        }
+        
+        if (current.content.trim()) {
+            items.push(current);
+        }
+        
+        if (!items.length && text.trim()) {
+            items.push({
+                title: filename,
+                content: text.trim(),
+                tags: ['imported'],
+                type: 'lesson',
+                created_at: new Date().toISOString()
+            });
+        }
+        
+        return items;
+    }
+
+    // ================================================================
+    // INITIALIZATION
+    // ================================================================
+    function init() {
+        console.log('🧠 Yad AI - Ultimate Global Knowledge');
+        console.log('✅ Features: AI Primary + Secondary | Global Knowledge | Admin Auto-Detect');
+        console.log(`📚 Knowledge Categories: ${Object.keys(KNOWLEDGE).length}`);
+        console.log('🔧 Admin: Auto-detection enabled');
+        
+        // Set initial AI badge
+        $('ai-badge').textContent = 'DeepSeek';
+        
+        // Focus input on desktop
+        if (window.innerWidth >= 768) {
+            setTimeout(() => $('userInput').focus(), 500);
+        }
+        
+        // Handle resize
+        window.addEventListener('resize', () => {
+            document.body.style.height = window.innerHeight + 'px';
+        });
+        
+        // Auto sync on load
+        setTimeout(() => autoSyncKnowledge(), 2000);
+        
+        // Check for stored token
+        const storedToken = localStorage.getItem('gh_token');
+        if (storedToken && storedToken.length > 30) {
+            CFG.github.token = storedToken;
+        }
+    }
+    
+    // Start the app
+    init();
+    
+    console.log('🚀 Yad AI Ready!');
+    console.log('💡 Type "?" for help | Admin auto-detected on login');
 })();
 </script>
 </body>

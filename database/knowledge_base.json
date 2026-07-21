@@ -1,0 +1,12 @@
+[
+  {
+    "title": "Selamat Datang di Yad AI",
+    "content": "Ini adalah database pengetahuan Yad AI. Tambahkan pelajaran di sini.",
+    "tags": [
+      "welcome",
+      "ai"
+    ],
+    "type": "lesson",
+    "created_at": "2026-07-21T07:04:09.387Z"
+  }
+]

@@ -1,5 +1,14 @@
 {
   "projects": {
     "default": "yadstores"
+  },
+  "targets": {
+    "yadstores": {
+      "hosting": {
+        "main": [
+          "yadstores"
+        ]
+      }
+    }
   }
 }

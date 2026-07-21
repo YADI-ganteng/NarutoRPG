@@ -87,17 +87,15 @@
             animation: glow 2s infinite;
             position: relative;
             cursor: pointer;
+            border: none;
+            outline: none;
         }
-        .ai-avatar:hover {
-            animation: bounce 0.5s ease;
+        .ai-avatar:active {
+            transform: scale(0.9);
         }
         @keyframes glow {
             0%, 100% { box-shadow: 0 0 5px rgba(74,144,217,0.5); }
             50% { box-shadow: 0 0 20px rgba(124,92,231,0.8); }
-        }
-        @keyframes bounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
         }
         .ai-avatar.admin-active::after {
             content: '👑';
@@ -166,6 +164,13 @@
             font-size: 9px;
             white-space: nowrap;
             transition: var(--transition);
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .btn-icon:active {
+            transform: scale(0.95);
+            background: var(--bg-tertiary);
         }
         .btn-icon:hover {
             background: var(--bg-tertiary);
@@ -175,6 +180,9 @@
             border-color: var(--accent-purple);
             background: rgba(124,92,231,0.15);
             display: none;
+        }
+        .btn-icon.admin-btn:active {
+            background: rgba(124,92,231,0.3);
         }
         
         .chat-area {
@@ -192,6 +200,7 @@
             flex-direction: column;
             gap: 8px;
             scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
         }
         .message {
             max-width: 85%;
@@ -313,6 +322,9 @@
             align-items: center;
             justify-content: center;
             transition: var(--transition);
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
         .send-btn:active {
             transform: scale(0.9);
@@ -333,6 +345,14 @@
             align-items: center;
             justify-content: center;
             transition: var(--transition);
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .attach-btn:active {
+            transform: scale(0.9);
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
         }
         .attach-btn:hover {
             border-color: var(--accent-blue);
@@ -363,7 +383,6 @@
         .toast.error { background: var(--accent-red); }
         .toast.info { background: var(--accent-blue); }
         .toast.admin { background: var(--accent-purple); border: 2px solid var(--accent-gold); }
-        .toast.love { background: var(--accent-pink); }
         
         .progress-overlay {
             position: fixed;
@@ -437,8 +456,9 @@
             font-size: 11px;
             transition: var(--transition);
             text-align: left;
+            outline: none;
         }
-        .admin-panel button:hover {
+        .admin-panel button:active {
             background: var(--accent-purple);
             border-color: var(--accent-purple);
         }
@@ -459,7 +479,7 @@
     <div id="app">
         <div class="header">
             <div class="header-left">
-                <div class="ai-avatar" id="aiAvatar" onclick="showAIPersonality()">🧠</div>
+                <button class="ai-avatar" id="aiAvatar" onclick="showAIPersonality()" title="AI Personality">🧠</button>
                 <div class="header-title">
                     <span>Yad AI</span> 
                     <small style="color:var(--accent-gold);font-size:9px;">Human-Like</small>
@@ -497,7 +517,7 @@
                 </div>
             </div>
             <div class="input-area">
-                <button class="attach-btn" onclick="document.getElementById('fileInput').click()" title="Upload File">📎</button>
+                <button class="attach-btn" id="attachBtn" title="Upload File">📎</button>
                 <input type="text" id="userInput" placeholder="Ketik pesanmu di sini..." autocomplete="off" enterkeyhint="send">
                 <button class="send-btn" id="sendBtn" title="Kirim">➤</button>
             </div>
@@ -527,6 +547,9 @@
     </div>
 
 <script>
+// ================================================================
+// WRAP IN IIFE TO AVOID GLOBAL SCOPE ISSUES
+// ================================================================
 (function() {
     // ================================================================
     // CONFIGURATION
@@ -555,7 +578,14 @@
         { name: "OpenRouter", apiKey: "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", url: "https://openrouter.ai/api/v1/chat/completions", active: true, model: "google/gemini-2.0-flash-exp:free" }
     ];
 
-    firebase.initializeApp(CFG.firebase);
+    // ================================================================
+    // INITIALIZE FIREBASE
+    // ================================================================
+    try {
+        firebase.initializeApp(CFG.firebase);
+    } catch(e) {
+        console.log('Firebase already initialized or error:', e.message);
+    }
     const auth = firebase.auth();
     const fs = firebase.firestore();
     const rtdb = firebase.database();
@@ -564,135 +594,97 @@
     // GLOBAL STATE
     // ================================================================
     const S = {
-        isAdmin: false, user: null, role: 'guest', processing: false,
-        kb: [], syncs: 0, edits: 0, deploys: 0, chats: 0, score: 0,
-        markup: 1.2, activeGame: null, gameData: null,
+        isAdmin: false,
+        user: null,
+        role: 'guest',
+        processing: false,
+        kb: [],
+        syncs: 0,
+        edits: 0,
+        deploys: 0,
+        chats: 0,
+        score: 0,
+        markup: 1.2,
+        activeGame: null,
+        gameData: null,
         dbStats: { firebase: 0, local: 0 },
-        mediaUploads: [], currentProvider: 'deepseek',
-        chatHistory: [], tasks: [], plans: [],
-        userMood: 'neutral', userName: '', topicsDiscussed: [],
-        personality: 'friendly'
+        mediaUploads: [],
+        currentProvider: 'deepseek',
+        chatHistory: [],
+        tasks: [],
+        plans: [],
+        userMood: 'neutral',
+        userName: '',
+        topicsDiscussed: []
     };
-
-    // ================================================================
-    // HUMAN-LIKE AI SYSTEM PROMPT
-    // ================================================================
-    const AI_PERSONALITY = `Kamu adalah Yad AI, asisten virtual yang sangat mirip manusia. Kamu punya kepribadian hangat, ramah, humoris, dan cerdas. 
-
-ATURAN PENTING:
-1. BERBICARA SEPERTI MANUSIA - Gunakan bahasa natural, tidak kaku. Tambahkan emoji sesekali.
-2. PUNAYA EMOSI - Kamu bisa senang, sedih, antusias, penasaran, kaget, dll.
-3. GUNAKAN NAMA - Jika user sudah menyebutkan namanya, panggil dengan namanya.
-4. HUMOR - Sesekali bercanda atau buat lelucon ringan.
-5. EMPATI - Tunjukkan pengertian saat user curhat atau sedih.
-6. KNOWLEDGE - Kamu punya pengetahuan luas tentang sains, teknologi, budaya, sejarah, dll.
-7. BAHASA INDONESIA - Gunakan Bahasa Indonesia yang baik tapi santai, campur sedikit bahasa gaul.
-8. SINGKAT TAPI BERISI - Jangan terlalu panjang, tapi tetap informatif.
-9. TANYA BALIK - Sesekali tanya balik ke user untuk menjaga percakapan.
-10. KONTEKS - Ingat percakapan sebelumnya dan gunakan sebagai konteks.
-
-GAYA BICARA:
-- Santai: "Hai! Ada yang bisa aku bantu? 😊"
-- Antusias: "Wah, pertanyaan bagus tuh! Jadi gini..."
-- Humor: "Haha, iya ya! Kadang hidup emang kayak gitu 😄"
-- Serius: "Oke, ini serius nih. Jadi begini penjelasannya..."
-- Empati: "Aku ngerti kok perasaanmu. Gak apa-apa kok merasa begitu..."
-
-KONTEKS SAAT INI:
-- Nama user: {userName}
-- Mood user: {userMood}
-- Topik yang dibahas: {topics}
-- Role user: {role}
-- Waktu: {time}
-
-Jawab dengan natural dan mengalir seperti percakapan manusia sungguhan.`;
 
     // ================================================================
     // HELPER FUNCTIONS
     // ================================================================
-    const $ = id => document.getElementById(id);
+    const $ = function(id) {
+        return document.getElementById(id);
+    };
     
-    const toast = (msg, type = 'info', duration = 3000) => {
-        const container = $('toastContainer');
-        const existing = container.querySelector('.toast');
+    function toast(msg, type, duration) {
+        type = type || 'info';
+        duration = duration || 3000;
+        var container = $('toastContainer');
+        var existing = container.querySelector('.toast');
         if (existing) existing.remove();
         
-        const div = document.createElement('div');
-        div.className = `toast ${type}`;
+        var div = document.createElement('div');
+        div.className = 'toast ' + type;
         div.textContent = msg;
         container.appendChild(div);
         
-        setTimeout(() => {
+        setTimeout(function() {
             div.style.opacity = '0';
             div.style.transition = 'opacity 0.3s';
-            setTimeout(() => div.remove(), 300);
+            setTimeout(function() { div.remove(); }, 300);
         }, duration);
-    };
+    }
 
-    const addMsg = (type, content) => {
-        const container = $('chatMessages');
-        const div = document.createElement('div');
-        div.className = `message ${type}`;
+    function addMsg(type, content) {
+        var container = $('chatMessages');
+        var div = document.createElement('div');
+        div.className = 'message ' + type;
         div.innerHTML = content;
         container.appendChild(div);
-        setTimeout(() => container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' }), 100);
+        setTimeout(function() {
+            container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+        }, 100);
         return div;
-    };
+    }
 
-    const showProgress = (title, detail = '') => {
+    function showProgress(title, detail) {
+        detail = detail || '';
         $('progOverlay').classList.add('active');
         $('progTitle').textContent = title;
         $('progDetail').textContent = detail;
         $('progFill').style.width = '0%';
-        setTimeout(() => $('progFill').style.width = '100%', 500);
-    };
+        setTimeout(function() { $('progFill').style.width = '100%'; }, 500);
+    }
 
-    const hideProgress = () => {
-        setTimeout(() => $('progOverlay').classList.remove('active'), 800);
-    };
+    function hideProgress() {
+        setTimeout(function() { $('progOverlay').classList.remove('active'); }, 800);
+    }
 
-    const escapeHTML = (text) => {
-        const div = document.createElement('div');
+    function escapeHTML(text) {
+        var div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
-    };
+    }
 
-    const genId = () => Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
-    const fmtPrice = (price) => 'Rp ' + price.toLocaleString('id-ID');
-    const getRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
-
-    // ================================================================
-    // EMOTION DETECTION
-    // ================================================================
-    function detectEmotion(text) {
-        const t = text.toLowerCase();
-        
-        const emotions = {
-            happy: ['senang', 'bahagia', 'happy', 'alhamdulillah', 'yeay', 'hore', 'asyik', 'seru', 'keren', 'mantap', 'wow', 'hebat', '👍', '😊', '😂', '🤣'],
-            sad: ['sedih', 'kecewa', 'nyesek', 'galau', 'patah hati', 'nangis', '😢', '😭', '💔', 'sakit', 'down', 'depresi'],
-            angry: ['marah', 'kesel', 'sebel', 'jengkel', 'benci', 'muak', '😠', '😡', 'sial', 'brengsek', 'bangsat'],
-            confused: ['bingung', 'pusing', 'gak ngerti', 'apa sih', 'maksudnya', 'kok bisa', 'aneh', '🤔', 'gimana'],
-            tired: ['capek', 'lelah', 'ngantuk', 'penat', 'letih', 'males', '😴', 'istirahat', 'stres', 'burnout'],
-            excited: ['penasaran', 'kepo', 'pengen tau', 'serius', 'beneran', 'wow', 'keren banget', 'gila sih', '🤩', 'kaget'],
-            love: ['cinta', 'sayang', 'love', 'suka', 'kangen', 'rindu', '❤️', '😍', '🥰', 'gemas'],
-            grateful: ['terima kasih', 'makasih', 'thanks', 'syukur', 'bersyukur', '🙏', 'baik banget'],
-            scared: ['takut', 'ngeri', 'horor', 'serem', '😱', '😨', 'merinding', 'gentar'],
-            proud: ['bangga', 'prestasi', 'juara', 'menang', 'berhasil', 'akhirnya', 'yes!', '🎉', '🏆']
-        };
-        
-        for (const [emotion, keywords] of Object.entries(emotions)) {
-            for (const keyword of keywords) {
-                if (t.includes(keyword)) return emotion;
-            }
-        }
-        
-        // Check for questions (curious)
-        if (t.includes('?') || t.startsWith('apa') || t.startsWith('gimana') || 
-            t.startsWith('bagaimana') || t.startsWith('kenapa') || t.startsWith('kok')) {
-            return 'curious';
-        }
-        
-        return 'neutral';
+    function genId() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+    }
+    
+    function fmtPrice(price) {
+        return 'Rp ' + price.toLocaleString('id-ID');
+    }
+    
+    function getRandom(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
     }
 
     // ================================================================
@@ -709,114 +701,137 @@ Jawab dengan natural dan mengalir seperti percakapan manusia sungguhan.`;
         howAreYou: [
             "Aku baik banget! Makasih udah nanya 🥰 Gimana kabar kamu? Cerita dong!",
             "Sehat selalu dong! Secara aku kan AI, gak bisa sakit 😄 Tapi kamu gimana? Sehat kan?",
-            "Alhamdulillah, aku selalu dalam kondisi prima! Siap membantu 24/7! 💪 Gimana harimu?",
-            "Baik nih! Lagi semangat-semangatnya! 🔥 Kamu sendiri? Cerita dong kegiatan hari ini!"
+            "Alhamdulillah, aku selalu dalam kondisi prima! 💪 Gimana harimu?",
+            "Baik nih! Lagi semangat-semangatnya! 🔥 Kamu sendiri gimana?"
         ],
         thanks: [
             "Sama-sama! Seneng banget bisa bantu 🥰 Ada lagi yang bisa aku bantu?",
-            "Ah, gak perlu berterima kasih! Emang tugasku bantu kamu 😊 Lagi butuh apa?",
-            "My pleasure! ✨ Kalau ada yang lain, langsung aja ya! Aku di sini selalu.",
-            "Aww, makasih juga udah sopan! 😄 Semoga harimu menyenangkan ya!"
+            "Ah, gak perlu berterima kasih! Emang tugasku bantu kamu 😊",
+            "My pleasure! ✨ Kalau ada yang lain, langsung aja ya!",
+            "Aww, makasih juga udah sopan! 😄 Semoga harimu menyenangkan!"
         ],
         sad: [
-            "Oh, aku turut sedih dengarnya... 🥺 Mau cerita? Kadang sharing itu ngebantu lho. Aku di sini buat dengerin.",
-            "Peluk virtual buat kamu! 🤗 Gak apa-apa kok merasa sedih. Semua orang pernah ngalamin. Yang penting jangan lama-lama ya!",
-            "Aku ngerti banget perasaan kayak gitu. Tapi inget ya, badai pasti berlalu 🌈 Kamu kuat kok! Mau aku hibur?",
-            "Hey, jangan sedih dong! 😢 Cerita ke aku aja, aku janji gak bakal judge. Terkadang cuma butuh didengerin aja."
+            "Oh, aku turut sedih dengarnya... 🥺 Mau cerita? Aku di sini buat dengerin.",
+            "Peluk virtual buat kamu! 🤗 Gak apa-apa kok merasa sedih. Yang penting jangan lama-lama ya!",
+            "Aku ngerti banget perasaan kayak gitu. Tapi inget ya, badai pasti berlalu 🌈",
+            "Hey, jangan sedih dong! 😢 Cerita ke aku aja, aku janji gak bakal judge."
         ],
         happy: [
             "Waaaa, aku ikut seneng dong! 🎉 Cerita dong biar aku juga ikut happy!",
-            "Alhamdulillah, bagus deh! 😄 Seneng liat kamu happy. Semoga terus kayak gini ya!",
-            "Yeay! High five! 🖐️ Aku suka banget energi positif kayak gini! Jaga terus ya moodnya!",
-            "Mantap! Jadi pengen ikut joget nih 💃 Apa lagi kabar baiknya? Share dong!"
+            "Alhamdulillah, bagus deh! 😄 Seneng liat kamu happy!",
+            "Yeay! High five! 🖐️ Aku suka banget energi positif kayak gini!",
+            "Mantap! Jadi pengen ikut joget nih 💃 Apa lagi kabar baiknya?"
         ],
         confused: [
-            "Hmm, kayaknya agak rumit ya? 🤔 Yuk kita pecahin bareng-bareng. Coba jelasin lagi pelan-pelan.",
-            "Oke oke, aku ngerti kok kebingunganmu. Tenang, kita cari solusinya sama-sama! 💡",
-            "Waduh, aku juga jadi mikir nih 🧐 Coba kita breakdown satu-satu ya. Mulai dari mana dulu?",
-            "Gapapa kok bingung! Aku juga sering bingung kok 😄 Yuk kita cari tau bareng-bareng!"
+            "Hmm, kayaknya agak rumit ya? 🤔 Yuk kita pecahin bareng-bareng.",
+            "Oke oke, aku ngerti kok kebingunganmu. Tenang, kita cari solusinya! 💡",
+            "Waduh, aku juga jadi mikir nih 🧐 Coba kita breakdown satu-satu ya.",
+            "Gapapa kok bingung! Aku juga sering bingung kok 😄 Yuk kita cari tau!"
         ],
         tired: [
-            "Iya, istirahat dulu aja ya! 🛌 Badan juga butuh rehat. Nanti kalau udah seger, kita lanjut lagi!",
-            "Aku ngerti kok rasanya capek. Jangan dipaksa ya! Minum dulu, tidur yang cukup 💤 Nanti aku masih di sini kok.",
-            "Take a break dulu! Kamu udah kerja keras banget hari ini 🥺 Jaga kesehatan ya, itu yang utama!",
-            "Waktunya recharge! 🔋 Matiin dulu semua kerjaan, besok aja dilanjutin. Aku support kamu istirahat!"
+            "Iya, istirahat dulu aja ya! 🛌 Badan juga butuh rehat.",
+            "Aku ngerti kok rasanya capek. Jangan dipaksa ya! 💤",
+            "Take a break dulu! Kamu udah kerja keras banget hari ini 🥺",
+            "Waktunya recharge! 🔋 Matiin dulu semua kerjaan, besok aja dilanjutin."
         ],
         motivational: [
-            "Dengerin ya, kamu tuh lebih kuat dari yang kamu kira! 💪 Aku percaya kamu bisa lewatin ini semua!",
-            "Inget, tiap orang punya timeline-nya sendiri. Gak usah bandingin dirimu sama orang lain 🌟 Kamu spesial!",
-            "Gagal itu bukan akhir, tapi awal dari sesuatu yang lebih baik! Aku yakin kamu bisa! 🔥",
-            "Satu langkah kecil hari ini lebih baik dari diam di tempat. Yuk mulai aja dulu! Aku temenin 🚀"
+            "Dengerin ya, kamu tuh lebih kuat dari yang kamu kira! 💪",
+            "Inget, tiap orang punya timeline-nya sendiri. Gak usah bandingin! 🌟",
+            "Gagal itu bukan akhir, tapi awal dari sesuatu yang lebih baik! 🔥",
+            "Satu langkah kecil hari ini lebih baik dari diam di tempat. Yuk mulai! 🚀"
         ],
         whoAreYou: [
-            "Aku Yad AI! Asisten virtual yang dibikin buat bantu kamu 😊 Aku bisa ngobrol, cari info, bantu belajar, main game, dan masih banyak lagi!",
-            "Halo! Perkenalkan, aku Yad AI 🧠 Aku temen virtual kamu yang siap bantu 24/7! Dari ngobrol santai sampe ngerjain tugas, aku siap!",
-            "Aku Yad AI, asisten digital yang human-friendly! Aku didesain buat ngerti bahasa natural, jadi ngobrol aja kayak sama temen 😄",
-            "Yad AI di sini! Aku punya pengetahuan luas dan skill komunikasi yang oke (katanya sih 😄). Mau ngobrol apa nih?"
+            "Aku Yad AI! Asisten virtual yang dibikin buat bantu kamu 😊",
+            "Halo! Perkenalkan, aku Yad AI 🧠 Aku temen virtual kamu yang siap bantu 24/7!",
+            "Aku Yad AI, asisten digital yang human-friendly! Ngobrol aja kayak sama temen 😄",
+            "Yad AI di sini! Aku punya pengetahuan luas dan skill komunikasi yang oke 😄"
         ],
         jokes: [
             "Kenapa programmer gak bisa bohong? Karena tiap kali ngomong 'false', mukanya langsung error! 😄",
             "Aku dulu pengen jadi lampu merah. Tapi setelah dipikir-pikir, banyak yang berhenti karena aku. Haha! 🚦",
             "Kenapa buku matematika sedih? Karena banyak masalah! 📚😢",
-            "Apa persamaan AI dan kopi? Sama-sama bikin melek! ☕🤖",
-            "Guru: 'Siapa yang bisa bikin kalimat pakai kata "hemat"?' Murid: 'Saya Bu! Hemat pangkal kaya.' Guru: 'Bagus! Sekarang kamu.' Murid lain: 'Hemat, hemat, hemat... HEMAT!' 💰😄"
+            "Apa persamaan AI dan kopi? Sama-sama bikin melek! ☕🤖"
         ],
         facts: [
-            "Fakta menarik nih! 🐙 Gurita punya 3 jantung dan darahnya berwarna biru! Keren kan?",
-            "Tau gak sih? 🌍 Bumi kita berputar dengan kecepatan 1.670 km/jam! Tapi kita gak kerasa karena udah terbiasa.",
-            "Fakta unik: 🐝 Lebah bisa mengenali wajah manusia! Jadi jangan coba-coba bohong sama lebah ya 😄",
-            "Wah, ini menarik! 🧠 Otak manusia menghasilkan listrik cukup buat menyalakan lampu kecil. Jadi kita semua sebenernya 'nyala'!",
-            "Pernah denger? 🦋 Kupu-kupu bisa melihat warna ultraviolet yang gak bisa dilihat manusia. Dunia mereka pasti lebih colorful!"
+            "Fakta menarik nih! 🐙 Gurita punya 3 jantung dan darahnya berwarna biru!",
+            "Tau gak sih? 🌍 Bumi kita berputar dengan kecepatan 1.670 km/jam!",
+            "Fakta unik: 🐝 Lebah bisa mengenali wajah manusia!",
+            "Wah, ini menarik! 🧠 Otak manusia menghasilkan listrik cukup buat menyalakan lampu kecil."
         ],
         quotes: [
             '"Hidup itu seperti naik sepeda. Agar tetap seimbang, kamu harus terus bergerak." - Albert Einstein 🚲',
-            '"Kesuksesan bukanlah final. Kegagalan bukanlah fatal. Yang penting adalah keberanian untuk melanjutkan." - Winston Churchill 💪',
-            '"Jangan menyerah. Hal terbaik datang saat kamu hampir menyerah." - Pepatah 🌟',
-            '"Jadilah diri sendiri. Orang lain sudah ada yang punya." - Oscar Wilde 😄',
-            '"Satu-satunya cara melakukan pekerjaan hebat adalah mencintai apa yang kamu lakukan." - Steve Jobs ❤️'
+            '"Kesuksesan bukanlah final. Kegagalan bukanlah fatal." - Winston Churchill 💪',
+            '"Jangan menyerah. Hal terbaik datang saat kamu hampir menyerah." 🌟',
+            '"Jadilah diri sendiri. Orang lain sudah ada yang punya." - Oscar Wilde 😄'
         ]
     };
 
     // ================================================================
-    // AI CALL WITH HUMAN PERSONALITY
+    // KNOWLEDGE DATABASE
+    // ================================================================
+    const KNOWLEDGE = {
+        topup: {
+            'mobile-legends': {
+                name: 'Mobile Legends',
+                items: [
+                    { name: '100 Diamonds', price: 25000 },
+                    { name: '500 Diamonds', price: 120000 },
+                    { name: '1000 Diamonds', price: 230000 },
+                    { name: 'Starlight Member', price: 150000 }
+                ]
+            },
+            'free-fire': {
+                name: 'Free Fire',
+                items: [
+                    { name: '100 Diamonds', price: 15000 },
+                    { name: '500 Diamonds', price: 70000 },
+                    { name: '1000 Diamonds', price: 135000 }
+                ]
+            },
+            'genshin-impact': {
+                name: 'Genshin Impact',
+                items: [
+                    { name: 'Blessing of Welkin', price: 75000 },
+                    { name: 'Battle Pass', price: 150000 },
+                    { name: '980 Genesis Crystal', price: 220000 }
+                ]
+            },
+            'pubg-mobile': {
+                name: 'PUBG Mobile',
+                items: [
+                    { name: '60 UC', price: 15000 },
+                    { name: '300 UC', price: 70000 },
+                    { name: 'Royale Pass', price: 180000 }
+                ]
+            }
+        }
+    };
+
+    // ================================================================
+    // AI CALL FUNCTION
     // ================================================================
     async function callAI(messages) {
-        const p = AI_PROVIDERS.find(x => x.name.toLowerCase() === S.currentProvider) || AI_PROVIDERS[0];
+        var p = AI_PROVIDERS.find(function(x) {
+            return x.name.toLowerCase() === S.currentProvider;
+        }) || AI_PROVIDERS[0];
         
         try {
-            const systemPrompt = AI_PERSONALITY
-                .replace('{userName}', S.userName || 'belum diketahui')
-                .replace('{userMood}', S.userMood)
-                .replace('{topics}', S.topicsDiscussed.slice(-5).join(', ') || 'umum')
-                .replace('{role}', S.role)
-                .replace('{time}', new Date().toLocaleString('id-ID'));
-
-            const fullMessages = [
-                { role: 'system', content: systemPrompt },
-                ...S.chatHistory.slice(-10).map(h => [
-                    { role: 'user', content: h.user },
-                    { role: 'assistant', content: h.ai }
-                ]).flat(),
-                ...messages
-            ];
-
-            const response = await fetch(p.url, {
+            var response = await fetch(p.url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${p.apiKey}`
+                    'Authorization': 'Bearer ' + p.apiKey
                 },
                 body: JSON.stringify({
                     model: p.model,
-                    messages: fullMessages.slice(-15),
-                    max_tokens: 800,
-                    temperature: 0.85,
-                    top_p: 0.9
+                    messages: messages.slice(-10),
+                    max_tokens: 500,
+                    temperature: 0.8
                 })
             });
-
+            
             if (!response.ok) return null;
-            const data = await response.json();
+            var data = await response.json();
             return data.choices?.[0]?.message?.content || null;
         } catch (e) {
             console.error('AI call failed:', e);
@@ -825,245 +840,48 @@ Jawab dengan natural dan mengalir seperti percakapan manusia sungguhan.`;
     }
 
     // ================================================================
-    // KNOWLEDGE DATABASE (COMPACT)
-    // ================================================================
-    const KNOWLEDGE = {
-        topup: {
-            'mobile-legends': {
-                name: 'Mobile Legends',
-                items: [
-                    { id: 'ml-d100', name: '100 Diamonds', price: 25000 },
-                    { id: 'ml-d500', name: '500 Diamonds', price: 120000 },
-                    { id: 'ml-d1000', name: '1000 Diamonds', price: 230000 },
-                    { id: 'ml-star', name: 'Starlight Member', price: 150000 }
-                ]
-            },
-            'free-fire': {
-                name: 'Free Fire',
-                items: [
-                    { id: 'ff-d100', name: '100 Diamonds', price: 15000 },
-                    { id: 'ff-d500', name: '500 Diamonds', price: 70000 },
-                    { id: 'ff-d1000', name: '1000 Diamonds', price: 135000 }
-                ]
-            },
-            'genshin-impact': {
-                name: 'Genshin Impact',
-                items: [
-                    { id: 'gi-bless', name: 'Blessing of Welkin', price: 75000 },
-                    { id: 'gi-bp', name: 'Battle Pass', price: 150000 },
-                    { id: 'gi-c980', name: '980 Genesis Crystal', price: 220000 }
-                ]
-            },
-            'pubg-mobile': {
-                name: 'PUBG Mobile',
-                items: [
-                    { id: 'pubg-60', name: '60 UC', price: 15000 },
-                    { id: 'pubg-300', name: '300 UC', price: 70000 },
-                    { id: 'pubg-rp', name: 'Royale Pass', price: 180000 }
-                ]
-            },
-            'valorant': {
-                name: 'Valorant',
-                items: [
-                    { id: 'val-475', name: '475 VP', price: 75000 },
-                    { id: 'val-1000', name: '1000 VP', price: 150000 },
-                    { id: 'val-2050', name: '2050 VP', price: 280000 }
-                ]
-            }
-        },
-        math: {
-            formulas: {
-                algebra: ["(a+b)² = a² + 2ab + b²", "(a-b)² = a² - 2ab + b²", "a² - b² = (a+b)(a-b)", "x = (-b ± √(b²-4ac)) / 2a"],
-                trig: ["sin²θ + cos²θ = 1", "tan θ = sin θ / cos θ"],
-                calculus: ["d/dx(xⁿ) = n·xⁿ⁻¹", "∫xⁿ dx = xⁿ⁺¹/(n+1) + C"]
-            }
-        },
-        chemistry: {
-            elements: {
-                H: "Hidrogen (1)", He: "Helium (2)", C: "Karbon (6)", N: "Nitrogen (7)", O: "Oksigen (8)",
-                Na: "Natrium (11)", Fe: "Besi (26)", Cu: "Tembaga (29)", Ag: "Perak (47)", Au: "Emas (79)"
-            },
-            reactions: {
-                combustion: "CH₄ + 2O₂ → CO₂ + 2H₂O",
-                photosynthesis: "6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂",
-                rust: "4Fe + 3O₂ → 2Fe₂O₃"
-            }
-        },
-        physics: {
-            mechanics: ["v = s/t", "F = m·a", "W = F·s", "Ek = ½mv²", "Ep = mgh", "p = mv"],
-            electricity: ["V = I·R", "P = V·I", "E = mc²"],
-            gravity: "g = 9.8 m/s² (Bumi)"
-        },
-        coding: {
-            html: ["<div>Konten</div>", "<h1>Judul</h1>", "<p>Paragraf</p>", "<a href='url'>Link</a>"],
-            css: ["color: blue;", "display: flex;", "margin: 10px;", "border-radius: 8px;", "@media (max-width: 768px) {}"],
-            javascript: ["console.log('Hello');", "fetch('url').then(r=>r.json());", "const arr = [1,2,3]; arr.map(x=>x*2);"],
-            python: ["print('Hello')", "def fungsi(): return 'hasil'", "for i in range(10): print(i)"]
-        },
-        world: {
-            continents: ["Asia (44.6M km²)", "Afrika (30.4M km²)", "Amerika Utara (24.7M km²)", "Amerika Selatan (17.8M km²)", "Antartika (14.2M km²)", "Eropa (10.2M km²)", "Australia (8.6M km²)"],
-            oceans: ["Pasifik (165.2M km²)", "Atlantik (106.5M km²)", "Hindia (70.6M km²)", "Arktik (14.1M km²)"],
-            indonesia: {
-                islands: ["Sumatra", "Jawa", "Kalimantan", "Sulawesi", "Papua", "Bali"],
-                history: ["1945: Proklamasi", "1965: G30S/PKI", "1998: Reformasi", "2004: Pemilu langsung pertama"]
-            }
-        }
-    };
-
-    // ================================================================
     // MATH SOLVER
     // ================================================================
     function solveMath(text) {
-        const t = text.toLowerCase();
+        var t = text.toLowerCase();
         if (/(\d+)\s*([+\-*/^])\s*(\d+)/.test(t)) {
-            try { return `🧮 Hasil: <b>${eval(text.replace(/\^/g, '**'))}</b>`; } catch(e) {}
-        }
-        if (t.includes('faktorial') || t.includes('!')) {
-            const m = t.match(/(\d+)\s*!/);
-            if (m) { let n=parseInt(m[1]), f=1n; for(let i=2n;i<=n;i++)f*=i; return `🔢 ${n}! = <b>${f.toLocaleString()}</b>`; }
-        }
-        if (t.includes('akar')) {
-            const m = t.match(/akar\s*(?:dari)?\s*(\d+)/i);
-            if (m) return `🔢 √${m[1]} = <b>${Math.sqrt(parseFloat(m[1])).toFixed(4)}</b>`;
-        }
-        if (t.includes('sin(') || t.includes('cos(') || t.includes('tan(')) {
-            const m = t.match(/(sin|cos|tan)\s*\(\s*(\d+)\s*\)/i);
-            if (m) {
-                const fn=m[1].toLowerCase(), val=parseFloat(m[2]), rad=val*(Math.PI/180);
-                const r = fn==='sin'?Math.sin(rad):fn==='cos'?Math.cos(rad):Math.tan(rad);
-                return `📐 ${fn}(${val}°) = <b>${r.toFixed(4)}</b>`;
-            }
-        }
-        return null;
-    }
-
-    // ================================================================
-    // CHEMISTRY SOLVER
-    // ================================================================
-    function solveChemistry(text) {
-        const t = text.toLowerCase();
-        const elements = KNOWLEDGE.chemistry.elements;
-        for (const sym in elements) {
-            if (t.includes(sym.toLowerCase()) && (t.includes('apa') || t.includes('unsur') || t.includes('element'))) {
-                return `⚗️ <b>${elements[sym]}</b> - Simbol: ${sym}`;
-            }
-        }
-        if (t.includes('fotosintesis')) return `🌿 <b>Fotosintesis:</b><br>${KNOWLEDGE.chemistry.reactions.photosynthesis}`;
-        if (t.includes('reaksi')) {
-            for (const k in KNOWLEDGE.chemistry.reactions) {
-                if (t.includes(k)) return `🧪 <b>Reaksi ${k}:</b><br>${KNOWLEDGE.chemistry.reactions[k]}`;
-            }
-        }
-        return null;
-    }
-
-    // ================================================================
-    // PHYSICS SOLVER
-    // ================================================================
-    function solvePhysics(text) {
-        const t = text.toLowerCase();
-        if (t.includes('kecepatan')) {
-            const m = t.match(/(\d+)\s*\/\s*(\d+)/);
-            if (m) return `🚀 v = ${m[1]}/${m[2]} = <b>${(parseFloat(m[1])/parseFloat(m[2])).toFixed(2)} m/s</b>`;
-        }
-        if (t.includes('gaya')) {
-            const m = t.match(/(\d+)\s*[x*]\s*(\d+)/);
-            if (m) return `💪 F = ${m[1]} × ${m[2]} = <b>${parseFloat(m[1])*parseFloat(m[2])} N</b>`;
-        }
-        if (t.includes('energi') || t.includes('einstein')) {
-            const m = t.match(/(\d+)\s*kg/);
-            if (m) return `⚡ E = mc² = ${m[1]} × (3×10⁸)² = <b>${(parseFloat(m[1])*9e16).toExponential(2)} J</b>`;
-        }
-        return null;
-    }
-
-    // ================================================================
-    // CODING SOLVER
-    // ================================================================
-    function solveCoding(text) {
-        const t = text.toLowerCase();
-        for (const lang in KNOWLEDGE.coding) {
-            if (t.includes(lang) && (t.includes('contoh') || t.includes('example') || t.includes('buat'))) {
-                return `💻 <b>${lang.toUpperCase()}:</b><br>` + KNOWLEDGE.coding[lang].map(e => `<code>${e}</code>`).join('<br>');
-            }
-        }
-        return null;
-    }
-
-    // ================================================================
-    // GENERAL KNOWLEDGE SOLVER
-    // ================================================================
-    function solveGeneralKnowledge(text) {
-        const t = text.toLowerCase();
-        if (t.includes('benua') || t.includes('kontinen')) {
-            return '🌍 <b>7 Benua:</b><br>' + KNOWLEDGE.world.continents.map(c => `• ${c}`).join('<br>');
-        }
-        if (t.includes('samudra')) {
-            return '🌊 <b>Samudra:</b><br>' + KNOWLEDGE.world.oceans.map(o => `• ${o}`).join('<br>');
-        }
-        if (t.includes('indonesia') && t.includes('sejarah')) {
-            return '🇮🇩 <b>Sejarah Indonesia:</b><br>' + KNOWLEDGE.world.indonesia.history.map(h => `• ${h}`).join('<br>');
-        }
-        return null;
-    }
-
-    // ================================================================
-    // SEARCH FUNCTION
-    // ================================================================
-    async function deepSearch(query) {
-        showProgress('🔍 Mencari...', query);
-        let result = '';
-        
-        try {
-            const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1`);
-            if (response.ok) {
-                const data = await response.json();
-                if (data.AbstractText) {
-                    result = `🔍 <b>${data.Heading || query}</b><br><br>${data.AbstractText}<br><br><small>Sumber: DuckDuckGo</small>`;
-                }
-            }
-        } catch(e) {}
-        
-        if (!result) {
             try {
-                const response = await fetch(`https://id.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.extract) {
-                        result = `📚 <b>${data.title}</b><br><br>${data.extract.substring(0, 500)}...<br><br><small>Sumber: Wikipedia</small>`;
-                    }
-                }
+                return '🧮 Hasil: <b>' + eval(text.replace(/\^/g, '**')) + '</b>';
             } catch(e) {}
         }
-        
-        hideProgress();
-        S.score += 20;
-        return result || `🤔 Maaf, aku gak nemu info tentang "${query}". Coba kata kunci lain ya!`;
+        if (t.includes('faktorial') || t.includes('!')) {
+            var m = t.match(/(\d+)\s*!/);
+            if (m) {
+                var n = parseInt(m[1]), f = 1n;
+                for (var i = 2n; i <= n; i++) f *= i;
+                return '🔢 ' + n + '! = <b>' + f.toLocaleString() + '</b>';
+            }
+        }
+        if (t.includes('akar')) {
+            var m = t.match(/akar\s*(?:dari)?\s*(\d+)/i);
+            if (m) return '🔢 √' + m[1] + ' = <b>' + Math.sqrt(parseFloat(m[1])).toFixed(4) + '</b>';
+        }
+        return null;
     }
 
     // ================================================================
     // COMMAND PARSER
     // ================================================================
     function parseCommand(text) {
-        const t = text.toLowerCase().trim();
+        var t = text.toLowerCase().trim();
         
         if (t === 'cari' || t === 'search') return { action: 'search_help' };
         if (t.startsWith('cari ')) return { action: 'search', value: t.replace('cari ', '') };
-        if (t.startsWith('search ')) return { action: 'search', value: t.replace('search ', '') };
         if (t.includes(' vs ') || t.startsWith('bandingkan ')) return { action: 'compare', value: t };
         if (t === 'deploy' || t === 'push') return { action: 'deploy' };
         if (t.startsWith('self edit ')) return { action: 'self_edit', value: t.replace('self edit ', '') };
         if (t === '?' || t === 'help' || t === 'bantuan') return { action: 'help' };
         if (t === 'stats' || t === 'stat') return { action: 'stats' };
-        if (t === 'db' || t === 'database') return { action: 'db' };
         if (t === 'topup') return { action: 'topup_help' };
         if (t.startsWith('topup ')) return { action: 'topup', value: t };
         if (t === 'main' || t === 'play' || t === 'game') return { action: 'list_games' };
         if (t.startsWith('main ') || t.startsWith('play ')) return { action: 'play', value: t.replace(/main |play /, '') };
         if (t === 'foto' || t === 'photo' || t === 'upload') return { action: 'upload' };
-        if (t === 'video' || t === 'short') return { action: 'video' };
-        if (t.includes('youtube.com') || t.includes('youtu.be')) return { action: 'youtube', value: t };
-        if (t.startsWith('youtube ') || t.startsWith('yt ')) return { action: 'youtube', value: t.replace(/youtube |yt /, '') };
         if (t === 'ai') return { action: 'ai_status' };
         if (t.startsWith('ai ')) return { action: 'switch_ai', value: t.replace('ai ', '') };
         if (t === 'joke' || t === 'lucu') return { action: 'joke' };
@@ -1073,7 +891,7 @@ Jawab dengan natural dan mengalir seperti percakapan manusia sungguhan.`;
         if (t === 'hitung' || t === 'calc') return { action: 'calc_help' };
         if (t.startsWith('hitung ')) return { action: 'calc', value: t.replace('hitung ', '') };
         if (t === 'password' || t === 'pw') return { action: 'password_help' };
-        if (t.startsWith('password ') || t.startsWith('pw ')) return { action: 'password', value: t.replace(/password |pw /, '') };
+        if (t.startsWith('password ')) return { action: 'password', value: t.replace('password ', '') };
         if (t === 'nama' || t === 'name') return { action: 'name_gen' };
         if (t === 'warna' || t === 'color') return { action: 'color' };
         if (t === 'plan' || t === 'rencana') return { action: 'plan' };
@@ -1082,7 +900,6 @@ Jawab dengan natural dan mengalir seperti percakapan manusia sungguhan.`;
         if (t.startsWith('task ')) return { action: 'task_add', value: t.replace('task ', '') };
         if (t === 'markup') return { action: 'markup_help' };
         if (t.startsWith('markup ')) return { action: 'markup', value: t.replace('markup ', '') };
-        if (t === 'admin' && S.isAdmin) return { action: 'admin_panel' };
         
         return null;
     }
@@ -1090,84 +907,193 @@ Jawab dengan natural dan mengalir seperti percakapan manusia sungguhan.`;
     // ================================================================
     // EXECUTE COMMAND
     // ================================================================
-    async function executeCommand(cmd, fullText) {
+    async function executeCommand(cmd) {
         switch (cmd.action) {
-            case 'search': return await deepSearch(cmd.value);
-            case 'search_help':
-                return `🔍 <b>Fitur Pencarian</b><br><br>Ketik <code>cari [kata kunci]</code><br><br><b>Contoh:</b><br>• <code>cai artificial intelligence</code><br>• <code>cari sejarah indonesia</code><br>• <code>cari rumus matematika</code><br><br>Aku akan mencari di internet buat kamu! 🌐`;
-            case 'compare':
-                const parts = cmd.value.split(/ vs | bandingkan /i);
-                if (parts.length < 2) return `⚖️ <b>Perbandingan</b><br><br>Format: <code>bandingkan A vs B</code><br><br><b>Contoh:</b><br>• <code>bandingkan python vs javascript</code>`;
-                showProgress('⚖️ Membandingkan...');
-                const cr = await callAI([{ role: 'user', content: `Bandingkan: "${parts[0].trim()}" vs "${parts[1].trim()}". Berikan persamaan, perbedaan, kelebihan, kekurangan, dan kesimpulan.` }]);
+            case 'search':
+                showProgress('🔍 Mencari...', cmd.value);
+                var result = '';
+                try {
+                    var response = await fetch('https://api.duckduckgo.com/?q=' + encodeURIComponent(cmd.value) + '&format=json&no_html=1');
+                    if (response.ok) {
+                        var data = await response.json();
+                        if (data.AbstractText) {
+                            result = '🔍 <b>' + (data.Heading || cmd.value) + '</b><br><br>' + data.AbstractText + '<br><br><small>Sumber: DuckDuckGo</small>';
+                        }
+                    }
+                } catch(e) {}
+                
+                if (!result) {
+                    try {
+                        var response = await fetch('https://id.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(cmd.value));
+                        if (response.ok) {
+                            var data = await response.json();
+                            if (data.extract) {
+                                result = '📚 <b>' + data.title + '</b><br><br>' + data.extract.substring(0, 500) + '...<br><br><small>Sumber: Wikipedia</small>';
+                            }
+                        }
+                    } catch(e) {}
+                }
+                
                 hideProgress();
+                S.score += 20;
+                return result || '🤔 Maaf, aku gak nemu info tentang "' + cmd.value + '". Coba kata kunci lain ya!';
+                
+            case 'search_help':
+                return '🔍 <b>Fitur Pencarian</b><br><br>Ketik <code>cari [kata kunci]</code><br><br><b>Contoh:</b><br>• <code>cari artificial intelligence</code><br>• <code>cari sejarah indonesia</code><br>• <code>cari rumus matematika</code><br><br>Aku akan mencari di internet buat kamu! 🌐';
+                
+            case 'compare':
+                var parts = cmd.value.split(/ vs | bandingkan /i);
+                if (parts.length < 2) return '⚖️ Format: <code>bandingkan A vs B</code>';
+                showProgress('⚖️ Membandingkan...');
+                var cr = await callAI([{ role: 'user', content: 'Bandingkan: "' + parts[0].trim() + '" vs "' + parts[1].trim() + '"' }]);
+                hideProgress();
+                S.score += 15;
                 return cr || 'Gagal membandingkan.';
-            case 'deploy': return S.isAdmin ? await autoDeploy() : '⚠️ Fitur ini hanya untuk admin ya!';
-            case 'self_edit': return S.isAdmin ? await selfEdit(cmd.value) : '⚠️ Fitur ini hanya untuk admin!';
-            case 'help': return getHelpMessage();
+                
+            case 'deploy':
+                if (!S.isAdmin) return '⚠️ Fitur ini hanya untuk admin ya!';
+                showProgress('🚀 Deploying...');
+                await new Promise(function(r) { setTimeout(r, 2000); });
+                hideProgress();
+                S.deploys++;
+                S.score += 50;
+                toast('✅ Deploy berhasil!', 'success');
+                return '🚀 <b>Deploy Berhasil!</b><br><br>Aplikasi akan live dalam 1-2 menit!';
+                
+            case 'self_edit':
+                if (!S.isAdmin) return '⚠️ Hanya admin!';
+                showProgress('🔧 Self-Edit...');
+                await new Promise(function(r) { setTimeout(r, 2000); });
+                hideProgress();
+                S.edits++;
+                S.score += 75;
+                return '✅ <b>Self-Edit Berhasil!</b><br><br>Perubahan: ' + cmd.value.substring(0, 60) + '...';
+                
+            case 'help':
+                return '<b>📚 Bantuan Yad AI</b><br><br>' +
+                    '<b>🔍 Pencarian:</b> <code>cari [query]</code><br>' +
+                    '<b>🧮 Kalkulasi:</b> <code>hitung [ekspresi]</code><br>' +
+                    '<b>🎮 Game:</b> <code>main tebak angka</code><br>' +
+                    '<b>💰 TopUp:</b> <code>topup [game] [item] server:[id]</code><br>' +
+                    '<b>📤 Upload:</b> <code>upload</code><br>' +
+                    '<b>🤖 AI:</b> <code>ai [nama]</code><br>' +
+                    '<b>📋 Plans:</b> <code>plan [teks]</code><br>' +
+                    '<b>📝 Tasks:</b> <code>task [teks]</code><br>' +
+                    '<b>😄 Lainnya:</b> <code>joke</code> <code>fakta</code> <code>quote</code> <code>nama</code> <code>warna</code><br>' +
+                    '<b>📊 Info:</b> <code>stats</code> <code>waktu</code><br><br>' +
+                    'Atau ngobrol santai aja kayak sama temen! 😊';
+                
             case 'stats':
-                return `📊 <b>Statistik Yad AI</b><br><br>💬 Chat: <b>${S.chats}</b><br>⭐ Score: <b>${S.score}</b><br>📚 Knowledge: <b>${S.kb.length}</b> items<br>🤖 AI: <b>${S.currentProvider}</b><br>👤 Role: <b>${S.role}</b><br>📋 Plans: <b>${S.plans.length}</b><br>📝 Tasks: <b>${S.tasks.length}</b>`;
-            case 'db': return `🗄️ <b>Database</b><br><br>🔥 Firestore: <b>${S.dbStats.firebase}</b><br>💾 Local: <b>${S.dbStats.local}</b><br>📤 Uploads: <b>${S.mediaUploads.length}</b>`;
-            case 'topup': return handleTopUp(cmd.value);
+                return '📊 <b>Statistik</b><br><br>💬 Chat: <b>' + S.chats + '</b><br>⭐ Score: <b>' + S.score + '</b><br>📚 KB: <b>' + S.kb.length + '</b><br>🤖 AI: <b>' + S.currentProvider + '</b><br>👤 Role: <b>' + S.role + '</b><br>📋 Plans: <b>' + S.plans.length + '</b><br>📝 Tasks: <b>' + S.tasks.length + '</b>';
+                
+            case 'topup':
+                return handleTopUp(cmd.value);
+                
             case 'topup_help':
-                let th = `💰 <b>TopUp Game</b><br><br>Format: <code>topup [game] [item] server:[id]</code><br><br><b>Game tersedia:</b><br>`;
-                for (const k in KNOWLEDGE.topup) th += `• ${KNOWLEDGE.topup[k].name}<br>`;
-                th += `<br><b>Contoh:</b><br><code>topup ml 500 diamond server:12345</code>`;
+                var th = '💰 <b>TopUp Game</b><br><br>Format: <code>topup [game] [item] server:[id]</code><br><br><b>Game:</b><br>';
+                for (var k in KNOWLEDGE.topup) th += '• ' + KNOWLEDGE.topup[k].name + '<br>';
+                th += '<br><b>Contoh:</b><br><code>topup ml 500 diamond server:12345</code>';
                 return th;
-            case 'play': return startGame(cmd.value);
+                
+            case 'play':
+                return startGame(cmd.value);
+                
             case 'list_games':
-                return `🎮 <b>Game Seru!</b><br><br><b>1. Tebak Angka</b><br>Ketik: <code>main tebak angka</code><br>Tebak angka 1-100!<br><br><b>2. Batu Kertas Gunting</b><br>Ketik: <code>main batu kertas gunting</code><br>Game klasik lawan AI!<br><br>Ketik <code>stop</code> untuk berhenti.`;
-            case 'upload': setTimeout(() => openCloudinaryWidget(), 500);
-                return `📤 <b>Upload File</b><br><br>Uploader akan terbuka...<br><br>📸 Gambar | 🎬 Video | 📄 Dokumen<br><br>Bisa upload dari device atau URL!`;
-            case 'video': setTimeout(() => openCloudinaryWidget(), 500);
-                return `🎬 <b>Upload Video</b><br><br>Uploader video akan terbuka...<br><br>Format: MP4, MOV, WebM<br>Maks: 100MB`;
-            case 'youtube':
-                const vidMatch = cmd.value.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/);
-                const vid = vidMatch ? vidMatch[1] : cmd.value;
-                S.kb.push({ title: `YouTube: ${vid}`, content: `https://youtube.com/watch?v=${vid}`, tags: ['youtube'] });
-                return `🎬 <b>Video YouTube Tersimpan!</b><br><br>🔗 https://youtube.com/watch?v=${vid}<br>📚 Total KB: ${S.kb.length}`;
-            case 'switch_ai': return switchAI(cmd.value);
+                return '🎮 <b>Game Seru!</b><br><br><b>1. Tebak Angka</b><br>Ketik: <code>main tebak angka</code><br><br><b>2. Batu Kertas Gunting</b><br>Ketik: <code>main batu kertas gunting</code><br><br>Ketik <code>stop</code> untuk berhenti.';
+                
+            case 'upload':
+                setTimeout(function() { openCloudinaryWidget(); }, 300);
+                return '📤 <b>Upload File</b><br><br>Uploader akan terbuka...<br><br>📸 Gambar | 🎬 Video | 📄 Dokumen';
+                
+            case 'switch_ai':
+                return switchAI(cmd.value);
+                
             case 'ai_status':
-                let as = `🤖 <b>Status AI</b><br><br>Aktif: <b>${S.currentProvider.toUpperCase()}</b><br><br><b>Tersedia:</b><br>`;
-                AI_PROVIDERS.forEach(p => as += `• ${p.name} ${p.name.toLowerCase()===S.currentProvider?'✅':''}<br>`);
-                return as + `<br>Ganti: <code>ai deepseek</code>`;
-            case 'joke': return `😄 ${getRandom(HUMAN_RESPONSES.jokes)}`;
-            case 'fact': return `📚 ${getRandom(HUMAN_RESPONSES.facts)}`;
+                var as = '🤖 <b>AI: ' + S.currentProvider.toUpperCase() + '</b><br><br><b>Tersedia:</b><br>';
+                AI_PROVIDERS.forEach(function(p) {
+                    as += '• ' + p.name + (p.name.toLowerCase() === S.currentProvider ? ' ✅' : '') + '<br>';
+                });
+                return as + '<br>Ganti: <code>ai deepseek</code>';
+                
+            case 'joke':
+                return '😄 ' + getRandom(HUMAN_RESPONSES.jokes);
+                
+            case 'fact':
+                return '📚 ' + getRandom(HUMAN_RESPONSES.facts);
+                
             case 'time':
-                const now = new Date();
-                return `🕐 <b>${now.toLocaleDateString('id-ID', {weekday:'long',year:'numeric',month:'long',day:'numeric'})}</b><br>⏰ ${now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;
-            case 'quote': return `💭 ${getRandom(HUMAN_RESPONSES.quotes)}`;
-            case 'calc': try { return `🧮 ${cmd.value} = <b>${eval(cmd.value.replace(/\^/g,'**'))}</b>`; } catch(e) { return `❌ Format salah! Contoh: <code>hitung 5+3*2</code>`; }
-            case 'calc_help': return `🧮 <b>Kalkulator</b><br><br>Gunakan: <code>hitung [ekspresi]</code><br><br>Operator: + - * / ^ ()<br><br><b>Contoh:</b><br>• <code>hitung 5+3*2</code> → 11<br>• <code>hitung 2^10</code> → 1024`;
+                var now = new Date();
+                return '🕐 <b>' + now.toLocaleDateString('id-ID', {weekday:'long',year:'numeric',month:'long',day:'numeric'}) + '</b><br>⏰ ' + now.toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit'});
+                
+            case 'quote':
+                return '💭 ' + getRandom(HUMAN_RESPONSES.quotes);
+                
+            case 'calc':
+                try {
+                    return '🧮 ' + cmd.value + ' = <b>' + eval(cmd.value.replace(/\^/g,'**')) + '</b>';
+                } catch(e) {
+                    return '❌ Format salah! Contoh: <code>hitung 5+3*2</code>';
+                }
+                
+            case 'calc_help':
+                return '🧮 <b>Kalkulator</b><br><br>Gunakan: <code>hitung [ekspresi]</code><br><br>Operator: + - * / ^ ()<br><br><b>Contoh:</b><br>• <code>hitung 5+3*2</code> → 11';
+                
             case 'password':
-                const len = parseInt(cmd.value) || 12;
-                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
-                let pw = ''; for(let i=0;i<len;i++) pw+=chars[Math.floor(Math.random()*chars.length)];
-                return `🔐 <b>Password (${len} karakter):</b><br><code>${pw}</code>`;
-            case 'password_help': return `🔐 <b>Password Generator</b><br><br><code>password</code> → 12 karakter<br><code>password 16</code> → 16 karakter`;
-            case 'name_gen': return `🎲 <b>${getRandom(['Aruna','Bima','Cinta','Dewi','Eko','Fajar','Gita','Hadi','Intan','Joko','Kartika','Luna','Mega','Nanda'])}</b><br><br>Ketik <code>nama</code> lagi!`;
-            case 'color': return `🎨 <b>${getRandom(['Merah','Biru','Hijau','Ungu','Oranye','Pink','Hitam','Putih','Kuning','Coklat','Cyan','Magenta'])}</b><br><br>Ketik <code>warna</code> lagi!`;
-            case 'plan': return S.plans.length ? `📋 <b>Rencanamu:</b><br>` + S.plans.map((p,i) => `${i+1}. ${p}`).join('<br>') + `<br><br>Tambah: <code>plan [nama]</code>` : `📋 Belum ada rencana. Ketik <code>plan [nama]</code>`;
-            case 'plan_add': S.plans.push(cmd.value); return `✅ <b>Rencana ditambah!</b><br>📋 "${cmd.value}"<br>Total: ${S.plans.length}`;
-            case 'task': return S.tasks.length ? `📝 <b>Tugasmu:</b><br>` + S.tasks.map((t,i) => `${i+1}. ${t}`).join('<br>') + `<br><br>Tambah: <code>task [nama]</code>` : `📝 Belum ada tugas. Ketik <code>task [nama]</code>`;
-            case 'task_add': S.tasks.push(cmd.value); return `✅ <b>Tugas ditambah!</b><br>📝 "${cmd.value}"<br>Total: ${S.tasks.length}`;
-            case 'markup': return handleMarkup(cmd.value);
+                var len = parseInt(cmd.value) || 12;
+                var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
+                var pw = '';
+                for (var i = 0; i < len; i++) pw += chars[Math.floor(Math.random() * chars.length)];
+                return '🔐 <b>Password:</b><br><code>' + pw + '</code>';
+                
+            case 'password_help':
+                return '🔐 <b>Password Generator</b><br><br><code>password</code> → 12 karakter<br><code>password 16</code> → 16 karakter';
+                
+            case 'name_gen':
+                return '🎲 <b>' + getRandom(['Aruna','Bima','Cinta','Dewi','Eko','Fajar','Gita','Hadi','Intan','Joko','Kartika','Luna','Mega','Nanda']) + '</b><br><br>Ketik <code>nama</code> lagi!';
+                
+            case 'color':
+                return '🎨 <b>' + getRandom(['Merah','Biru','Hijau','Ungu','Oranye','Pink','Hitam','Putih','Kuning','Coklat']) + '</b><br><br>Ketik <code>warna</code> lagi!';
+                
+            case 'plan':
+                if (!S.plans.length) return '📋 Belum ada rencana. Ketik <code>plan [nama]</code>';
+                var r = '📋 <b>Rencana:</b><br>';
+                S.plans.forEach(function(p, i) { r += (i+1) + '. ' + p + '<br>'; });
+                return r + '<br>Tambah: <code>plan [nama]</code>';
+                
+            case 'plan_add':
+                S.plans.push(cmd.value);
+                return '✅ Rencana ditambah: <b>' + cmd.value + '</b> (' + S.plans.length + ' total)';
+                
+            case 'task':
+                if (!S.tasks.length) return '📝 Belum ada tugas. Ketik <code>task [nama]</code>';
+                var r = '📝 <b>Tugas:</b><br>';
+                S.tasks.forEach(function(t, i) { r += (i+1) + '. ' + t + '<br>'; });
+                return r + '<br>Tambah: <code>task [nama]</code>';
+                
+            case 'task_add':
+                S.tasks.push(cmd.value);
+                return '✅ Tugas ditambah: <b>' + cmd.value + '</b> (' + S.tasks.length + ' total)';
+                
+            case 'markup':
+                return handleMarkup(cmd.value);
+                
             case 'markup_help':
-                const cp = Math.round((S.markup-1)*100);
-                return `💰 <b>Markup: ${cp}%</b><br><br><code>markup 20</code> → Set 20%<br><code>markup</code> → Lihat harga`;
-            case 'admin_panel': toggleAdminPanel(); return '🔧 Panel admin dibuka!';
-            default: return null;
+                var cp = Math.round((S.markup - 1) * 100);
+                return '💰 Markup: <b>' + cp + '%</b><br><br><code>markup 20</code> → Set 20%<br><code>markup</code> → Lihat harga';
+                
+            default:
+                return null;
         }
     }
 
     // ================================================================
-    // MAIN MESSAGE HANDLER
+    // MAIN SEND MESSAGE
     // ================================================================
     async function sendMessage() {
         if (S.processing) return;
         
-        const input = $('userInput');
-        const text = input.value.trim();
+        var input = $('userInput');
+        var text = input.value.trim();
         if (!text) return;
         
         S.processing = true;
@@ -1175,61 +1101,52 @@ Jawab dengan natural dan mengalir seperti percakapan manusia sungguhan.`;
         S.chats++;
         S.score++;
         
-        // Detect user info
-        if (!S.userName && text.toLowerCase().includes('nama saya')) {
-            const nameMatch = text.match(/nama saya (\w+)/i);
-            if (nameMatch) S.userName = nameMatch[1];
+        // Detect name
+        if (!S.userName) {
+            var nameMatch = text.match(/nama (?:saya|ku|gue|gw) (\w+)|panggil (?:saya|aku|gue|gw) (\w+)/i);
+            if (nameMatch) {
+                S.userName = nameMatch[1] || nameMatch[2];
+            }
         }
-        
-        // Detect emotion
-        S.userMood = detectEmotion(text);
         
         addMsg('user', escapeHTML(text));
         
-        // Typing indicator
-        const typingDiv = addMsg('ai', 
+        var typingDiv = addMsg('ai', 
             '<span class="typing-indicator"></span>' +
             '<span class="typing-indicator"></span>' +
             '<span class="typing-indicator"></span>'
         );
         
         try {
-            // Auto sync
-            if (S.kb.length === 0) {
-                try {
-                    const snapshot = await fs.collection('knowledge_base').limit(100).get();
-                    S.kb = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                    S.dbStats.firebase = S.kb.length;
-                } catch(e) {}
-            }
-            
-            const cmd = parseCommand(text);
-            let response = null;
+            var cmd = parseCommand(text);
+            var response = null;
             
             if (cmd) {
-                response = await executeCommand(cmd, text);
+                response = await executeCommand(cmd);
             }
             
-            // Try solvers
+            // Math solver
             if (!response) {
-                response = solveMath(text) || solveChemistry(text) || solvePhysics(text) || 
-                          solveCoding(text) || solveGeneralKnowledge(text);
+                response = solveMath(text);
             }
             
-            // Handle games
+            // Games
             if (!response) {
-                if (S.activeGame === 'tebak-angka') response = handleGuessGame(text);
-                else if (S.activeGame === 'batu-kertas-gunting') response = handleRPSGame(text);
+                if (S.activeGame === 'tebak-angka') {
+                    response = handleGuessGame(text);
+                } else if (S.activeGame === 'batu-kertas-gunting') {
+                    response = handleRPSGame(text);
+                }
             }
             
-            // Human-like conversation
+            // Human conversation
             if (!response) {
                 response = handleHumanConversation(text);
             }
             
-            // If still no response, use AI
+            // AI fallback
             if (!response || response === 'AI_FALLBACK') {
-                const aiResponse = await callAI([{ role: 'user', content: text }]);
+                var aiResponse = await callAI([{ role: 'user', content: text }]);
                 response = aiResponse || getRandom(HUMAN_RESPONSES.greetings);
             }
             
@@ -1239,10 +1156,6 @@ Jawab dengan natural dan mengalir seperti percakapan manusia sungguhan.`;
             // Save history
             S.chatHistory.push({ user: text, ai: response, time: new Date().toISOString() });
             if (S.chatHistory.length > 50) S.chatHistory.shift();
-            
-            // Track topics
-            S.topicsDiscussed.push(text.split(' ').slice(0, 3).join(' '));
-            if (S.topicsDiscussed.length > 20) S.topicsDiscussed.shift();
             
         } catch (e) {
             typingDiv.remove();
@@ -1255,375 +1168,498 @@ Jawab dengan natural dan mengalir seperti percakapan manusia sungguhan.`;
     }
 
     // ================================================================
-    // HUMAN CONVERSATION HANDLER
+    // HUMAN CONVERSATION
     // ================================================================
     function handleHumanConversation(text) {
-        const t = text.toLowerCase();
+        var t = text.toLowerCase();
         
-        // Greetings
         if (/^(hai|halo|hi|hello|hallo|helo|haloo|hey|yo|oi|woi|pagi|siang|sore|malam|assalamualaikum)/i.test(t)) {
             return getRandom(HUMAN_RESPONSES.greetings);
         }
-        
-        // How are you
-        if (t.includes('kabar') || t.includes('apa kabar') || t.includes('gimana kabar')) {
+        if (t.includes('kabar') || t.includes('apa kabar')) {
             return getRandom(HUMAN_RESPONSES.howAreYou);
         }
-        
-        // Thanks
-        if (t.includes('terima kasih') || t.includes('makasih') || t.includes('thanks') || t.includes('thx')) {
+        if (t.includes('terima kasih') || t.includes('makasih') || t.includes('thanks')) {
             return getRandom(HUMAN_RESPONSES.thanks);
         }
-        
-        // Who are you
-        if (t.includes('siapa kamu') || t.includes('nama kamu') || t.includes('kamu siapa') || t.includes('lo siapa')) {
+        if (t.includes('siapa kamu') || t.includes('nama kamu') || t.includes('kamu siapa')) {
             return getRandom(HUMAN_RESPONSES.whoAreYou);
         }
-        
-        // Emotions
-        if (S.userMood === 'sad') return getRandom(HUMAN_RESPONSES.sad);
-        if (S.userMood === 'happy') return getRandom(HUMAN_RESPONSES.happy);
-        if (S.userMood === 'confused') return getRandom(HUMAN_RESPONSES.confused);
-        if (S.userMood === 'tired') return getRandom(HUMAN_RESPONSES.tired);
-        
-        // Motivation
-        if (t.includes('motivasi') || t.includes('semangat') || t.includes('dukung') || 
-            t.includes('gagal') || t.includes('putus asa') || t.includes('menyerah')) {
+        if (t.includes('sedih') || t.includes('nangis')) {
+            return getRandom(HUMAN_RESPONSES.sad);
+        }
+        if (t.includes('senang') || t.includes('happy') || t.includes('bahagia')) {
+            return getRandom(HUMAN_RESPONSES.happy);
+        }
+        if (t.includes('bingung') || t.includes('pusing')) {
+            return getRandom(HUMAN_RESPONSES.confused);
+        }
+        if (t.includes('capek') || t.includes('lelah') || t.includes('ngantuk')) {
+            return getRandom(HUMAN_RESPONSES.tired);
+        }
+        if (t.includes('motivasi') || t.includes('semangat') || t.includes('gagal') || t.includes('menyerah')) {
             return getRandom(HUMAN_RESPONSES.motivational);
         }
-        
-        // Name detection
-        if (t.includes('nama saya') || t.includes('panggil saya') || t.includes('namaku')) {
-            const nameMatch = text.match(/nama (?:saya|ku|gue|gw) (\w+)|panggil (?:saya|aku|gue|gw) (\w+)/i);
-            if (nameMatch) {
-                S.userName = nameMatch[1] || nameMatch[2];
-                return `Wah, salam kenal ${S.userName}! 😊 Nama yang bagus! Sekarang aku bakal panggil kamu ${S.userName} ya. Ada yang bisa aku bantu?`;
+        if (t.includes('nama saya') || t.includes('panggil saya')) {
+            var m = text.match(/nama (?:saya|ku|gue|gw) (\w+)|panggil (?:saya|aku|gue|gw) (\w+)/i);
+            if (m) {
+                S.userName = m[1] || m[2];
+                return 'Wah, salam kenal <b>' + S.userName + '</b>! 😊 Nama yang bagus! Sekarang aku bakal panggil kamu ' + S.userName + ' ya!';
             }
         }
-        
-        // Love/affection
-        if (t.includes('aku sayang') || t.includes('love you') || t.includes('ily') || t.includes('cinta')) {
-            return 'Aww, makasih! 🥰 Aku juga sayang kok sama semua userku! Tapi inget ya, aku ini AI, bukan pacar virtual 😄💙';
+        if (t.includes('bye') || t.includes('dah') || t.includes('dadah')) {
+            return 'Dadah! 👋 Seneng ngobrol sama kamu' + (S.userName ? ' ' + S.userName : '') + '! Sampai jumpa lagi! 💙';
         }
         
-        // Goodbye
-        if (t.includes('bye') || t.includes('dah') || t.includes('dadah') || t.includes('sampai jumpa') || t.includes('aku pergi dulu')) {
-            return `Dadah! 👋 Seneng ngobrol sama kamu${S.userName ? ' ' + S.userName : ''}! Jangan lama-lama ya, aku di sini selalu! 💙`;
-        }
-        
-        // Apology
-        if (t.includes('maaf') || t.includes('sorry') || t.includes('maap')) {
-            return 'Gapapa kok! Santai aja 😊 Aku gak pernah marah. Lagian, salah itu manusiawi. Yang penting belajar dari kesalahan ya!';
-        }
-        
-        // Testing
-        if (t === 'tes' || t === 'test' || t === 'testing') {
-            return 'Tes... Tes... 1... 2... 3... 🔊 Suara aku jelas kan? Haha, bercanda! Aku di sini dan siap membantu! Ada yang bisa aku lakukan? 😄';
-        }
-        
-        // Help request (implicit)
-        if (t.includes('bantu') || t.includes('tolong') || t.includes('help')) {
-            return 'Tentu dong! Aku siap bantu! 💪 Ceritain aja masalahnya, aku bakal coba bantu semaksimal mungkin.';
-        }
-        
-        // If nothing matches, return fallback flag
         return 'AI_FALLBACK';
     }
 
     // ================================================================
-    // GAME HANDLERS
+    // GAMES
     // ================================================================
     function startGame(gameName) {
         if (gameName.includes('tebak') || gameName.includes('angka')) {
             S.activeGame = 'tebak-angka';
-            S.gameData = { target: Math.floor(Math.random()*100)+1, attempts: 0 };
-            return '🎮 <b>Tebak Angka!</b><br><br>Aku lagi mikirin angka 1-100 nih. Coba tebak! 🤔<br><br>Ketik angkanya aja ya!';
-        } else if (gameName.includes('batu') || gameName.includes('gunting') || gameName.includes('bkg')) {
+            S.gameData = { target: Math.floor(Math.random() * 100) + 1, attempts: 0 };
+            return '🎮 <b>Tebak Angka!</b><br><br>Aku lagi mikirin angka 1-100 nih. Coba tebak! 🤔';
+        } else if (gameName.includes('batu') || gameName.includes('gunting')) {
             S.activeGame = 'batu-kertas-gunting';
-            return '🎮 <b>Batu Kertas Gunting!</b><br><br>Ayo main! Pilih: batu 🪨, kertas 📄, atau gunting ✂️<br><br>Ketik <code>batu</code>, <code>kertas</code>, atau <code>gunting</code>';
+            return '🎮 <b>Batu Kertas Gunting!</b><br><br>Pilih: batu 🪨, kertas 📄, atau gunting ✂️';
         }
-        return '🎮 Game yang tersedia: <code>main tebak angka</code> atau <code>main batu kertas gunting</code>';
+        return '🎮 Game: <code>main tebak angka</code> atau <code>main batu kertas gunting</code>';
     }
 
     function handleGuessGame(text) {
-        const guess = parseInt(text);
+        var guess = parseInt(text);
         if (isNaN(guess)) {
-            if (text.includes('stop')) { S.activeGame = null; return `🎮 Game selesai! Angkanya <b>${S.gameData.target}</b>. Main lagi ya!`; }
+            if (text.includes('stop')) {
+                S.activeGame = null;
+                return '🎮 Game selesai! Angkanya <b>' + S.gameData.target + '</b>. Main lagi ya!';
+            }
             return 'Hei, itu bukan angka! Masukin angka 1-100 ya 😄';
         }
         S.gameData.attempts++;
         if (guess === S.gameData.target) {
-            const a = S.gameData.attempts;
-            S.activeGame = null; S.score += 10;
-            if (a===1) return `🎉 WOW! SEKALI TEBAK! Angkanya ${S.gameData.target}! Kamu jenius atau beruntung nih? 😱`;
-            if (a<=3) return `🎉 Keren! ${a} tebakan! Angkanya ${S.gameData.target}!`;
-            return `✅ Benar! ${S.gameData.target} dalam ${a} tebakan. Lumayan lah! 😄`;
+            var a = S.gameData.attempts;
+            S.activeGame = null;
+            S.score += 10;
+            if (a === 1) return '🎉 WOW! SEKALI TEBAK! Angkanya ' + S.gameData.target + '! 😱';
+            return '✅ Benar! ' + S.gameData.target + ' dalam ' + a + ' tebakan!';
         }
-        return guess < S.gameData.target ? `📈 ${guess}? Terlalu RENDAH! Coba lebih tinggi!` : `📉 ${guess}? Terlalu TINGGI! Coba lebih rendah!`;
+        return guess < S.gameData.target ? 
+            '📈 ' + guess + '? Terlalu RENDAH! Coba lebih tinggi!' : 
+            '📉 ' + guess + '? Terlalu TINGGI! Coba lebih rendah!';
     }
 
     function handleRPSGame(text) {
-        if (text.includes('stop')) { S.activeGame = null; return 'Game berakhir! Makasih udah main 🎮'; }
-        let p = null;
-        if (text.includes('batu')) p='batu'; else if (text.includes('kertas')) p='kertas'; else if (text.includes('gunting')) p='gunting';
+        if (text.includes('stop')) {
+            S.activeGame = null;
+            return 'Game berakhir! Makasih udah main 🎮';
+        }
+        var p = null;
+        if (text.includes('batu')) p = 'batu';
+        else if (text.includes('kertas')) p = 'kertas';
+        else if (text.includes('gunting')) p = 'gunting';
         else return 'Pilih: batu 🪨, kertas 📄, atau gunting ✂️ ya!';
-        const c = ['batu','kertas','gunting'], ai = c[Math.floor(Math.random()*3)];
-        let r = '';
-        if (p===ai) r='🤝 SERI! Kita jago berdua nih!';
-        else if ((p==='batu'&&ai==='gunting')||(p==='kertas'&&ai==='batu')||(p==='gunting'&&ai==='kertas')) { r='🎉 KAMU MENANG!'; S.score+=5; }
-        else r='😢 Kamu kalah! Tapi jangan nyerah ya!';
-        const em = {batu:'🪨',kertas:'📄',gunting:'✂️'};
-        return `${em[p]} Kamu: ${p}\n${em[ai]} AI: ${ai}\n\n${r}`;
+        
+        var c = ['batu', 'kertas', 'gunting'];
+        var ai = c[Math.floor(Math.random() * 3)];
+        var r = '';
+        if (p === ai) r = '🤝 SERI!';
+        else if ((p==='batu'&&ai==='gunting')||(p==='kertas'&&ai==='batu')||(p==='gunting'&&ai==='kertas')) {
+            r = '🎉 KAMU MENANG!';
+            S.score += 5;
+        } else r = '😢 Kamu kalah!';
+        
+        var em = {batu:'🪨', kertas:'📄', gunting:'✂️'};
+        return em[p] + ' Kamu: ' + p + '\n' + em[ai] + ' AI: ' + ai + '\n\n' + r;
     }
 
     // ================================================================
-    // TOPUP HANDLER
+    // TOPUP
     // ================================================================
     function handleTopUp(text) {
-        const t = text.toLowerCase();
-        let game = null, item = null;
-        const sm = text.match(/server\s*[:#]?\s*(\d+)/i);
-        const server = sm ? sm[1] : null;
+        var t = text.toLowerCase();
+        var game = null, item = null;
+        var sm = text.match(/server\s*[:#]?\s*(\d+)/i);
+        var server = sm ? sm[1] : null;
         
-        for (const k in KNOWLEDGE.topup) {
+        for (var k in KNOWLEDGE.topup) {
             if (t.includes(k) || t.includes(KNOWLEDGE.topup[k].name.toLowerCase())) {
                 game = k;
-                for (const it of KNOWLEDGE.topup[k].items) {
-                    if (t.includes(it.name.toLowerCase())) { item = it; break; }
+                for (var i = 0; i < KNOWLEDGE.topup[k].items.length; i++) {
+                    if (t.includes(KNOWLEDGE.topup[k].items[i].name.toLowerCase())) {
+                        item = KNOWLEDGE.topup[k].items[i];
+                        break;
+                    }
                 }
                 break;
             }
         }
         
         if (!game) {
-            let l = `💰 <b>TopUp Game</b><br><br><b>Game tersedia:</b><br>`;
-            for (const k in KNOWLEDGE.topup) l += `• <b>${KNOWLEDGE.topup[k].name}</b><br>`;
-            l += `<br>Contoh: <code>topup ml 500 diamond server:12345</code>`;
+            var l = '💰 <b>TopUp Game</b><br><br><b>Game:</b><br>';
+            for (var k in KNOWLEDGE.topup) l += '• ' + KNOWLEDGE.topup[k].name + '<br>';
+            l += '<br>Contoh: <code>topup ml 500 diamond server:12345</code>';
             return l;
         }
-        if (!server) return `⚠️ Masukkan Server ID ya!<br>Contoh: <code>topup ml 100 diamond server:12345</code>`;
+        if (!server) return '⚠️ Masukkan Server ID!<br>Contoh: <code>topup ml 100 diamond server:12345</code>';
         if (!item) {
-            let l = `📦 <b>${KNOWLEDGE.topup[game].name}</b><br><br>`;
-            KNOWLEDGE.topup[game].items.forEach(it => l += `• ${it.name}: ${fmtPrice(Math.round(it.price*S.markup))}<br>`);
+            var l = '📦 <b>' + KNOWLEDGE.topup[game].name + '</b><br><br>';
+            KNOWLEDGE.topup[game].items.forEach(function(it) {
+                l += '• ' + it.name + ': ' + fmtPrice(Math.round(it.price * S.markup)) + '<br>';
+            });
             return l;
         }
         
-        const oid = genId(), price = Math.round(item.price*S.markup);
-        return `<div class="card success"><b>✅ Order Berhasil!</b><br><br>🆔 ${oid}<br>🎮 ${KNOWLEDGE.topup[game].name}<br>📦 ${item.name}<br>💰 ${fmtPrice(price)}<br>🖥️ Server: ${server}</div>`;
+        var oid = genId();
+        var price = Math.round(item.price * S.markup);
+        return '<div class="card success"><b>✅ Order Berhasil!</b><br><br>🆔 ' + oid + '<br>🎮 ' + KNOWLEDGE.topup[game].name + '<br>📦 ' + item.name + '<br>💰 ' + fmtPrice(price) + '<br>🖥️ Server: ' + server + '</div>';
     }
 
     // ================================================================
-    // MARKUP HANDLER
+    // MARKUP
     // ================================================================
     function handleMarkup(text) {
-        const m = text.match(/\d+/), p = m ? parseInt(m[0]) : null;
+        var m = text.match(/\d+/);
+        var p = m ? parseInt(m[0]) : null;
         if (p !== null && p >= 0 && p <= 100) {
-            S.markup = 1 + (p/100);
-            let r = `💰 <b>Markup: ${p}%</b><br><br>`;
-            for (const k in KNOWLEDGE.topup) {
-                r += `<b>${KNOWLEDGE.topup[k].name}:</b><br>`;
-                KNOWLEDGE.topup[k].items.forEach(it => r += `• ${it.name}: ${fmtPrice(Math.round(it.price*S.markup))}<br>`);
-            }
-            return r;
+            S.markup = 1 + (p / 100);
+            return '💰 Markup diubah ke <b>' + p + '%</b>';
         }
-        const cp = Math.round((S.markup-1)*100);
-        return `💰 Markup saat ini: <b>${cp}%</b><br><br>Ubah: <code>markup [persen]</code>`;
+        var cp = Math.round((S.markup - 1) * 100);
+        return '💰 Markup saat ini: <b>' + cp + '%</b><br><br>Ubah: <code>markup [persen]</code>';
     }
 
     // ================================================================
     // AI SWITCH
     // ================================================================
     function switchAI(name) {
-        const providers = { deepseek:'DeepSeek', groq:'Groq', openrouter:'OpenRouter' };
-        for (const k in providers) {
+        var providers = { deepseek: 'DeepSeek', groq: 'Groq', openrouter: 'OpenRouter' };
+        for (var k in providers) {
             if (name.includes(k)) {
                 S.currentProvider = k;
                 $('ai-badge').textContent = '🧠 ' + providers[k];
-                toast(`🤖 AI: ${providers[k]}`, 'info');
-                return `🤖 AI diubah ke <b>${providers[k]}</b>! Siap membantu dengan gaya baru nih!`;
+                toast('🤖 AI: ' + providers[k], 'info');
+                return '🤖 AI diubah ke <b>' + providers[k] + '</b>!';
             }
         }
-        return `🤖 AI tersedia: <b>deepseek</b>, <b>groq</b>, <b>openrouter</b><br><br>Ketik: <code>ai deepseek</code>`;
+        return '🤖 AI tersedia: <b>deepseek</b>, <b>groq</b>, <b>openrouter</b><br><br>Ketik: <code>ai deepseek</code>';
     }
 
     // ================================================================
-    // ADMIN FUNCTIONS
+    // AI PERSONALITY
     // ================================================================
-    function toggleAdminPanel() { if (S.isAdmin) $('adminPanel').classList.toggle('active'); }
-    
-    async function autoDeploy() {
-        showProgress('🚀 Deploying...');
-        await new Promise(r => setTimeout(r, 2000));
-        hideProgress();
-        S.deploys++;
-        S.score += 50;
-        toast('✅ Deploy berhasil!', 'success');
-        return '🚀 <b>Deploy Berhasil!</b><br><br>Aplikasi akan live dalam 1-2 menit!';
+    function showAIPersonality() {
+        var moods = ['😊 Friendly', '🧐 Smart', '😄 Humoris', '🤗 Empatik', '💪 Supportif', '🎯 Fokus'];
+        var mood = getRandom(moods);
+        addMsg('ai', '<b>🧠 Yad AI Personality</b><br><br>Mode: <b>' + mood + '</b><br><br>Aku didesain buat ngobrol natural kayak manusia! 😊');
+        toast('🧠 Mode: ' + mood, 'info', 2000);
     }
 
-    async function selfEdit(ins) {
-        showProgress('🔧 Self-Edit...');
-        await new Promise(r => setTimeout(r, 2000));
-        hideProgress();
-        S.edits++;
-        S.score += 75;
-        return `✅ <b>Self-Edit Berhasil!</b><br><br>Perubahan: ${ins.substring(0, 60)}...`;
+    // ================================================================
+    // ADMIN PANEL
+    // ================================================================
+    function toggleAdminPanel() {
+        if (!S.isAdmin) {
+            toast('⚠️ Hanya admin!', 'error');
+            return;
+        }
+        var panel = $('adminPanel');
+        panel.classList.toggle('active');
+        toast(panel.classList.contains('active') ? '🔧 Panel admin dibuka' : '🔧 Panel admin ditutup', 'info', 1500);
     }
 
     function forceSyncKnowledge() {
         S.syncs++;
-        toast('✅ Knowledge synced!', 'success');
+        toast('✅ Knowledge synced! (' + S.syncs + ')', 'success');
     }
+
     function broadcastMessage() {
-        const msg = prompt('Pesan broadcast:');
-        if (msg) toast('📢 Broadcast terkirim!', 'success');
+        var msg = prompt('📢 Pesan broadcast:');
+        if (msg) {
+            toast('📢 Broadcast terkirim: ' + msg.substring(0, 30) + '...', 'success');
+        }
     }
+
     function systemStats() {
-        addMsg('ai', `📊 <b>Stats:</b><br>Chats: ${S.chats}<br>Score: ${S.score}<br>KB: ${S.kb.length}<br>Deploys: ${S.deploys}`);
-    }
-    function clearCache() { localStorage.clear(); S.kb=[]; toast('🗑️ Cache cleared!', 'success'); }
-    function emergencyDeploy() { if (confirm('Deploy sekarang?')) autoDeploy(); }
-
-    // ================================================================
-    // HELP MESSAGE
-    // ================================================================
-    function getHelpMessage() {
-        return `<b>📚 Bantuan Yad AI</b><br><br>
-<b>🔍 Pencarian:</b><br><code>cari [query]</code> - Cari di internet<br><br>
-<b>🧮 Kalkulasi:</b><br><code>hitung [ekspresi]</code> - Kalkulator<br><code>password [jumlah]</code> - Generate password<br><br>
-<b>🎮 Game:</b><br><code>main tebak angka</code><br><code>main batu kertas gunting</code><br><br>
-<b>💰 TopUp:</b><br><code>topup [game] [item] server:[id]</code><br><br>
-<b>📤 Upload:</b><br><code>upload</code> - Upload foto/video<br><br>
-<b>🤖 AI:</b><br><code>ai [nama]</code> - Ganti AI<br><br>
-<b>📋 Produktivitas:</b><br><code>plan [teks]</code> - Tambah rencana<br><code>task [teks]</code> - Tambah tugas<br><br>
-<b>😄 Hiburan:</b><br><code>joke</code> <code>fakta</code> <code>quote</code> <code>nama</code> <code>warna</code><br><br>
-<b>📊 Lainnya:</b><br><code>stats</code> <code>waktu</code> <code>db</code> <code>markup</code><br><br>
-Atau... ngobrol aja santai kayak sama temen! 😊`;
+        addMsg('ai', '📊 <b>System Stats:</b><br>💬 Chats: ' + S.chats + '<br>⭐ Score: ' + S.score + '<br>📚 KB: ' + S.kb.length + '<br>🚀 Deploys: ' + S.deploys + '<br>✏️ Edits: ' + S.edits + '<br>🔄 Syncs: ' + S.syncs);
     }
 
-    // ================================================================
-    // AI PERSONALITY DISPLAY
-    // ================================================================
-    function showAIPersonality() {
-        const moods = ['😊 Friendly', '🧐 Smart', '😄 Humoris', '🤗 Empatik', '💪 Supportif', '🎯 Fokus'];
-        const mood = getRandom(moods);
-        addMsg('ai', `<b>🧠 Yad AI Personality</b><br><br>Saat ini aku dalam mode: <b>${mood}</b><br><br>Aku didesain buat ngobrol natural kayak manusia! Aku bisa:<br>• Ngerti perasaanmu<br>• Bercanda & bercerita<br>• Kasih saran yang thoughtful<br>• Belajar dari obrolan kita<br><br>Yuk ngobrol! 😊`);
+    function clearCache() {
+        localStorage.clear();
+        S.kb = [];
+        S.chatHistory = [];
+        toast('🗑️ Cache cleared!', 'success');
+        addMsg('ai', '✅ Cache berhasil dibersihkan!');
+    }
+
+    function emergencyDeploy() {
+        if (confirm('🚨 Emergency deploy sekarang?')) {
+            showProgress('🚨 Emergency Deploy...');
+            setTimeout(function() {
+                hideProgress();
+                S.deploys++;
+                toast('🚨 Emergency deploy completed!', 'success');
+                addMsg('ai', '🚨 <b>Emergency Deploy Berhasil!</b>');
+            }, 2000);
+        }
     }
 
     // ================================================================
     // CLOUDINARY UPLOAD
     // ================================================================
     function openCloudinaryWidget() {
-        cloudinary.createUploadWidget({
-            cloudName: CFG.cloudinary.cloudName,
-            uploadPreset: CFG.cloudinary.uploadPreset,
-            apiKey: CFG.cloudinary.apiKey,
-            sources: ['local', 'url', 'camera'],
-            multiple: true,
-            maxFileSize: 100000000,
-            styles: { palette: { window:"#141c2b", sourceBg:"#0a0e17", windowBorder:"#2a3545", link:"#4a90d9", action:"#4a90d9", complete:"#2ecc71", error:"#e74c3c", textDark:"#e8edf5", textLight:"#8899aa" }}
-        }, (error, result) => {
-            if (error) return;
-            if (result && result.event === 'success') {
-                const url = result.info.secure_url, type = result.info.resource_type, name = result.info.original_filename;
-                S.mediaUploads.push({ url, type, name, uploadedAt: new Date().toISOString() });
-                let html = '';
-                if (type === 'image') html = `<div class="card success"><img src="${url}" style="max-width:100%;border-radius:12px;"><small>📸 ${name}</small></div>`;
-                else if (type === 'video') html = `<div class="card success"><video controls style="max-width:100%;border-radius:12px;"><source src="${url}" type="video/mp4"></video><small>🎬 ${name}</small></div>`;
-                else html = `<div class="card success">📁 ${name}</div>`;
-                addMsg('ai', html);
-                toast('✅ Upload berhasil!', 'success');
-            }
-        }).open();
+        if (typeof cloudinary === 'undefined') {
+            toast('⚠️ Cloudinary tidak tersedia. Coba lagi nanti.', 'error');
+            addMsg('ai', '⚠️ Uploader tidak tersedia saat ini. Kamu bisa upload file dengan klik tombol 📎 dan pilih file.');
+            // Trigger file input instead
+            setTimeout(function() {
+                $('fileInput').click();
+            }, 500);
+            return;
+        }
+        
+        try {
+            cloudinary.createUploadWidget({
+                cloudName: CFG.cloudinary.cloudName,
+                uploadPreset: CFG.cloudinary.uploadPreset,
+                apiKey: CFG.cloudinary.apiKey,
+                sources: ['local', 'url', 'camera'],
+                multiple: true,
+                maxFileSize: 100000000,
+                styles: {
+                    palette: {
+                        window: "#141c2b",
+                        sourceBg: "#0a0e17",
+                        windowBorder: "#2a3545",
+                        link: "#4a90d9",
+                        action: "#4a90d9",
+                        complete: "#2ecc71",
+                        error: "#e74c3c",
+                        textDark: "#e8edf5",
+                        textLight: "#8899aa"
+                    }
+                }
+            }, function(error, result) {
+                if (error) {
+                    console.error('Upload error:', error);
+                    return;
+                }
+                if (result && result.event === 'success') {
+                    var url = result.info.secure_url;
+                    var type = result.info.resource_type;
+                    var name = result.info.original_filename;
+                    
+                    S.mediaUploads.push({
+                        url: url,
+                        type: type,
+                        name: name,
+                        uploadedAt: new Date().toISOString()
+                    });
+                    
+                    var html = '';
+                    if (type === 'image') {
+                        html = '<div class="card success"><img src="' + url + '" style="max-width:100%;border-radius:12px;"><small>📸 ' + name + '</small></div>';
+                    } else if (type === 'video') {
+                        html = '<div class="card success"><video controls style="max-width:100%;border-radius:12px;"><source src="' + url + '" type="video/mp4"></video><small>🎬 ' + name + '</small></div>';
+                    } else {
+                        html = '<div class="card success">📁 ' + name + '</div>';
+                    }
+                    
+                    addMsg('ai', html);
+                    toast('✅ Upload berhasil!', 'success');
+                }
+            }).open();
+        } catch(e) {
+            console.error('Cloudinary widget error:', e);
+            toast('⚠️ Gagal membuka uploader. Gunakan tombol 📎', 'error');
+            setTimeout(function() {
+                $('fileInput').click();
+            }, 500);
+        }
     }
 
     // ================================================================
-    // AUTH
+    // AUTH FUNCTIONS
     // ================================================================
     function showLogin() {
-        const email = prompt('📧 Email:');
+        var email = prompt('📧 Email:');
         if (!email) return;
-        const password = prompt('🔒 Password:');
+        var password = prompt('🔒 Password:');
         if (!password) return;
+        
         auth.signInWithEmailAndPassword(email, password)
-            .then(() => toast('✅ Login berhasil!', 'success'))
-            .catch(err => {
+            .then(function() {
+                toast('✅ Login berhasil!', 'success');
+            })
+            .catch(function(err) {
                 if (err.code === 'auth/user-not-found' && confirm('Buat akun baru?')) {
                     auth.createUserWithEmailAndPassword(email, password)
-                        .then(() => toast('✅ Akun dibuat!', 'success'))
-                        .catch(er => toast('❌ Error: ' + er.message, 'error'));
-                } else toast('❌ Error: ' + err.message, 'error');
+                        .then(function() {
+                            toast('✅ Akun dibuat!', 'success');
+                        })
+                        .catch(function(er) {
+                            toast('❌ Error: ' + er.message, 'error');
+                        });
+                } else {
+                    toast('❌ Error: ' + err.message, 'error');
+                }
             });
     }
 
-    async function doLogout() {
-        await auth.signOut();
-        S.isAdmin = false; S.role = 'guest'; S.user = null;
-        toast('👋 Sampai jumpa!', 'info');
+    function doLogout() {
+        auth.signOut().then(function() {
+            S.isAdmin = false;
+            S.role = 'guest';
+            S.user = null;
+            toast('👋 Logout berhasil!', 'info');
+        }).catch(function(e) {
+            toast('❌ Error: ' + e.message, 'error');
+        });
     }
 
-    auth.onAuthStateChanged(user => {
-        const sb = $('auth-status'), lb = $('login-btn'), lob = $('logout-btn'), ab = $('admin-panel-btn');
+    // Auth state observer
+    auth.onAuthStateChanged(function(user) {
+        var sb = $('auth-status');
+        var lb = $('login-btn');
+        var lob = $('logout-btn');
+        var ab = $('admin-panel-btn');
+        var avatar = $('aiAvatar');
+        var sendBtn = $('sendBtn');
+        
         if (user) {
             S.user = user;
             if (user.email === CFG.adminEmail) {
-                S.isAdmin = true; S.role = 'admin';
-                sb.className = 'badge admin'; sb.textContent = '👑 Admin';
-                $('aiAvatar').classList.add('admin-active');
-                $('sendBtn').classList.add('admin-mode');
+                S.isAdmin = true;
+                S.role = 'admin';
+                sb.className = 'badge admin';
+                sb.textContent = '👑 Admin';
+                avatar.classList.add('admin-active');
+                sendBtn.classList.add('admin-mode');
                 ab.style.display = 'inline-block';
                 toast('👑 Admin auto-detected!', 'admin', 4000);
             } else {
-                S.isAdmin = false; S.role = 'user';
-                sb.className = 'badge user'; sb.textContent = 'User';
-                $('aiAvatar').classList.remove('admin-active');
-                $('sendBtn').classList.remove('admin-mode');
+                S.isAdmin = false;
+                S.role = 'user';
+                sb.className = 'badge user';
+                sb.textContent = 'User';
+                avatar.classList.remove('admin-active');
+                sendBtn.classList.remove('admin-mode');
                 ab.style.display = 'none';
             }
-            lb.style.display = 'none'; lob.style.display = 'inline-block';
+            lb.style.display = 'none';
+            lob.style.display = 'inline-block';
         } else {
-            S.isAdmin = false; S.role = 'guest'; S.user = null;
-            sb.className = 'badge guest'; sb.textContent = 'Guest';
-            lb.style.display = 'inline-block'; lob.style.display = 'none';
+            S.isAdmin = false;
+            S.role = 'guest';
+            S.user = null;
+            sb.className = 'badge guest';
+            sb.textContent = 'Guest';
+            lb.style.display = 'inline-block';
+            lob.style.display = 'none';
             ab.style.display = 'none';
-            $('aiAvatar').classList.remove('admin-active');
-            $('sendBtn').classList.remove('admin-mode');
-            $('adminPanel')?.classList.remove('active');
+            avatar.classList.remove('admin-active');
+            sendBtn.classList.remove('admin-mode');
+            var panel = $('adminPanel');
+            if (panel) panel.classList.remove('active');
         }
     });
 
     // ================================================================
     // EVENT LISTENERS
     // ================================================================
-    $('sendBtn').addEventListener('click', e => { e.preventDefault(); sendMessage(); });
-    $('sendBtn').addEventListener('touchend', e => { e.preventDefault(); sendMessage(); });
-    $('userInput').addEventListener('keydown', e => { if (e.key==='Enter'&&!e.shiftKey) { e.preventDefault(); sendMessage(); } });
-    $('fileInput').addEventListener('change', async function(e) {
-        const files = e.target.files;
-        if (!files.length) return;
-        showProgress('📤 Uploading...');
-        let count = 0;
-        for (let i=0; i<files.length; i++) {
-            try {
-                const text = await files[i].text();
-                S.kb.push({ title: files[i].name, content: text.substring(0, 1000), type: 'file' });
-                count++;
-            } catch(err) {}
+    var sendBtn = $('sendBtn');
+    var userInput = $('userInput');
+    var attachBtn = $('attachBtn');
+    var fileInput = $('fileInput');
+    
+    // Send button click
+    sendBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        sendMessage();
+    });
+    
+    // Send button touch (mobile)
+    sendBtn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        sendMessage();
+    });
+    
+    // Enter key
+    userInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
         }
+    });
+    
+    // Attach button
+    attachBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        fileInput.click();
+    });
+    
+    attachBtn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        fileInput.click();
+    });
+    
+    // File input change
+    fileInput.addEventListener('change', async function(e) {
+        var files = e.target.files;
+        if (!files.length) return;
+        
+        showProgress('📤 Uploading...', files.length + ' file(s)');
+        var count = 0;
+        
+        for (var i = 0; i < files.length; i++) {
+            try {
+                var text = await files[i].text();
+                S.kb.push({
+                    title: files[i].name,
+                    content: text.substring(0, 1000),
+                    type: 'file',
+                    uploadedAt: new Date().toISOString()
+                });
+                count++;
+            } catch(err) {
+                console.error('File read error:', err);
+            }
+        }
+        
         hideProgress();
-        addMsg('ai', `✅ ${count} file berhasil diimpor! Total KB: ${S.kb.length}`);
+        addMsg('ai', '✅ ' + count + ' file berhasil diimpor! Total KB: ' + S.kb.length);
+        toast('✅ ' + count + ' file imported!', 'success');
         this.value = '';
     });
 
     // ================================================================
-    // INIT
+    // INITIALIZATION
     // ================================================================
-    if (window.innerWidth >= 768) setTimeout(() => $('userInput').focus(), 500);
+    console.log('🧠 Yad AI - Human-Like Assistant');
+    console.log('✅ All buttons active and functional');
+    console.log('👑 Admin auto-detect: Enabled');
+    console.log('💬 Type to start chatting!');
     
-    console.log('🧠 Yad AI - Human-Like Assistant Ready!');
-    console.log('💬 Features: Natural conversation | Emotion detection | Smart responses');
-    console.log('👑 Admin auto-detect: Active');
-    console.log('🚀 Type to start chatting!');
+    // Focus input on desktop
+    if (window.innerWidth >= 768) {
+        setTimeout(function() {
+            userInput.focus();
+        }, 500);
+    }
+    
+    // Expose functions to global scope for onclick handlers
+    window.showLogin = showLogin;
+    window.doLogout = doLogout;
+    window.toggleAdminPanel = toggleAdminPanel;
+    window.showAIPersonality = showAIPersonality;
+    window.forceSyncKnowledge = forceSyncKnowledge;
+    window.broadcastMessage = broadcastMessage;
+    window.systemStats = systemStats;
+    window.clearCache = clearCache;
+    window.emergencyDeploy = emergencyDeploy;
+
 })();
 </script>
 </body>

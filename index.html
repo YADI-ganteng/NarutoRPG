@@ -281,7 +281,131 @@ typingDiv.remove();addMsg('ai',resp||'💡 Maaf, aku tidak mengerti. Coba tanyak
 // ================================================================
 async function deepSearchAnalyze(query){showProg('🔍 Mencari...',query);const results={web:[],saved:0};try{const r=await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1`);if(r.ok){const d=await r.json();if(d.AbstractText)results.web.push({title:d.Heading||query,content:d.AbstractText,source:'DuckDuckGo'});}}catch(e){}try{const r=await fetch(`https://id.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`);if(r.ok){const d=await r.json();if(d.extract)results.web.push({title:d.title,content:d.extract,source:'Wikipedia'});}}catch(e){}for(const w of results.web){try{await fs.collection('knowledge_base').add({title:w.title,content:w.content,tags:['search'],source:w.source,searched_at:new Date().toISOString()});results.saved++;}catch(e){}}hideProg();S.score+=20;let resp=`✅ <b>Search:</b> "${query}"<br>📊 ${results.web.length} hasil<br>`;results.web.slice(0,3).forEach(w=>resp+=`<div class="card"><b>${w.title}</b> (${w.source})<br>${(w.content||'').substring(0,150)}...</div>`);return resp;}
 async function autoDeployToFirebase(){showProg('🚀 Deploy...');try{await fetch(`https://api.github.com/repos/${CFG.github.owner}/${CFG.github.repo}/dispatches`,{method:'POST',headers:{'Authorization':`token ${CFG.github.token}`,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify({event_type:'deploy-to-firebase',client_payload:{project:'yadstores'}})});hideProg();S.deploys++;S.score+=20;return'✅ <b>Deploy!</b><br>⏳ Live 1-2 menit<br>🌐 <a href="https://yadstores.web.app" target="_blank">yadstores.web.app</a>';}catch(e){hideProg();return'❌ '+e.message;}}
-async function selfEditAndDeploy(ins){showProg('🧠 Self-Edit...');try{const fr=await fetch(`https://api.github.com/repos/${CFG.github.owner}/${CFG.github.repo}/contents/${CFG.github.filePath}?ref=${CFG.github.branch}`,{headers:{'Authorization':`token ${CFG.github.token}`,'Accept':'application/vnd.github.v3+json'}});if(!fr.ok)throw new Error('Cannot fetch');const fd=await fr.json();let nc=atob(fd.content);const ti=ins.toLowerCase();if(ti.includes('tambah fitur')){const fn=ti.replace(/tambah fitur|add feature/gi,'').trim();if(fn)nc=nc.replace('</body>',`\n<!-- AI: ${fn} -->\n<div class="ft-${fn.replace(/\s+/g,'-').toLowerCase()}" style="padding:20px;margin:20px auto;max-width:600px;background:var(--bg-tertiary);border-radius:12px;border:2px solid var(--accent-blue);text-align:center;"><h3>✨ ${fn}</h3><p>Added by AI</p></div>\n</body>`);}if(ti.includes('rename ai')||ti.includes('ubah nama')){const nn=ti.replace(/rename ai|ubah nama ai|menjadi|ke/gi,'').trim();if(nn){nc=nc.replace(/<title>.*?<\/title>/i,`<title>${nn} - AI</title>`);nc=nc.replace(/(<span[^>]*>)(Yad AI)(<\/span>)/gi,`$1${nn}$3`);}}const cr=await fetch(`https://api.github.com/repos/${CFG.github.owner}/${CFG.github.repo}/contents/${CFG.github.filePath}`,{method:'PUT',headers:{'Authorization':`token ${CFG.github.token}`,'Content-Type':'application/json'},body:JSON.stringify({message:`🤖 AI: ${ins.substring(0,80)}`,content:btoa(unescape(encodeURIComponent(nc))),sha:fd.sha,branch:CFG.github.branch})});if(!cr.ok)throw new Error('Commit failed');await fetch(`https://api.github.com/repos/${CFG.github.owner}/${CFG.github.repo}/dispatches`,{method:'POST',headers:{'Authorization':`token ${CFG.github.token}`,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify({event_type:'deploy-to-firebase',client_payload:{project:'yadstores'}})});hideProg();S.edits++;S.deploys++;S.score+=30;return'✅ <b>Self-Edit & Deploy!</b><br>🚀 Live 1-2 menit';}catch(e){hideProg();return'❌ '+e.message;}}
+async function selfEditAndDeploy(ins){
+    showProg(' Self-Edit...', ins.substring(0, 60));
+    try {
+        $('progFill').style.width = '20%';
+        $('progDetail').textContent = 'Fetching code...';
+        
+        const fileUrl = `https://api.github.com/repos/${CFG.github.owner}/${CFG.github.repo}/contents/${CFG.github.filePath}?ref=${CFG.github.branch}`;
+        const fileRes = await fetch(fileUrl, {
+            headers: {
+                'Authorization': `token ${CFG.github.token}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'User-Agent': 'Yad-AI'
+            }
+        });
+        
+        if (!fileRes.ok) {
+            const err = await fileRes.json();
+            throw new Error(`Fetch failed: ${err.message} (${fileRes.status})`);
+        }
+        
+        const fileData = await fileRes.json();
+        let nc = atob(fileData.content);
+        const ti = ins.toLowerCase();
+        
+        $('progFill').style.width = '40%';
+        $('progDetail').textContent = 'Editing...';
+        
+        // Perbaiki prioritas chat natural
+        if (ti.includes('prioritas chat') || ti.includes('chat natural') || ti.includes('perbaiki chat') || ti.includes('solveMath')) {
+            // Cari dan ganti baris solveMath
+            const oldLine = /if\(!resp\)\{resp=solveMath\(text\)\|\|solveChemistry\(text\)\|\|solvePhysics\(text\)\|\|solveCoding\(text\)\|\|solveGeneral\(text\);\}/;
+            const newLine = `if(!resp){const t=text.toLowerCase();if(t.includes('hitung')||t.includes('=')||/[+\\-*\\/^]/.test(t)||t.includes('sin')||t.includes('cos')||t.includes('faktorial')||t.includes('akar')||t.includes('luas')||t.includes('volume'))resp=solveMath(text);else if(t.includes('unsur')||t.includes('element')||t.includes('atom')||t.includes('mr ')||t.includes('ph ')||t.includes('reaksi')||t.includes('molekul')||t.includes('kimia'))resp=solveChemistry(text);else if(t.includes('kecepatan')||t.includes('gaya')||t.includes('energi')||t.includes('tekanan')||t.includes('ohm')||t.includes('volt')||t.includes('fisika'))resp=solvePhysics(text);else if(t.includes('contoh html')||t.includes('contoh css')||t.includes('contoh javascript')||t.includes('contoh python')||t.includes('algoritma')||t.includes('coding'))resp=solveCoding(text);}`;
+            nc = nc.replace(oldLine, newLine);
+            
+            // Ganti AI fallback
+            const oldAI = /else resp=await callAI\(\[\{role:'system',content:'Kamu AI genius. Jawab dalam bahasa Indonesia natural dan lengkap. Bisa matematika, kimia, fisika, coding, sejarah, semua!'\},\{role:'user',content:text\}\]\);/;
+            const newAI = `else{const chatResp=await callAI([{role:'system',content:'Kamu adalah Yad AI, asisten virtual yang ramah, pintar, dan natural. Jawab dalam bahasa Indonesia seperti manusia. Bisa ngobrol santai, membantu, menjawab pertanyaan dengan lengkap dan akurat.'},{role:'user',content:text}]);resp=chatResp||' Maaf, aku tidak mengerti. Coba tanyakan dengan cara lain ya.';}`;
+            nc = nc.replace(oldAI, newAI);
+        }
+        
+        // Tambah fitur
+        if (ti.includes('tambah fitur') || ti.includes('add feature')) {
+            const fn = ti.replace(/tambah fitur|add feature/gi, '').trim();
+            if (fn) {
+                const sn = fn.replace(/\s+/g, '-').toLowerCase();
+                nc = nc.replace('</body>', `\n<!-- AI: ${fn} -->\n<div class="ft-${sn}" style="padding:20px;margin:20px auto;max-width:600px;background:var(--bg-tertiary);border-radius:12px;border:2px solid var(--accent-blue);text-align:center;"><h3> ${fn}</h3><p>Added by AI</p></div>\n</body>`);
+            }
+        }
+        
+        // Rename AI
+        if (ti.includes('rename ai') || ti.includes('ubah nama')) {
+            const nn = ti.replace(/rename ai|ubah nama ai|menjadi|ke/gi, '').trim();
+            if (nn) {
+                nc = nc.replace(/<title>.*?<\/title>/i, `<title>${nn} - AI</title>`);
+                nc = nc.replace(/(<span[^>]*>)(Yad AI)(<\/span>)/gi, `$1${nn}$3`);
+            }
+        }
+        
+        $('progFill').style.width = '70%';
+        $('progDetail').textContent = 'Committing...';
+        
+        // Commit
+        const commitUrl = `https://api.github.com/repos/${CFG.github.owner}/${CFG.github.repo}/contents/${CFG.github.filePath}`;
+        const commitRes = await fetch(commitUrl, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${CFG.github.token}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/vnd.github.v3+json',
+                'User-Agent': 'Yad-AI'
+            },
+            body: JSON.stringify({
+                message: ` AI Self-Edit: ${ins.substring(0, 80)}`,
+                content: btoa(unescape(encodeURIComponent(nc))),
+                sha: fileData.sha,
+                branch: CFG.github.branch
+            })
+        });
+        
+        if (!commitRes.ok) {
+            const err = await commitRes.json();
+            throw new Error(`Commit failed: ${err.message}`);
+        }
+        
+        // Trigger deploy
+        $('progFill').style.width = '90%';
+        await fetch(`https://api.github.com/repos/${CFG.github.owner}/${CFG.github.repo}/dispatches`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `token ${CFG.github.token}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json',
+                'User-Agent': 'Yad-AI'
+            },
+            body: JSON.stringify({
+                event_type: 'deploy-to-firebase',
+                client_payload: { project: 'yadstores' }
+            })
+        });
+        
+        $('progFill').style.width = '100%';
+        await new Promise(r => setTimeout(r, 500));
+        hideProg();
+        
+        S.edits++;
+        S.deploys++;
+        S.score += 30;
+        toast(' Self-edit berhasil!', 'success');
+        
+        return ` <b>Self-Edit Berhasil!</b><br><br>
+        <div class="card success">
+             <b>Edit:</b> ${ins.substring(0, 80)}...<br>
+             <b>Total Edits:</b> ${S.edits}<br>
+             <b>Status:</b> Deployed
+        </div><br>
+         <b>Live dalam 1-2 menit!</b>`;
+        
+    } catch(e) {
+        hideProg();
+        return ` <b>Self-Edit Gagal!</b><br><br>
+        <div class="card danger">
+             <b>Error:</b> ${e.message}<br><br>
+             <b>Solusi:</b><br>
+            � Edit manual di GitHub: <a href="https://github.com/${CFG.github.owner}/${CFG.github.repo}/edit/main/index.html" target="_blank">Klik di sini</a><br>
+            � Atau update token: <code>set github token TOKEN</code>
 async function uploadShortFromLink(link){if(!link)return'❌ Link?';if(!link.startsWith('http'))link='https://'+link;showProg('📱 Upload...');try{const fd=new FormData();fd.append('file',link);fd.append('upload_preset',CFG.cloudinary.uploadPreset);fd.append('cloud_name',CFG.cloudinary.cloudName);const r=await fetch(`https://api.cloudinary.com/v1_1/${CFG.cloudinary.cloudName}/auto/upload`,{method:'POST',body:fd});const d=await r.json();if(d.secure_url){S.mediaUploads.push({url:d.secure_url,type:d.resource_type,name:d.original_filename||link.split('/').pop(),uploadedAt:new Date().toISOString()});hideProg();return`✅ <b>Short!</b><br><video controls style="width:100%;max-width:300px;border-radius:12px;"><source src="${d.secure_url}" type="video/mp4"></video>`;}hideProg();return'❌ Gagal.';}catch(e){hideProg();return'❌ '+e.message;}}
 function getShortList(){const v=S.mediaUploads.filter(m=>m.type==='video');if(!v.length)return'📱 Kosong.';let r='<b>📱 Shorts:</b><br>';v.slice(-10).reverse().forEach(x=>{r+=`<div class="card"><video controls style="width:100%;max-width:300px;border-radius:8px;"><source src="${x.url}" type="video/mp4"></video></div>`;});return r;}
 async function learnFromYouTube(url){let vid=null;const p=[/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/];for(const pp of p){const m=url.match(pp);if(m){vid=m[1];break;}}if(!vid)return'❌ Link invalid!';let title='';try{const r=await fetch(`https://www.youtube.com/oembed?url=https://youtube.com/watch?v=${vid}&format=json`);if(r.ok){const d=await r.json();title=d.title||'';}}catch(e){}const item={title:title||`Video ${vid}`,content:`Judul: ${title}\nLink: https://youtube.com/watch?v=${vid}`,tags:['youtube'],type:'lesson',source:'youtube',learned_at:new Date().toISOString()};S.kb.push(item);try{await fs.collection('knowledge_base').add(item);}catch(e){}return`✅ <b>YouTube:</b> ${title||vid}<br>📚 Total KB: ${S.kb.length}`;}

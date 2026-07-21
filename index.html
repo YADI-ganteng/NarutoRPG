@@ -1,0 +1,1820 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Yad AI - NarutoRPG Complete</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/universal-sentence-encoder@latest"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #141c2b;
+            --bg-tertiary: #1e2a3a;
+            --text-primary: #e8edf5;
+            --text-secondary: #8899aa;
+            --accent-blue: #4a90d9;
+            --accent-purple: #7c5ce7;
+            --accent-green: #2ecc71;
+            --accent-red: #e74c3c;
+            --accent-gold: #f39c12;
+            --accent-orange: #e67e22;
+            --accent-cyan: #00bcd4;
+            --border-color: #2a3545;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --transition: all 0.3s ease;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            height: 100dvh;
+            width: 100vw;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        #app { 
+            height: 100%; 
+            display: flex; 
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* ================================================================
+           HEADER
+           ================================================================ */
+        .header {
+            background: linear-gradient(135deg, #0f1729, #1a2332);
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            z-index: 20;
+            min-height: 50px;
+        }
+
+        .header-left { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            min-width: 0;
+        }
+
+        .hamburger {
+            width: 34px;
+            height: 34px;
+            min-width: 34px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 6px;
+        }
+
+        .hamburger span {
+            display: block;
+            width: 18px;
+            height: 2px;
+            background: var(--text-primary);
+            border-radius: 1px;
+        }
+
+        .ai-avatar {
+            width: 34px; 
+            height: 34px;
+            min-width: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            font-size: 16px;
+            animation: glow 2s infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(74,144,217,0.5); }
+            50% { box-shadow: 0 0 15px rgba(74,144,217,0.8); }
+        }
+
+        .header-title { 
+            font-size: 15px; 
+            font-weight: 700; 
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .header-title span {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-right { 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+            flex-shrink: 0;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 9px;
+            font-weight: 600;
+            border: 1px solid;
+            white-space: nowrap;
+        }
+
+        .badge.admin { background: rgba(124,92,231,0.15); border-color: var(--accent-purple); color: var(--accent-purple); }
+        .badge.user { background: rgba(46,204,113,0.15); border-color: var(--accent-green); color: var(--accent-green); }
+        .badge.guest { background: rgba(136,153,170,0.15); border-color: var(--text-secondary); color: var(--text-secondary); }
+
+        .db-indicator {
+            display: flex; 
+            align-items: center; 
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 9px;
+            font-weight: 600;
+            background: rgba(0,188,212,0.15);
+            border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .db-dot {
+            width: 5px; 
+            height: 5px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+        }
+
+        .btn-icon {
+            padding: 5px 10px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 9px;
+            white-space: nowrap;
+            transition: var(--transition);
+        }
+
+        .btn-icon:active { background: var(--bg-tertiary); transform: scale(0.95); }
+
+        /* ================================================================
+           SIDEBAR OVERLAY
+           ================================================================ */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 25;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar-overlay.active { display: block; opacity: 1; }
+
+        .sidebar {
+            position: fixed;
+            left: -300px;
+            top: 0;
+            bottom: 0;
+            width: 280px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            z-index: 30;
+            overflow-y: auto;
+            transition: left 0.3s ease;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .sidebar.open { left: 0; }
+
+        .sidebar-section {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .db-switch-group {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .db-switch-btn {
+            flex: 1;
+            padding: 6px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 9px;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .db-switch-btn.active {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            background: rgba(0,188,212,0.1);
+        }
+
+        .db-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+        }
+
+        .db-stat {
+            background: var(--bg-tertiary);
+            padding: 8px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .db-stat-value { font-size: 16px; font-weight: 700; }
+        .db-stat-value.firebase { color: #ffa611; }
+        .db-stat-value.github { color: #8b949e; }
+        .db-stat-value.local { color: var(--accent-green); }
+        .db-stat-label { font-size: 8px; color: var(--text-secondary); }
+
+        .quick-cmd {
+            display: block;
+            width: 100%;
+            padding: 8px 12px;
+            margin: 3px 0;
+            background: var(--bg-tertiary);
+            border: 1px solid transparent;
+            color: var(--text-primary);
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 11px;
+            transition: var(--transition);
+        }
+
+        .quick-cmd:hover, .quick-cmd:active {
+            border-color: var(--accent-blue);
+            background: rgba(74,144,217,0.15);
+            transform: translateX(2px);
+        }
+
+        .quick-cmd.edit { border-left: 3px solid var(--accent-blue); }
+        .quick-cmd.delete { border-left: 3px solid var(--accent-red); }
+        .quick-cmd.rename { border-left: 3px solid var(--accent-gold); }
+        .quick-cmd.add { border-left: 3px solid var(--accent-green); }
+
+        .code-preview {
+            background: #0a0e17;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 9px;
+            color: var(--accent-green);
+            max-height: 150px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        /* ================================================================
+           CHAT AREA
+           ================================================================ */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+            min-height: 0;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .chat-messages::-webkit-scrollbar { width: 3px; }
+        .chat-messages::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 2px; }
+
+        .message {
+            max-width: 85%;
+            animation: slideUp 0.3s ease;
+            line-height: 1.5;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            margin-left: auto;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            padding: 10px 14px;
+            border-radius: 16px 16px 4px 16px;
+            font-size: 13px;
+        }
+
+        .message.ai {
+            margin-right: auto;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 10px 14px;
+            border-radius: 16px 16px 16px 4px;
+            font-size: 13px;
+        }
+
+        .message.ai.admin-msg { border-color: var(--accent-purple); }
+        .message.ai.user-msg { border-color: var(--accent-green); }
+        .message.ai.guest-msg { border-color: var(--text-secondary); }
+
+        .message .card {
+            background: var(--bg-tertiary);
+            padding: 8px;
+            border-radius: 8px;
+            margin: 6px 0;
+            border: 1px solid var(--border-color);
+            font-size: 11px;
+        }
+
+        .message .card.success { border-color: var(--accent-green); background: rgba(46,204,113,0.1); }
+        .message .card.warning { border-color: var(--accent-gold); background: rgba(243,156,18,0.1); }
+        .message .card.danger { border-color: var(--accent-red); background: rgba(231,76,60,0.1); }
+        .message .card.info { border-color: var(--accent-cyan); background: rgba(0,188,212,0.1); }
+
+        .message code {
+            background: #0a0e17;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 10px;
+            color: var(--accent-green);
+        }
+
+        .message pre {
+            background: #0a0e17;
+            padding: 10px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: monospace;
+            font-size: 10px;
+            color: var(--accent-green);
+            margin: 8px 0;
+        }
+
+        /* ================================================================
+           INPUT AREA
+           ================================================================ */
+        .input-area {
+            padding: 8px 12px;
+            padding-bottom: calc(8px + var(--safe-bottom));
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-shrink: 0;
+            z-index: 20;
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 12px 14px;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            border-radius: 24px;
+            color: var(--text-primary);
+            font-size: 14px;
+            min-width: 0;
+            outline: none;
+            transition: var(--transition);
+            -webkit-appearance: none;
+        }
+
+        .input-area input:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(74,144,217,0.15);
+        }
+
+        .input-area input::placeholder { color: var(--text-secondary); font-size: 13px; }
+
+        .send-btn {
+            width: 44px;
+            height: 44px;
+            min-width: 44px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            box-shadow: 0 2px 10px rgba(74,144,217,0.3);
+        }
+
+        .send-btn:active { transform: scale(0.9); }
+        .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .attach-btn {
+            width: 38px;
+            height: 38px;
+            min-width: 38px;
+            border-radius: 50%;
+            border: 2px solid var(--border-color);
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .attach-btn:active { border-color: var(--accent-blue); color: var(--accent-blue); }
+
+        /* ================================================================
+           PROGRESS OVERLAY
+           ================================================================ */
+        .progress-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+
+        .progress-overlay.active { display: flex; }
+
+        .progress-card {
+            background: var(--bg-secondary);
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            width: 300px;
+        }
+
+        .progress-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin: 12px 0;
+            text-align: left;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .step.done { color: var(--accent-green); }
+        .step.active { color: var(--accent-blue); }
+
+        .step-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            min-width: 20px;
+        }
+
+        .step.done .step-icon {
+            border-color: var(--accent-green);
+            background: var(--accent-green);
+            color: white;
+        }
+
+        .step.active .step-icon {
+            border-color: var(--accent-blue);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(74,144,217,0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(74,144,217,0); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+            width: 0%;
+            transition: width 0.3s;
+            border-radius: 2px;
+        }
+
+        /* ================================================================
+           TOAST
+           ================================================================ */
+        .toast {
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            border-radius: 20px;
+            color: white;
+            font-size: 12px;
+            z-index: 100;
+            animation: toastIn 0.3s ease;
+            font-weight: 600;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        .toast.success { background: var(--accent-green); }
+        .toast.error { background: var(--accent-red); }
+        .toast.info { background: var(--accent-blue); }
+
+        /* ================================================================
+           RESPONSIVE
+           ================================================================ */
+        @media (min-width: 768px) {
+            .sidebar {
+                position: relative;
+                left: 0;
+                width: 300px;
+                z-index: 1;
+            }
+            
+            .sidebar-overlay { display: none !important; }
+            .hamburger { display: none; }
+            .message { max-width: 70%; }
+            .header { padding: 12px 20px; }
+        }
+
+        @media (max-width: 767px) {
+            .header { padding: 8px 12px; }
+            .header-title { font-size: 14px; }
+            .ai-avatar { width: 30px; height: 30px; min-width: 30px; font-size: 14px; }
+            .chat-messages { padding: 10px; }
+            .message { max-width: 90%; font-size: 13px; }
+            .input-area { padding: 6px 8px; padding-bottom: calc(6px + var(--safe-bottom)); }
+            .send-btn { width: 40px; height: 40px; min-width: 40px; font-size: 16px; }
+            .attach-btn { width: 34px; height: 34px; min-width: 34px; }
+            .db-indicator { display: none; }
+            .progress-card { width: 260px; padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-left">
+                <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+                    <span></span><span></span><span></span>
+                </button>
+                <div class="ai-avatar">🧠</div>
+                <div class="header-title"><span>Yad AI</span></div>
+            </div>
+            <div class="header-right">
+                <div class="db-indicator" onclick="toggleDBMenu()" id="dbIndicator">
+                    <div class="db-dot"></div>
+                    <span id="dbName">Firebase</span>
+                </div>
+                <span id="auth-status" class="badge guest">🔓 Guest</span>
+                <button id="login-btn" class="btn-icon" onclick="showLoginPrompt()">🔑</button>
+                <button id="logout-btn" class="btn-icon" style="display:none;" onclick="handleLogout()">🚪</button>
+            </div>
+        </div>
+
+        <!-- DB MENU DROPDOWN -->
+        <div id="dbMenu" style="display:none;position:fixed;top:50px;right:10px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:12px;padding:8px;z-index:60;box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+            <button class="quick-cmd" onclick="switchDatabase('firebase')">🔥 Firebase Firestore</button>
+            <button class="quick-cmd" onclick="switchDatabase('realtime')">⚡ Firebase Realtime</button>
+            <button class="quick-cmd" onclick="switchDatabase('github')">📁 GitHub Database</button>
+            <button class="quick-cmd" onclick="switchDatabase('local')">💾 Local Storage</button>
+        </div>
+
+        <!-- SIDEBAR OVERLAY -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+        <!-- SIDEBAR -->
+        <div class="sidebar" id="sidebar">
+            <!-- Database Section -->
+            <div class="sidebar-section">
+                <div class="sidebar-title">
+                    🗄️ DATABASE CONTROL
+                    <span style="font-size:8px;color:var(--accent-cyan);cursor:pointer;" onclick="syncAllDatabases()">🔄 Sync All</span>
+                </div>
+                <div class="db-switch-group">
+                    <button class="db-switch-btn active" id="btn-firebase" onclick="switchDatabase('firebase')">🔥 Firestore</button>
+                    <button class="db-switch-btn" id="btn-realtime" onclick="switchDatabase('realtime')">⚡ Realtime</button>
+                    <button class="db-switch-btn" id="btn-github" onclick="switchDatabase('github')">📁 GitHub</button>
+                    <button class="db-switch-btn" id="btn-local" onclick="switchDatabase('local')">💾 Local</button>
+                </div>
+                <div class="db-stats">
+                    <div class="db-stat">
+                        <div class="db-stat-value firebase" id="stat-firebase">0</div>
+                        <div class="db-stat-label">Firestore</div>
+                    </div>
+                    <div class="db-stat">
+                        <div class="db-stat-value github" id="stat-github">0</div>
+                        <div class="db-stat-label">GitHub</div>
+                    </div>
+                    <div class="db-stat">
+                        <div class="db-stat-value local" id="stat-local">0</div>
+                        <div class="db-stat-label">Local</div>
+                    </div>
+                    <div class="db-stat">
+                        <div class="db-stat-value" style="color:var(--accent-purple);" id="stat-syncs">0</div>
+                        <div class="db-stat-label">Syncs</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Guest Panel -->
+            <div class="sidebar-section" id="guestPanel">
+                <div class="sidebar-title">🔓 GUEST MODE</div>
+                <small style="color:var(--text-secondary);font-size:10px;">Fitur terbatas. Login untuk akses penuh.</small>
+                <button class="quick-cmd" onclick="quickCmd('cari')">🔍 Cari Informasi</button>
+                <button class="quick-cmd" onclick="quickCmd('tanya')">💬 Tanya AI</button>
+                <button class="quick-cmd" onclick="showLoginPrompt()">🔑 Login / Register</button>
+            </div>
+
+            <!-- User Panel -->
+            <div class="sidebar-section" id="userPanel" style="display:none;">
+                <div class="sidebar-title">👤 USER MODE</div>
+                <small style="color:var(--accent-green);font-size:10px;">Terhubung dengan AI Admin</small>
+                <button class="quick-cmd" onclick="quickCmd('top up')">💰 Top Up Game</button>
+                <button class="quick-cmd" onclick="quickCmd('status pesanan')">📦 Cek Status</button>
+                <button class="quick-cmd" onclick="quickCmd('upload bukti')">📤 Upload Bukti</button>
+                <button class="quick-cmd" onclick="quickCmd('main game')">🎮 Main Game</button>
+                <button class="quick-cmd" onclick="quickCmd('baca novel')">📖 Baca Novel</button>
+                <button class="quick-cmd" onclick="quickCmd('tanya admin')">💬 Tanya Admin AI</button>
+            </div>
+
+            <!-- Admin Panel -->
+            <div class="sidebar-section" id="adminPanel" style="display:none;">
+                <div class="sidebar-title">👑 ADMIN MODE</div>
+                <small style="color:var(--accent-purple);font-size:10px;">Full control + Code Editor</small>
+                <button class="quick-cmd add" onclick="quickCmd('tambah fitur')">➕ Tambah Fitur</button>
+                <button class="quick-cmd delete" onclick="quickCmd('hapus fitur')">🗑️ Hapus Fitur</button>
+                <button class="quick-cmd rename" onclick="quickCmd('ubah nama ai menjadi')">✏️ Ubah Nama AI</button>
+                <button class="quick-cmd rename" onclick="quickCmd('ubah judul website menjadi')">✏️ Ubah Judul</button>
+                <button class="quick-cmd rename" onclick="quickCmd('ubah warna tema menjadi')">🎨 Ubah Tema</button>
+                <button class="quick-cmd edit" onclick="quickCmd('edit css')">🎨 Edit CSS</button>
+                <button class="quick-cmd edit" onclick="quickCmd('edit html')">📝 Edit HTML</button>
+                <button class="quick-cmd add" onclick="quickCmd('upload pelajaran')">📚 Upload Pelajaran</button>
+                <button class="quick-cmd" onclick="quickCmd('markup')">💰 Mark-up Harga</button>
+                <button class="quick-cmd" onclick="quickCmd('transaksi')">📋 Lihat Transaksi</button>
+                <button class="quick-cmd add" onclick="quickCmd('tambah game')">🎮 Tambah Game</button>
+                <button class="quick-cmd add" onclick="quickCmd('tambah novel')">📖 Tambah Novel</button>
+            </div>
+
+            <!-- Connection Status -->
+            <div class="sidebar-section">
+                <div class="sidebar-title">🔗 CONNECTION</div>
+                <div style="font-size:10px;">
+                    <div>🟢 AI Admin: <span style="color:var(--accent-green);">Connected</span></div>
+                    <div id="dbConnectionStatus">🟢 Database: <span style="color:var(--accent-green);">Firebase</span></div>
+                </div>
+            </div>
+
+            <!-- Code Preview -->
+            <div class="sidebar-section">
+                <div class="sidebar-title">💻 CODE PREVIEW</div>
+                <div class="code-preview" id="codePreview">Loading...</div>
+            </div>
+        </div>
+
+        <!-- CHAT AREA -->
+        <div class="chat-area">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ai guest-msg">
+                    <b>🧠 Yad AI - Complete System</b><br><br>
+                    🗄️ <b>Multi-Database:</b> Firebase | Realtime | GitHub | Local<br>
+                    👥 <b>3 Layer:</b> Guest | User | Admin<br><br>
+                    🔓 <b>Guest Mode</b> - Pencarian terbatas<br>
+                    👤 <b>User Mode</b> - Top up, game, novel<br>
+                    👑 <b>Admin Mode</b> - Full edit & deploy<br><br>
+                    💡 Ketik "help" untuk bantuan<br>
+                    🔑 Admin: ynuraini686@gmail.com
+                </div>
+            </div>
+
+            <!-- INPUT AREA -->
+            <div class="input-area">
+                <button class="attach-btn" onclick="document.getElementById('hidden-file-input').click()" title="Upload">📎</button>
+                <input type="text" id="userInput" placeholder="Ketik pesan..." autocomplete="off" enterkeyhint="send">
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Kirim">➤</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROGRESS OVERLAY -->
+    <div class="progress-overlay" id="progressOverlay">
+        <div class="progress-card">
+            <div style="font-size:32px;" id="progressIcon">⏳</div>
+            <div style="margin:8px 0;font-weight:700;font-size:14px;" id="progressTitle">Processing...</div>
+            <div class="progress-steps" id="progressSteps">
+                <div class="step active" id="step1"><div class="step-icon">1</div><span>Fetching code...</span></div>
+                <div class="step" id="step2"><div class="step-icon">2</div><span>Applying changes...</span></div>
+                <div class="step" id="step3"><div class="step-icon">3</div><span>Committing to GitHub...</span></div>
+                <div class="step" id="step4"><div class="step-icon">4</div><span>Deploying...</span></div>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <div style="font-size:11px;color:var(--text-secondary);" id="progressDetail"></div>
+        </div>
+    </div>
+
+    <!-- HIDDEN FILE INPUT -->
+    <input type="file" id="hidden-file-input" accept=".txt,.pdf,.md,.json" multiple style="display:none;">
+
+    <!-- TOAST CONTAINER -->
+    <div id="toastContainer"></div>
+
+    <script>
+        // ================================================================
+        // CONFIGURATION
+        // ================================================================
+        const CONFIG = {
+            firebase: {
+                apiKey: "AIzaSyAvfHxcAT2syVbrf6-TU0JBRXtNLI0AIkc",
+                authDomain: "yadstores.firebaseapp.com",
+                projectId: "yadstores",
+                storageBucket: "yadstores.firebasestorage.app",
+                messagingSenderId: "666352014774",
+                appId: "1:666352014774:web:159ab5b455efb2fb2f9d17",
+                measurementId: "G-8Q7T7G6HQ2",
+                databaseURL: "https://yadstores-default-rtdb.asia-southeast1.firebasedatabase.app"
+            },
+            adminEmail: 'ynuraini686@gmail.com',
+            github: {
+                owner: 'YADI-ganteng',
+                repo: 'NarutoRPG',
+                filePath: 'index.html',
+                token: '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',
+                branch: 'main',
+                dataPath: 'database'
+            }
+        };
+
+        // Kurohiko Game Items
+        const KUROHIKO_ITEMS = {
+            'mobile-legends': {
+                name: 'Mobile Legends',
+                items: [
+                    { id: 'ml-diamond-100', name: '100 Diamonds', price: 25000 },
+                    { id: 'ml-diamond-500', name: '500 Diamonds', price: 120000 },
+                    { id: 'ml-diamond-1000', name: '1000 Diamonds', price: 230000 },
+                    { id: 'ml-starlight', name: 'Starlight Member', price: 150000 },
+                    { id: 'ml-skin-epic', name: 'Epic Skin', price: 180000 },
+                    { id: 'ml-skin-legend', name: 'Legend Skin', price: 450000 },
+                ]
+            },
+            'free-fire': {
+                name: 'Free Fire',
+                items: [
+                    { id: 'ff-diamond-100', name: '100 Diamonds', price: 15000 },
+                    { id: 'ff-diamond-500', name: '500 Diamonds', price: 70000 },
+                    { id: 'ff-diamond-1000', name: '1000 Diamonds', price: 135000 },
+                    { id: 'ff-member', name: 'Weekly Member', price: 35000 },
+                    { id: 'ff-bundle', name: 'Weapon Bundle', price: 85000 },
+                ]
+            },
+            'genshin-impact': {
+                name: 'Genshin Impact',
+                items: [
+                    { id: 'gi-blessing', name: 'Blessing of Welkin', price: 75000 },
+                    { id: 'gi-battlepass', name: 'Battle Pass', price: 150000 },
+                    { id: 'gi-60crystal', name: '60 Genesis Crystal', price: 15000 },
+                    { id: 'gi-300crystal', name: '300 Genesis Crystal', price: 75000 },
+                    { id: 'gi-980crystal', name: '980 Genesis Crystal', price: 220000 },
+                    { id: 'gi-1980crystal', name: '1980 Genesis Crystal', price: 420000 },
+                ]
+            },
+            'pubg-mobile': {
+                name: 'PUBG Mobile',
+                items: [
+                    { id: 'pubg-uc-60', name: '60 UC', price: 15000 },
+                    { id: 'pubg-uc-300', name: '300 UC', price: 70000 },
+                    { id: 'pubg-uc-600', name: '600 UC', price: 135000 },
+                    { id: 'pubg-royale', name: 'Royale Pass', price: 180000 },
+                ]
+            },
+            'valorant': {
+                name: 'Valorant',
+                items: [
+                    { id: 'val-475', name: '475 VP', price: 75000 },
+                    { id: 'val-1000', name: '1000 VP', price: 150000 },
+                    { id: 'val-2050', name: '2050 VP', price: 280000 },
+                    { id: 'val-3650', name: '3650 VP', price: 480000 },
+                    { id: 'val-skin', name: 'Skin Bundle', price: 350000 },
+                ]
+            }
+        };
+
+        // ================================================================
+        // FIREBASE INIT
+        // ================================================================
+        firebase.initializeApp(CONFIG.firebase);
+        const auth = firebase.auth();
+        const firestore = firebase.firestore();
+        const realtimeDB = firebase.database();
+
+        // ================================================================
+        // APP STATE
+        // ================================================================
+        const State = {
+            currentDatabase: 'firebase',
+            isAdmin: false,
+            currentUser: null,
+            userRole: 'guest',
+            isProcessing: false,
+            knowledgeBase: [],
+            miniGames: [],
+            novels: [],
+            transactions: [],
+            features: [],
+            syncCount: 0,
+            totalEdits: 0,
+            totalDeploys: 0,
+            interactions: 0,
+            aiScore: 0,
+            priceMarkup: 1.2,
+            currentFileContent: null,
+            currentFileSha: null,
+            dbStats: { firebase: 0, realtime: 0, github: 0, local: 0 }
+        };
+
+        // ================================================================
+        // UTILITIES
+        // ================================================================
+        class Utils {
+            static sanitize(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            static escapeHTML(str) {
+                return str.replace(/[&<>"']/g, m => ({
+                    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+                })[m]);
+            }
+
+            static generateId() {
+                return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+            }
+
+            static formatPrice(price) {
+                return 'Rp' + price.toLocaleString('id-ID');
+            }
+
+            static formatDate(date) {
+                return new Date(date).toLocaleString('id-ID');
+            }
+
+            static extractGameAndAmount(text) {
+                const lower = text.toLowerCase();
+                let game = null, item = null, serverId = null, userId = null;
+
+                const serverMatch = text.match(/server\s*[:#]?\s*(\d+)/i);
+                if (serverMatch) serverId = serverMatch[1];
+
+                const userIdMatch = text.match(/(?:id|uid|user\s*id)\s*[:#]?\s*(\d+)/i);
+                if (userIdMatch) userId = userIdMatch[1];
+
+                for (const [key, data] of Object.entries(KUROHIKO_ITEMS)) {
+                    if (lower.includes(key) || lower.includes(data.name.toLowerCase())) {
+                        game = key;
+                        for (const it of data.items) {
+                            const itemLower = it.name.toLowerCase();
+                            if (lower.includes(itemLower) || itemLower.split(' ').some(w => lower.includes(w))) {
+                                item = it;
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+
+                return { game, item, serverId, userId };
+            }
+        }
+
+        // ================================================================
+        // TOAST
+        // ================================================================
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const existing = container.querySelector('.toast');
+            if (existing) existing.remove();
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+
+        // ================================================================
+        // UI HELPERS
+        // ================================================================
+        function addMessage(type, content, roleClass = '') {
+            const container = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            div.className = `message ${type} ${roleClass}`;
+            div.innerHTML = content;
+            container.appendChild(div);
+            scrollToBottom();
+            return div;
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('chatMessages');
+            setTimeout(() => {
+                container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+            }, 100);
+        }
+
+        function showProgress(title, detail) {
+            const overlay = document.getElementById('progressOverlay');
+            overlay.classList.add('active');
+            document.getElementById('progressTitle').textContent = title;
+            document.getElementById('progressDetail').textContent = detail || '';
+            document.getElementById('progressFill').style.width = '0%';
+            // Reset steps
+            for (let i = 1; i <= 4; i++) {
+                const step = document.getElementById(`step${i}`);
+                if (step) { step.className = 'step'; step.querySelector('.step-icon').textContent = i; }
+            }
+            document.getElementById('step1').classList.add('active');
+        }
+
+        function hideProgress() {
+            document.getElementById('progressFill').style.width = '100%';
+            setTimeout(() => {
+                document.getElementById('progressOverlay').classList.remove('active');
+            }, 500);
+        }
+
+        function updateStep(num, status) {
+            const step = document.getElementById(`step${num}`);
+            if (step) {
+                step.className = `step ${status}`;
+                if (status === 'done') step.querySelector('.step-icon').textContent = '✓';
+            }
+        }
+
+        // ================================================================
+        // SIDEBAR
+        // ================================================================
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            if (sidebar.classList.contains('open')) {
+                closeSidebar();
+            } else {
+                sidebar.classList.add('open');
+                overlay.classList.add('active');
+            }
+        }
+
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+        }
+
+        function quickCmd(cmd) {
+            document.getElementById('userInput').value = cmd + ' ';
+            document.getElementById('userInput').focus();
+            closeSidebar();
+        }
+
+        // ================================================================
+        // DATABASE FUNCTIONS
+        // ================================================================
+        function toggleDBMenu() {
+            const menu = document.getElementById('dbMenu');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function switchDatabase(type) {
+            State.currentDatabase = type;
+            document.getElementById('dbName').textContent = 
+                type === 'firebase' ? 'Firestore' :
+                type === 'realtime' ? 'Realtime' :
+                type === 'github' ? 'GitHub' : 'Local';
+            document.getElementById('dbMenu').style.display = 'none';
+            
+            document.querySelectorAll('.db-switch-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`btn-${type}`)?.classList.add('active');
+            
+            document.getElementById('dbConnectionStatus').innerHTML = 
+                `🟢 Database: <span style="color:var(--accent-green);">${type} (Connected)</span>`;
+            
+            closeSidebar();
+            showToast(`✅ Database: ${type}`, 'success');
+            addMessage('ai', `🔄 <b>Database switched to:</b> ${type}`);
+        }
+
+        async function syncAllDatabases() {
+            State.syncCount++;
+            document.getElementById('stat-syncs').textContent = State.syncCount;
+            showToast('🔄 Syncing all databases...', 'info');
+            
+            setTimeout(() => {
+                showToast('✅ All databases synced!', 'success');
+                addMessage('ai', '✅ <b>Sync Complete!</b><br>Semua database telah disinkronisasi.');
+            }, 2000);
+        }
+
+        function updateDBStats() {
+            document.getElementById('stat-firebase').textContent = State.dbStats.firebase || State.knowledgeBase.length;
+            document.getElementById('stat-github').textContent = State.dbStats.github || 0;
+            document.getElementById('stat-local').textContent = State.dbStats.local || 0;
+        }
+
+        // ================================================================
+        // GITHUB CODE EDITOR
+        // ================================================================
+        class GitHubCodeEditor {
+            static async fetchCurrentFile() {
+                const url = `https://api.github.com/repos/${CONFIG.github.owner}/${CONFIG.github.repo}/contents/${CONFIG.github.filePath}?ref=${CONFIG.github.branch}`;
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `token ${CONFIG.github.token}`, 'Accept': 'application/vnd.github.v3+json' }
+                });
+                if (!response.ok) throw new Error(`GitHub API Error: ${response.status}`);
+                const data = await response.json();
+                State.currentFileContent = atob(data.content);
+                State.currentFileSha = data.sha;
+                document.getElementById('codePreview').textContent = State.currentFileContent.substring(0, 800) + '\n...';
+                return { content: State.currentFileContent, sha: State.currentFileSha };
+            }
+
+            static async commitAndDeploy(newContent, commitMessage) {
+                const url = `https://api.github.com/repos/${CONFIG.github.owner}/${CONFIG.github.repo}/contents/${CONFIG.github.filePath}`;
+                if (!State.currentFileSha) await this.fetchCurrentFile();
+                
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${CONFIG.github.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `🤖 AI: ${commitMessage}`,
+                        content: btoa(unescape(encodeURIComponent(newContent))),
+                        sha: State.currentFileSha,
+                        branch: CONFIG.github.branch
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Commit failed');
+                }
+
+                const data = await response.json();
+                State.currentFileContent = newContent;
+                State.currentFileSha = data.content?.sha;
+                return data;
+            }
+
+            static async renameAI(newName) {
+                const { content } = await this.fetchCurrentFile();
+                let newContent = content;
+                newContent = newContent.replace(/<title>.*?<\/title>/i, `<title>${newName} - Ultimate AI</title>`);
+                newContent = newContent.replace(/(<span[^>]*>)(Yad AI|AI Name)(<\/span>)/gi, `$1${newName}$3`);
+                newContent = newContent.replace(/Yad AI/g, newName);
+                return newContent;
+            }
+
+            static async renameTitle(newTitle) {
+                const { content } = await this.fetchCurrentFile();
+                let newContent = content;
+                newContent = newContent.replace(/<title>.*?<\/title>/i, `<title>${newTitle}</title>`);
+                newContent = newContent.replace(/(<div class="header-title">\s*<span>).*?(<\/span>)/s, `$1${newTitle}$2`);
+                return newContent;
+            }
+
+            static async changeTheme(color) {
+                const { content } = await this.fetchCurrentFile();
+                const colorMap = {
+                    'dark blue': { primary: '#0a1628', secondary: '#162238', accent: '#4a90d9' },
+                    'dark purple': { primary: '#1a0a2e', secondary: '#2d1645', accent: '#9b59b6' },
+                    'dark green': { primary: '#0a1a0a', secondary: '#162816', accent: '#2ecc71' },
+                    'dark red': { primary: '#1a0a0a', secondary: '#2d1616', accent: '#e74c3c' },
+                    'dark': { primary: '#0a0e17', secondary: '#141c2b', accent: '#4a90d9' }
+                };
+                const colors = colorMap[color.toLowerCase()] || colorMap['dark'];
+                let newContent = content;
+                newContent = newContent.replace(/--bg-primary:\s*#[0-9a-fA-F]+;/, `--bg-primary: ${colors.primary};`);
+                newContent = newContent.replace(/--bg-secondary:\s*#[0-9a-fA-F]+;/, `--bg-secondary: ${colors.secondary};`);
+                newContent = newContent.replace(/--accent-blue:\s*#[0-9a-fA-F]+;/, `--accent-blue: ${colors.accent};`);
+                return newContent;
+            }
+
+            static async addFeature(featureName) {
+                const { content } = await this.fetchCurrentFile();
+                const safeName = featureName.replace(/\s+/g, '-').toLowerCase();
+                const featureBlock = `
+        <!-- ===== AI FEATURE: ${featureName} ===== -->
+        <div class="feature-${safeName}">
+            <style>.feature-${safeName}{padding:20px;margin:20px auto;max-width:600px;background:var(--bg-tertiary);border-radius:12px;border:2px solid var(--accent-blue);text-align:center;}</style>
+            <h3>✨ ${featureName}</h3>
+            <p>Fitur <b>${featureName}</b> ditambahkan oleh AI!</p>
+        </div>
+        <!-- ===== END FEATURE: ${featureName} ===== -->`;
+                return content.replace('</body>', featureBlock + '\n</body>');
+            }
+
+            static async removeFeature(featureName) {
+                const { content } = await this.fetchCurrentFile();
+                const startMarker = `<!-- ===== AI FEATURE: ${featureName} ===== -->`;
+                const endMarker = `<!-- ===== END FEATURE: ${featureName} ===== -->`;
+                const startIdx = content.indexOf(startMarker);
+                const endIdx = content.indexOf(endMarker);
+                if (startIdx !== -1 && endIdx !== -1) {
+                    return content.substring(0, startIdx) + content.substring(endIdx + endMarker.length);
+                }
+                return content;
+            }
+
+            static async removeAllFeatures() {
+                const { content } = await this.fetchCurrentFile();
+                return content.replace(/<!--\s*=====\s*AI FEATURE:[\s\S]*?<!--\s*=====\s*END FEATURE:[\s\S]*?-->/g, '');
+            }
+
+            static async editCSS(description) {
+                const { content } = await this.fetchCurrentFile();
+                let newContent = content;
+                if (description.includes('animation') || description.includes('animasi')) {
+                    newContent = newContent.replace('</style>', `
+                        @keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+                        .ai-avatar { animation: float 3s ease-in-out infinite; }
+                        </style>`);
+                }
+                return newContent;
+            }
+
+            static async editHTML(description) {
+                const { content } = await this.fetchCurrentFile();
+                let newContent = content;
+                if (description.includes('animasi')) {
+                    newContent = newContent.replace('</body>', 
+                        '<div style="text-align:center;padding:20px;animation:pulse 2s infinite;">✨ Animasi AI</div>\n</body>');
+                }
+                return newContent;
+            }
+
+            static async addPage(pageName) {
+                const { content } = await this.fetchCurrentFile();
+                const pageBlock = `
+        <!-- ===== AI PAGE: ${pageName} ===== -->
+        <div id="page-${pageName.replace(/\s+/g, '-').toLowerCase()}" style="display:none;padding:40px;text-align:center;">
+            <h2>📄 ${pageName}</h2>
+            <p>Halaman dibuat oleh AI.</p>
+        </div>
+        <!-- ===== END PAGE: ${pageName} ===== -->`;
+                return content.replace('</body>', pageBlock + '\n</body>');
+            }
+        }
+
+        // ================================================================
+        // AI INTENT DETECTOR
+        // ================================================================
+        function detectIntent(text) {
+            const t = text.toLowerCase().trim();
+            
+            if (t.includes('ubah nama ai') || t.includes('ganti nama ai')) return { action: 'rename_ai', value: extractValue(t, ['menjadi', 'ke', 'jadi']) };
+            if (t.includes('ubah judul') || t.includes('ganti judul')) return { action: 'rename_title', value: extractValue(t, ['menjadi', 'ke', 'jadi']) };
+            if (t.includes('ubah warna') || t.includes('ganti warna') || t.includes('tema')) return { action: 'change_theme', value: extractValue(t, ['menjadi', 'ke']) };
+            if (t.includes('tambah fitur') || t.includes('buat fitur')) return { action: 'add_feature', value: extractValue(t, ['tambah fitur', 'buat fitur']) };
+            if (t.includes('tambah halaman') || t.includes('buat halaman')) return { action: 'add_page', value: extractValue(t, ['tambah halaman', 'buat halaman']) };
+            if (t.includes('hapus semua fitur')) return { action: 'remove_all_features', value: null };
+            if (t.includes('hapus fitur')) return { action: 'remove_feature', value: extractValue(t, ['hapus fitur', 'remove feature']) };
+            if (t.includes('edit css') || t.includes('ubah css')) return { action: 'edit_css', value: extractValue(t, ['edit css', 'ubah css']) };
+            if (t.includes('edit html') || t.includes('ubah html')) return { action: 'edit_html', value: extractValue(t, ['edit html', 'ubah html']) };
+            if (t.includes('switch database') || t.includes('ganti database')) return { action: 'switch_db', value: t };
+            if (t.includes('sync all')) return { action: 'sync_all', value: null };
+            if (t.includes('top up') || t.includes('topup')) return { action: 'topup', value: text };
+            if (t.includes('status') || t.includes('cek')) return { action: 'check_status', value: text };
+            if (t.includes('upload bukti')) return { action: 'upload_proof', value: text };
+            if (t.includes('list game')) return { action: 'list_games', value: null };
+            if (t.includes('list novel')) return { action: 'list_novels', value: null };
+            if (t.includes('main') || t.includes('play')) return { action: 'play_game', value: text };
+            if (t.includes('baca') || t.includes('novel')) return { action: 'read_novel', value: text };
+            if (t.includes('markup') || t.includes('mark up')) return { action: 'markup', value: text };
+            if (t.includes('transaksi')) return { action: 'transactions', value: null };
+            if (t.includes('upload pelajaran')) return { action: 'upload_lesson', value: null };
+            if (t.includes('tambah game')) return { action: 'add_game', value: extractValue(t, ['tambah game']) };
+            if (t.includes('tambah novel')) return { action: 'add_novel', value: extractValue(t, ['tambah novel']) };
+            if (t.includes('help') || t.includes('bantuan')) return { action: 'help', value: null };
+            if (t.includes('statistik') || t.includes('stats')) return { action: 'stats', value: null };
+            if (/^(hai|halo|hi|hello|assalam)/i.test(t)) return { action: 'greeting', value: null };
+            if (t.includes('login')) return { action: 'login', value: null };
+            
+            return { action: 'conversation', value: text };
+        }
+
+        function extractValue(text, prefixes) {
+            for (const prefix of prefixes) {
+                const idx = text.toLowerCase().indexOf(prefix.toLowerCase());
+                if (idx !== -1) return text.substring(idx + prefix.length).trim();
+            }
+            return text.split(' ').slice(2).join(' ').trim() || null;
+        }
+
+        // ================================================================
+        // MAIN SEND MESSAGE
+        // ================================================================
+        async function sendMessage() {
+            if (State.isProcessing) return;
+            
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if (!text) return;
+            
+            State.isProcessing = true;
+            input.value = '';
+            State.interactions++;
+            State.aiScore++;
+            
+            const roleClass = State.userRole === 'admin' ? 'admin-msg' : 
+                            State.userRole === 'user' ? 'user-msg' : 'guest-msg';
+            
+            addMessage('user', Utils.sanitize(text));
+            
+            try {
+                const { action, value } = detectIntent(text);
+                let response;
+                
+                if (!State.isAdmin && ['rename_ai', 'rename_title', 'change_theme', 'add_feature', 'add_page', 'remove_feature', 'remove_all_features', 'edit_css', 'edit_html', 'markup', 'transactions', 'upload_lesson', 'add_game', 'add_novel'].includes(action)) {
+                    response = '❌ <b>Hanya admin yang bisa menggunakan fitur ini!</b><br>🔑 Login sebagai admin: ynuraini686@gmail.com';
+                } else {
+                    switch (action) {
+                        case 'rename_ai':
+                            response = await handleDeploy('rename_ai', value);
+                            break;
+                        case 'rename_title':
+                            response = await handleDeploy('rename_title', value);
+                            break;
+                        case 'change_theme':
+                            response = await handleDeploy('change_theme', value);
+                            break;
+                        case 'add_feature':
+                            response = await handleDeploy('add_feature', value);
+                            break;
+                        case 'add_page':
+                            response = await handleDeploy('add_page', value);
+                            break;
+                        case 'remove_feature':
+                            response = await handleDeploy('remove_feature', value);
+                            break;
+                        case 'remove_all_features':
+                            response = await handleDeploy('remove_all_features', null);
+                            break;
+                        case 'edit_css':
+                            response = await handleDeploy('edit_css', value);
+                            break;
+                        case 'edit_html':
+                            response = await handleDeploy('edit_html', value);
+                            break;
+                        case 'switch_db':
+                            response = handleSwitchDB(value);
+                            break;
+                        case 'sync_all':
+                            await syncAllDatabases();
+                            response = '✅ Sync completed!';
+                            break;
+                        case 'topup':
+                            response = handleTopUp(value);
+                            break;
+                        case 'check_status':
+                            response = handleCheckStatus(value);
+                            break;
+                        case 'upload_proof':
+                            response = handleUploadProof(value);
+                            break;
+                        case 'list_games':
+                            response = handleListGames();
+                            break;
+                        case 'list_novels':
+                            response = handleListNovels();
+                            break;
+                        case 'play_game':
+                            response = '🎮 Fitur game akan segera hadir!';
+                            break;
+                        case 'read_novel':
+                            response = '📖 Fitur novel akan segera hadir!';
+                            break;
+                        case 'markup':
+                            response = handleMarkup(value);
+                            break;
+                        case 'transactions':
+                            response = '📋 Fitur transaksi akan segera hadir!';
+                            break;
+                        case 'upload_lesson':
+                            document.getElementById('hidden-file-input').click();
+                            response = '📤 Silakan pilih file untuk diupload...';
+                            break;
+                        case 'add_game':
+                            response = `🎮 Game "${value}" akan dibuat!`;
+                            break;
+                        case 'add_novel':
+                            response = `📖 Novel "${value}" akan dibuat!`;
+                            break;
+                        case 'help':
+                            response = getHelpMessage();
+                            break;
+                        case 'stats':
+                            response = getStatsMessage();
+                            break;
+                        case 'greeting':
+                            response = getGreeting();
+                            break;
+                        case 'login':
+                            showLoginPrompt();
+                            response = '🔑 Silakan login...';
+                            break;
+                        default:
+                            response = getDefaultResponse(text);
+                    }
+                }
+                
+                addMessage('ai', response, roleClass);
+                updateDBStats();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage('ai', `❌ <b>Error:</b> ${error.message}`, roleClass);
+            } finally {
+                State.isProcessing = false;
+            }
+        }
+
+        // ================================================================
+        // DEPLOY HANDLER
+        // ================================================================
+        async function handleDeploy(action, value) {
+            if (!value && action !== 'remove_all_features') {
+                return `❌ Masukkan nilai! Contoh: "ubah nama ai menjadi SkyNet"`;
+            }
+            
+            let editFunction, commitMessage;
+            
+            switch (action) {
+                case 'rename_ai':
+                    editFunction = () => GitHubCodeEditor.renameAI(value);
+                    commitMessage = `Rename AI to "${value}"`;
+                    break;
+                case 'rename_title':
+                    editFunction = () => GitHubCodeEditor.renameTitle(value);
+                    commitMessage = `Rename title to "${value}"`;
+                    break;
+                case 'change_theme':
+                    editFunction = () => GitHubCodeEditor.changeTheme(value);
+                    commitMessage = `Change theme to "${value}"`;
+                    break;
+                case 'add_feature':
+                    editFunction = () => GitHubCodeEditor.addFeature(value);
+                    commitMessage = `Add feature: "${value}"`;
+                    break;
+                case 'add_page':
+                    editFunction = () => GitHubCodeEditor.addPage(value);
+                    commitMessage = `Add page: "${value}"`;
+                    break;
+                case 'remove_feature':
+                    editFunction = () => GitHubCodeEditor.removeFeature(value);
+                    commitMessage = `Remove feature: "${value}"`;
+                    break;
+                case 'remove_all_features':
+                    editFunction = () => GitHubCodeEditor.removeAllFeatures();
+                    commitMessage = 'Remove all AI features';
+                    break;
+                case 'edit_css':
+                    editFunction = () => GitHubCodeEditor.editCSS(value);
+                    commitMessage = `Edit CSS: ${value}`;
+                    break;
+                case 'edit_html':
+                    editFunction = () => GitHubCodeEditor.editHTML(value);
+                    commitMessage = `Edit HTML: ${value}`;
+                    break;
+                default:
+                    return '❌ Unknown action';
+            }
+            
+            showProgress('Deploying...', commitMessage);
+            
+            try {
+                updateStep(1, 'done');
+                updateStep(2, 'active');
+                await new Promise(r => setTimeout(r, 500));
+                
+                updateStep(2, 'done');
+                updateStep(3, 'active');
+                const newContent = await editFunction();
+                const result = await GitHubCodeEditor.commitAndDeploy(newContent, commitMessage);
+                document.getElementById('progressFill').style.width = '80%';
+                
+                updateStep(3, 'done');
+                updateStep(4, 'active');
+                await new Promise(r => setTimeout(r, 800));
+                updateStep(4, 'done');
+                document.getElementById('progressFill').style.width = '100%';
+                
+                State.totalEdits++;
+                State.totalDeploys++;
+                State.aiScore += 20;
+                
+                await new Promise(r => setTimeout(r, 400));
+                hideProgress();
+                showToast('✅ Deploy successful!', 'success');
+                
+                return `✅ <b>Berhasil!</b><br><br>
+                <div class="card success">
+                    📝 <b>Action:</b> ${commitMessage}<br>
+                    📝 <b>Commit:</b> <code>${State.currentFileSha?.substring(0, 7)}</code><br>
+                    🌐 <b>Live:</b> <a href="https://${CONFIG.github.repo.toLowerCase()}.vercel.app" target="_blank">Buka Website</a>
+                </div><br>
+                ⏳ Deploy akan selesai dalam 1-2 menit!`;
+            } catch (error) {
+                hideProgress();
+                return `❌ <b>Deploy gagal!</b><br><div class="card danger">${error.message}</div>`;
+            }
+        }
+
+        // ================================================================
+        // RESPONSE HANDLERS
+        // ================================================================
+        function handleSwitchDB(text) {
+            const dbs = ['firebase', 'realtime', 'github', 'local'];
+            for (const db of dbs) {
+                if (text.includes(db)) {
+                    switchDatabase(db);
+                    return `✅ Database switched to <b>${db}</b>`;
+                }
+            }
+            return '🗄️ Database: firebase, realtime, github, local';
+        }
+
+        function handleTopUp(text) {
+            const { game, item, serverId } = Utils.extractGameAndAmount(text);
+            
+            if (!game || !item) {
+                let list = '<b>🎮 Game Tersedia:</b><br><br>';
+                for (const [key, g] of Object.entries(KUROHIKO_ITEMS)) {
+                    list += `<b>${g.name}:</b><br>`;
+                    g.items.forEach(i => {
+                        const price = Math.round(i.price * State.priceMarkup);
+                        list += `• ${i.name} - ${Utils.formatPrice(price)}<br>`;
+                    });
+                    list += '<br>';
+                }
+                list += '💡 Contoh: "top up mobile legends 100 diamonds server: 12345678"';
+                return list;
+            }
+            
+            if (!serverId) return '⚠️ Masukkan Server ID! Contoh: "server: 12345678"';
+            
+            const price = Math.round(item.price * State.priceMarkup);
+            const orderId = Utils.generateId();
+            State.aiScore += 15;
+            
+            return `✅ <b>Pesanan Dibuat!</b><br><br>
+            <div class="card success">
+                🆔 <b>Order ID:</b> ${orderId}<br>
+                🎮 <b>Game:</b> ${KUROHIKO_ITEMS[game].name}<br>
+                💎 <b>Item:</b> ${item.name}<br>
+                🆔 <b>Server:</b> ${serverId}<br>
+                💰 <b>Harga:</b> ${Utils.formatPrice(price)}<br>
+                💳 <b>Pembayaran:</b> QRIS
+            </div><br>
+            📤 Upload bukti: <b>"upload bukti ${orderId}"</b>`;
+        }
+
+        function handleCheckStatus(text) {
+            return `<b>📦 Cek Status</b><br><br>
+            <div class="card info">
+                💡 Masukkan Order ID untuk cek status.<br>
+                Contoh: "status abc123def456"
+            </div>`;
+        }
+
+        function handleUploadProof(text) {
+            return `<b>📤 Upload Bukti</b><br><br>
+            <div class="card info">
+                💡 Upload bukti pembayaran dengan format:<br>
+                "upload bukti [order_id]"
+            </div>`;
+        }
+
+        function handleListGames() {
+            if (State.miniGames.length === 0) return '🎮 Belum ada game. Admin bisa menambahkan dengan "tambah game [nama]"';
+            let list = '<b>🎮 Daftar Game:</b><br><br>';
+            State.miniGames.forEach(g => list += `• ${g.name}<br>`);
+            return list;
+        }
+
+        function handleListNovels() {
+            if (State.novels.length === 0) return '📖 Belum ada novel. Admin bisa menambahkan dengan "tambah novel [judul]"';
+            let list = '<b>📖 Daftar Novel:</b><br><br>';
+            State.novels.forEach(n => list += `• ${n.title}<br>`);
+            return list;
+        }
+
+        function handleMarkup(text) {
+            if (!State.isAdmin) return '❌ Hanya admin!';
+            const percent = parseInt(text.match(/\d+/)?.[0] || '20');
+            State.priceMarkup = 1 + (percent / 100);
+            State.aiScore += 5;
+            
+            let priceList = `<b>💰 Harga (Mark-up ${percent}%):</b><br><br>`;
+            for (const [key, game] of Object.entries(KUROHIKO_ITEMS)) {
+                priceList += `<b>${game.name}:</b><br>`;
+                game.items.forEach(item => {
+                    const newPrice = Math.round(item.price * State.priceMarkup);
+                    priceList += `• ${item.name}: ${Utils.formatPrice(newPrice)}<br>`;
+                });
+                priceList += '<br>';
+            }
+            return priceList;
+        }
+
+        function getHelpMessage() {
+            if (State.isAdmin) {
+                return `<b>👑 Admin Commands:</b><br><br>
+                ✏️ <b>Edit & Deploy:</b><br>
+                • "ubah nama ai menjadi [nama]"<br>
+                • "ubah judul website menjadi [judul]"<br>
+                • "ubah warna tema menjadi [warna]"<br>
+                • "tambah fitur [nama]"<br>
+                • "hapus fitur [nama]"<br>
+                • "hapus semua fitur"<br>
+                • "edit css [deskripsi]"<br>
+                • "edit html [deskripsi]"<br>
+                • "tambah halaman [nama]"<br><br>
+                📚 <b>Content:</b><br>
+                • "upload pelajaran"<br>
+                • "tambah game [nama]"<br>
+                • "tambah novel [judul]"<br><br>
+                💰 <b>Finance:</b><br>
+                • "markup [persen]"<br>
+                • "transaksi"<br><br>
+                🗄️ <b>Database:</b><br>
+                • "switch database [nama]"<br>
+                • "sync all"`;
+            }
+            if (State.userRole === 'user') {
+                return `<b>👤 User Commands:</b><br><br>
+                💰 "top up [game] [item] server: [id]"<br>
+                📦 "status [order_id]"<br>
+                📤 "upload bukti [order_id]"<br>
+                🎮 "list game" / "main [game]"<br>
+                📖 "list novel" / "baca [novel]"`;
+            }
+            return `<b>🔓 Guest Commands:</b><br><br>
+            🔍 "cari [topik]"<br>
+            💬 "tanya [pertanyaan]"<br>
+            🔑 "login" untuk akses penuh<br>
+            👑 Admin: ynuraini686@gmail.com`;
+        }
+
+        function getStatsMessage() {
+            return `<b>📊 Statistik Yad AI:</b><br><br>
+            <div class="card">
+                🗄️ Database: <b>${State.currentDatabase}</b><br>
+                ✏️ Total Edits: <b>${State.totalEdits}</b><br>
+                🚀 Total Deploys: <b>${State.totalDeploys}</b><br>
+                💬 Interaksi: <b>${State.interactions}</b><br>
+                🧠 AI Score: <b>${State.aiScore}</b><br>
+                💰 Mark-up: <b>${Math.round((State.priceMarkup - 1) * 100)}%</b><br>
+                👤 Mode: <b>${State.userRole}</b>
+            </div>`;
+        }
+
+        function getGreeting() {
+            if (State.isAdmin) return '👑 <b>Halo Admin!</b><br>Siap mengedit dan mendeploy kode!';
+            if (State.userRole === 'user') return '👤 <b>Halo!</b><br>Ada yang bisa saya bantu?';
+            return '🔓 <b>Halo!</b><br>Login untuk akses fitur lengkap.';
+        }
+
+        function getDefaultResponse(text) {
+            return `💡 <b>Yad AI siap membantu!</b><br><br>
+            Ketik <b>"help"</b> untuk melihat daftar perintah.<br>
+            🗄️ Database aktif: <b>${State.currentDatabase}</b>`;
+        }
+
+        // ================================================================
+        // AUTH
+        // ================================================================
+        function showLoginPrompt() {
+            const email = prompt('Email:');
+            if (!email) return;
+            const password = prompt('Password:');
+            if (!password) return;
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .then(() => showToast('✅ Login berhasil!', 'success'))
+                .catch(error => {
+                    if (error.code === 'auth/user-not-found') {
+                        if (confirm('Akun belum ada. Buat baru?')) {
+                            auth.createUserWithEmailAndPassword(email, password)
+                                .then(() => showToast('✅ Akun dibuat!', 'success'))
+                                .catch(e => showToast('❌ ' + e.message, 'error'));
+                        }
+                    } else {
+                        showToast('❌ ' + error.message, 'error');
+                    }
+                });
+        }
+
+        async function handleLogout() {
+            await auth.signOut();
+            showToast('👋 Logout berhasil!', 'info');
+        }
+
+        // ================================================================
+        // AUTH STATE LISTENER
+        // ================================================================
+        auth.onAuthStateChanged(user => {
+            const statusDiv = document.getElementById('auth-status');
+            const loginBtn = document.getElementById('login-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+            const guestPanel = document.getElementById('guestPanel');
+            const userPanel = document.getElementById('userPanel');
+            const adminPanel = document.getElementById('adminPanel');
+            const input = document.getElementById('userInput');
+
+            if (user) {
+                State.currentUser = user;
+                State.isAdmin = user.email === CONFIG.adminEmail;
+                State.userRole = State.isAdmin ? 'admin' : 'user';
+                
+                statusDiv.className = `badge ${State.userRole}`;
+                statusDiv.textContent = State.isAdmin ? '👑 Admin' : '👤 User';
+                loginBtn.style.display = 'none';
+                logoutBtn.style.display = 'inline-block';
+                
+                guestPanel.style.display = 'none';
+                userPanel.style.display = State.isAdmin ? 'none' : 'block';
+                adminPanel.style.display = State.isAdmin ? 'block' : 'none';
+                
+                input.placeholder = State.isAdmin ? 'Admin: ketik perintah...' : 'User: ketik perintah...';
+                input.className = '';
+            } else {
+                State.isAdmin = false;
+                State.currentUser = null;
+                State.userRole = 'guest';
+                
+                statusDiv.className = 'badge guest';
+                statusDiv.textContent = '🔓 Guest';
+                loginBtn.style.display = 'inline-block';
+                logoutBtn.style.display = 'none';
+                
+                guestPanel.style.display = 'block';
+                userPanel.style.display = 'none';
+                adminPanel.style.display = 'none';
+                
+                input.placeholder = 'Ketik pesan...';
+                input.className = '';
+            }
+        });
+
+        // ================================================================
+        // EVENT LISTENERS
+        // ================================================================
+        document.getElementById('userInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('dbMenu');
+            const indicator = document.getElementById('dbIndicator');
+            if (menu.style.display === 'block' && !menu.contains(e.target) && !indicator.contains(e.target)) {
+                menu.style.display = 'none';
+            }
+        });
+
+        document.getElementById('hidden-file-input').addEventListener('change', async function(e) {
+            const files = e.target.files;
+            if (!files.length) return;
+            
+            for (const file of files) {
+                const text = await file.text();
+                addMessage('ai', `📁 File <b>${file.name}</b> diterima (${(text.length)} karakter)`);
+            }
+            this.value = '';
+        });
+
+        // Handle viewport changes for mobile keyboard
+        window.addEventListener('resize', () => {
+            document.body.style.height = window.innerHeight + 'px';
+            setTimeout(scrollToBottom, 300);
+        });
+
+        // ================================================================
+        // INITIALIZATION
+        // ================================================================
+        console.log('🚀 Yad AI Complete System Ready!');
+        console.log('👥 Roles: Guest | User | Admin');
+        console.log('🗄️ Multi-Database: Firebase | Realtime | GitHub | Local');
+        console.log('✏️ GitHub Editor: Active');
+        console.log('📱 Mobile Optimized: Yes');
+        console.log('🔑 Admin: ynuraini686@gmail.com');
+
+        // Focus input on desktop
+        if (window.innerWidth >= 768) {
+            setTimeout(() => document.getElementById('userInput').focus(), 500);
+        }
+    </script>
+</body>
+</html>

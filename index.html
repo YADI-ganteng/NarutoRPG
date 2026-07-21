@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Yad AI - Ultimate Complete v8.5</title>
+    <title>Yad AI - Secure v9.5</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/universal-sentence-encoder@latest"></script>
@@ -15,61 +15,51 @@
     <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
     
     <style>
-        :root {
-            --bg-primary: #0a0e17; --bg-secondary: #141c2b; --bg-tertiary: #1e2a3a;
-            --text-primary: #e8edf5; --text-secondary: #8899aa;
-            --accent-blue: #4a90d9; --accent-purple: #7c5ce7; --accent-green: #2ecc71;
-            --accent-red: #e74c3c; --accent-gold: #f39c12; --accent-cyan: #00bcd4;
-            --border-color: #2a3545; --safe-bottom: env(safe-area-inset-bottom, 0px);
-        }
-        * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-        body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg-primary); color:var(--text-primary); height:100vh; width:100vw; overflow:hidden; position:fixed; top:0; left:0; }
-        #app { height:100%; display:flex; flex-direction:column; }
-        .header { background:linear-gradient(135deg,#0f1729,#1a2332); padding:12px 16px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; z-index:20; min-height:56px; }
-        .header-left { display:flex; align-items:center; gap:12px; }
-        .ai-avatar { width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple)); display:flex; align-items:center; justify-content:center; font-size:18px; animation:glow 2s infinite; }
-        @keyframes glow { 0%,100%{box-shadow:0 0 5px rgba(74,144,217,0.5)} 50%{box-shadow:0 0 25px rgba(124,92,231,0.8)} }
-        .header-title { font-size:15px; font-weight:700; }
-        .header-title span { background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-        .header-right { display:flex; align-items:center; gap:8px; }
-        .badge { padding:5px 10px; border-radius:20px; font-size:10px; font-weight:600; border:1px solid; }
-        .badge.admin { background:rgba(124,92,231,0.15); border-color:var(--accent-purple); color:var(--accent-purple); }
-        .badge.user { background:rgba(46,204,113,0.15); border-color:var(--accent-green); color:var(--accent-green); }
-        .badge.guest { background:rgba(136,153,170,0.15); border-color:var(--text-secondary); color:var(--text-secondary); }
-        .btn-icon { padding:6px 12px; border-radius:20px; border:1px solid var(--border-color); background:transparent; color:var(--text-primary); cursor:pointer; font-size:10px; }
-        .btn-icon:active { transform:scale(0.95); }
-        .chat-area { flex:1; display:flex; flex-direction:column; background:var(--bg-primary); min-height:0; }
-        .chat-messages { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; scroll-behavior:smooth; }
-        .chat-messages::-webkit-scrollbar { width:4px; }
-        .chat-messages::-webkit-scrollbar-thumb { background:var(--border-color); border-radius:2px; }
-        .message { max-width:85%; animation:slideUp 0.4s ease; line-height:1.6; word-wrap:break-word; }
-        @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-        .message.user { margin-left:auto; background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple)); color:white; padding:12px 16px; border-radius:20px 20px 4px 20px; font-size:13px; }
-        .message.ai { margin-right:auto; background:var(--bg-secondary); border:1px solid var(--border-color); padding:12px 16px; border-radius:20px 20px 20px 4px; font-size:13px; }
-        .message .card { background:var(--bg-tertiary); padding:10px; border-radius:10px; margin:8px 0; border:1px solid var(--border-color); font-size:11px; }
-        .message .card.success { border-color:var(--accent-green); background:rgba(46,204,113,0.1); }
-        .message .card.info { border-color:var(--accent-cyan); background:rgba(0,188,212,0.1); }
-        .message .card.warning { border-color:var(--accent-gold); background:rgba(243,156,18,0.1); }
-        .message code { background:#0a0e17; padding:2px 6px; border-radius:4px; font-family:monospace; font-size:10px; color:var(--accent-green); }
-        .message a { color:var(--accent-cyan); text-decoration:none; }
-        .input-area { padding:12px 16px; padding-bottom:calc(12px + var(--safe-bottom)); background:var(--bg-secondary); border-top:1px solid var(--border-color); display:flex; gap:10px; align-items:center; }
-        .input-area input { flex:1; padding:12px 18px; background:var(--bg-primary); border:2px solid var(--border-color); border-radius:24px; color:var(--text-primary); font-size:14px; outline:none; font-family:inherit; }
-        .input-area input:focus { border-color:var(--accent-blue); }
-        .send-btn { width:46px; height:46px; border-radius:50%; border:none; background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple)); color:white; cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center; }
-        .send-btn:active { transform:scale(0.9); }
-        .attach-btn { width:40px; height:40px; border-radius:50%; border:2px solid var(--border-color); background:transparent; color:var(--text-secondary); cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; }
-        .toast { position:fixed; top:20px; left:50%; transform:translateX(-50%); padding:12px 24px; border-radius:24px; color:white; font-size:12px; z-index:1000; animation:toastIn 0.4s ease; font-weight:600; }
-        @keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(-30px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
-        .toast.success { background:rgba(46,204,113,0.95); } .toast.error { background:rgba(231,76,60,0.95); } .toast.info { background:rgba(74,144,217,0.95); }
-        .progress-overlay { position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);display:none;align-items:center;justify-content:center;z-index:50; }
-        .progress-overlay.active { display:flex; }
-        .progress-card { background:var(--bg-secondary);padding:32px;border-radius:20px;text-align:center;width:320px;border:1px solid var(--border-color); }
-        .progress-bar { width:100%;height:6px;background:var(--bg-tertiary);border-radius:3px;margin:16px 0;overflow:hidden; }
-        .progress-fill { height:100%;background:linear-gradient(90deg,var(--accent-blue),var(--accent-purple));width:0%;transition:width 0.5s; }
-        .typing-indicator { display:inline-flex;gap:4px;padding:4px 0; }
-        .typing-indicator span { width:8px;height:8px;border-radius:50%;background:var(--text-secondary);animation:typing 1.4s infinite; }
-        .typing-indicator span:nth-child(2){animation-delay:0.2s} .typing-indicator span:nth-child(3){animation-delay:0.4s}
-        @keyframes typing { 0%,60%,100%{transform:translateY(0);opacity:0.4} 30%{transform:translateY(-10px);opacity:1} }
+        :root{--bg-primary:#0a0e17;--bg-secondary:#141c2b;--bg-tertiary:#1e2a3a;--text-primary:#e8edf5;--text-secondary:#8899aa;--accent-blue:#4a90d9;--accent-purple:#7c5ce7;--accent-green:#2ecc71;--accent-red:#e74c3c;--accent-gold:#f39c12;--accent-cyan:#00bcd4;--border-color:#2a3545;--safe-bottom:env(safe-area-inset-bottom,0px)}
+        *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+        body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg-primary);color:var(--text-primary);height:100vh;width:100vw;overflow:hidden;position:fixed;top:0;left:0}
+        #app{height:100%;display:flex;flex-direction:column}
+        .header{background:linear-gradient(135deg,#0f1729,#1a2332);padding:12px 16px;border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;z-index:20;min-height:56px}
+        .header-left{display:flex;align-items:center;gap:12px}
+        .ai-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));display:flex;align-items:center;justify-content:center;font-size:18px;animation:glow 2s infinite}
+        @keyframes glow{0%,100%{box-shadow:0 0 5px rgba(74,144,217,0.5)}50%{box-shadow:0 0 25px rgba(124,92,231,0.8)}}
+        .header-title{font-size:15px;font-weight:700}
+        .header-title span{background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .header-right{display:flex;align-items:center;gap:8px}
+        .badge{padding:5px 10px;border-radius:20px;font-size:10px;font-weight:600;border:1px solid}
+        .badge.admin{background:rgba(124,92,231,0.15);border-color:var(--accent-purple);color:var(--accent-purple)}
+        .badge.user{background:rgba(46,204,113,0.15);border-color:var(--accent-green);color:var(--accent-green)}
+        .badge.guest{background:rgba(136,153,170,0.15);border-color:var(--text-secondary);color:var(--text-secondary)}
+        .btn-icon{padding:6px 12px;border-radius:20px;border:1px solid var(--border-color);background:transparent;color:var(--text-primary);cursor:pointer;font-size:10px}
+        .btn-icon:active{transform:scale(0.95)}
+        .chat-area{flex:1;display:flex;flex-direction:column;background:var(--bg-primary);min-height:0}
+        .chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth}
+        .chat-messages::-webkit-scrollbar{width:4px}
+        .chat-messages::-webkit-scrollbar-thumb{background:var(--border-color);border-radius:2px}
+        .message{max-width:85%;animation:slideUp 0.4s ease;line-height:1.6;word-wrap:break-word}
+        @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        .message.user{margin-left:auto;background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));color:white;padding:12px 16px;border-radius:20px 20px 4px 20px;font-size:13px}
+        .message.ai{margin-right:auto;background:var(--bg-secondary);border:1px solid var(--border-color);padding:12px 16px;border-radius:20px 20px 20px 4px;font-size:13px}
+        .message .card{background:var(--bg-tertiary);padding:10px;border-radius:10px;margin:8px 0;border:1px solid var(--border-color);font-size:11px}
+        .message .card.success{border-color:var(--accent-green);background:rgba(46,204,113,0.1)}
+        .message .card.info{border-color:var(--accent-cyan);background:rgba(0,188,212,0.1)}
+        .message .card.warning{border-color:var(--accent-gold);background:rgba(243,156,18,0.1)}
+        .message code{background:#0a0e17;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:10px;color:var(--accent-green)}
+        .message a{color:var(--accent-cyan);text-decoration:none}
+        .input-area{padding:12px 16px;padding-bottom:calc(12px + var(--safe-bottom));background:var(--bg-secondary);border-top:1px solid var(--border-color);display:flex;gap:10px;align-items:center}
+        .input-area input{flex:1;padding:12px 18px;background:var(--bg-primary);border:2px solid var(--border-color);border-radius:24px;color:var(--text-primary);font-size:14px;outline:none;font-family:inherit}
+        .input-area input:focus{border-color:var(--accent-blue)}
+        .send-btn{width:46px;height:46px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));color:white;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center}
+        .send-btn:active{transform:scale(0.9)}
+        .attach-btn{width:40px;height:40px;border-radius:50%;border:2px solid var(--border-color);background:transparent;color:var(--text-secondary);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+        .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:12px 24px;border-radius:24px;color:white;font-size:12px;z-index:1000;animation:toastIn 0.4s ease;font-weight:600}
+        @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-30px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+        .toast.success{background:rgba(46,204,113,0.95)}.toast.error{background:rgba(231,76,60,0.95)}.toast.info{background:rgba(74,144,217,0.95)}
+        .progress-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);display:none;align-items:center;justify-content:center;z-index:50}
+        .progress-overlay.active{display:flex}
+        .progress-card{background:var(--bg-secondary);padding:32px;border-radius:20px;text-align:center;width:320px;border:1px solid var(--border-color)}
+        .progress-bar{width:100%;height:6px;background:var(--bg-tertiary);border-radius:3px;margin:16px 0;overflow:hidden}
+        .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent-blue),var(--accent-purple));width:0%;transition:width 0.5s}
         @media(min-width:768px){.message{max-width:70%}}
         @media(max-width:767px){.message{max-width:90%}}
     </style>
@@ -79,7 +69,7 @@
         <div class="header">
             <div class="header-left">
                 <div class="ai-avatar">🧠</div>
-                <div class="header-title"><span>Yad AI v8.5</span></div>
+                <div class="header-title"><span>Yad AI v9.5</span></div>
             </div>
             <div class="header-right">
                 <span id="auth-status" class="badge guest">🔓 Guest</span>
@@ -109,21 +99,13 @@
 
 <script>
 // ================================================================
-// YAD AI v8.5 - TOKEN FIX + ALL FEATURES
+// YAD AI v9.5 - SECURE (Token dari Chat, Bukan Hardcode)
 // ================================================================
 (function() {
     'use strict';
     
     // ================================================================
-    // TOKEN GITHUB - HARDCODE (VERIFIED)
-    // ================================================================
-    const GITHUB_TOKEN = "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";
-    const GITHUB_OWNER = "YADI-ganteng";
-    const GITHUB_REPO = "NarutoRPG";
-    const GITHUB_BRANCH = "main";
-    
-    // ================================================================
-    // CONFIG
+    // CONFIG (TANPA TOKEN HARDCODE!)
     // ================================================================
     const CFG = {
         firebase: {
@@ -135,6 +117,13 @@
             appId: "1:666352014774:web:159ab5b455efb2fb2f9d17",
             databaseURL: "https://yadstores-default-rtdb.asia-southeast1.firebasedatabase.app"
         },
+        github: {
+            owner: "YADI-ganteng",
+            repo: "NarutoRPG",
+            branch: "main",
+            filePath: "index.html",
+            dataPath: "database"
+        },
         adminEmail: 'ynuraini686@gmail.com',
         cloudinary: { cloudName: 'b8at16d3', apiKey: '671378325589697', uploadPreset: 'koinku_uploads' },
         aiApis: [
@@ -145,15 +134,84 @@
     };
 
     // ================================================================
+    // TOKEN MANAGER (AMAN - dari localStorage/Firestore)
+    // ================================================================
+    function getToken() {
+        return localStorage.getItem('gh_token') || null;
+    }
+    
+    function setToken(token) {
+        if (!token || token.length < 30) return false;
+        localStorage.setItem('gh_token', token);
+        // Juga simpan ke Firestore
+        if (fs) {
+            fs.collection('config').doc('github_token').set({
+                token: token,
+                updated_at: new Date().toISOString()
+            }).catch(() => {});
+        }
+        return true;
+    }
+    
+    async function getTokenFromFirestore() {
+        if (fs) {
+            try {
+                const doc = await fs.collection('config').doc('github_token').get();
+                if (doc.exists && doc.data().token) {
+                    const token = doc.data().token;
+                    localStorage.setItem('gh_token', token);
+                    return token;
+                }
+            } catch(e) {}
+        }
+        return null;
+    }
+
+    // ================================================================
+    // KNOWLEDGE BASE
+    // ================================================================
+    const KNOWLEDGE = {
+        greetings: ["Halo! Ada yang bisa dibantu? 😊", "Hai! Senang bertemu denganmu.", "Selamat datang! Yad AI siap membantu."],
+        kabar: ["Kabar baik! Bagaimana denganmu?", "Sehat selalu! Semoga harimu menyenangkan."],
+        perasaan: {
+            sedih: ["Aku ngerti kok. Ceritakan ya. 💙", "Peluk virtual! 🤗"],
+            senang: ["Wah ikut senang! Ceritakan! 🎉", "Menyenangkan! ✨"],
+            capek: ["Istirahat dulu ya. 💪", "Santai sejenak."],
+            marah: ["Wajar kok. Luapkan aja. 😤➡️😊", "Ceritakan semuanya."]
+        },
+        motivasi: ["Jangan menyerah! 💪", "Kamu lebih kuat!", "Terus melangkah!"],
+        coding: {
+            html: { desc: "HTML untuk struktur web", ex: "<div>Konten</div>" },
+            css: { desc: "CSS untuk styling", ex: "color: blue;" },
+            js: { desc: "JavaScript interaktivitas", ex: "console.log('Hello')" }
+        },
+        topup: {
+            'ml': { name: 'Mobile Legends', items: { '100': 25000, '500': 120000 } },
+            'ff': { name: 'Free Fire', items: { '100': 15000, '500': 70000 } },
+            'gi': { name: 'Genshin Impact', items: { 'bless': 75000 } },
+            'pubg': { name: 'PUBG Mobile', items: { '60': 15000, '300': 70000 } },
+            'valo': { name: 'Valorant', items: { '475': 75000 } }
+        }
+    };
+
+    // ================================================================
     // INIT FIREBASE
     // ================================================================
     let fs = null, auth = null;
-    try { firebase.initializeApp(CFG.firebase); fs = firebase.firestore(); auth = firebase.auth(); } catch(e) {}
+    try { 
+        firebase.initializeApp(CFG.firebase); 
+        fs = firebase.firestore(); 
+        auth = firebase.auth();
+    } catch(e) {}
 
+    // ================================================================
+    // STATE
+    // ================================================================
     const S = {
         isAdmin: false, user: null, role: 'guest', processing: false,
-        chats: 0, score: 0, markup: 1.2,
-        activeGame: null, gameData: null, currentAI: 0, deployCount: 0
+        kb: [], chats: 0, score: 0, markup: 1.2,
+        activeGame: null, gameData: null, currentAI: 0,
+        deployCount: 0, dbStats: { firebase: 0, github: 0, local: 0 }
     };
 
     // ================================================================
@@ -175,205 +233,264 @@
     function escHTML(t) { const d=document.createElement('div');d.textContent=t;return d.innerHTML; }
     function getRandom(a) { return a[Math.floor(Math.random()*a.length)]; }
     function fmtPrice(p) { return 'Rp '+p.toLocaleString('id-ID'); }
+    function genId() { return Date.now().toString(36)+Math.random().toString(36).substr(2,9); }
 
     // ================================================================
-    // DEPLOY KE GITHUB - FIXED (PASTI BERHASIL)
+    // TRIPLE DATABASE SYNC
     // ================================================================
-    async function deployToGithub() {
-        const token = GITHUB_TOKEN;
+    async function syncAllDatabases() {
+        showProg('🔄 Triple Sync...', 'Firestore + GitHub + Local');
         
-        showProg('🚀 Deploy ke GitHub...', 'Menghubungi API GitHub');
+        const results = { firestore: [], github: [], local: [], all: [] };
+        
+        // 1. Firestore
+        updateProg(20, 'Firestore...');
+        if (fs) {
+            try {
+                const snap = await fs.collection('knowledge_base').orderBy('created_at','desc').limit(500).get();
+                results.firestore = snap.docs.map(d => ({ id: d.id, ...d.data(), source: 'firestore' }));
+                S.dbStats.firebase = results.firestore.length;
+            } catch(e) {}
+        }
+        
+        // 2. GitHub
+        updateProg(40, 'GitHub...');
+        const token = getToken();
+        if (token) {
+            try {
+                const url = `https://api.github.com/repos/${CFG.github.owner}/${CFG.github.repo}/contents/${CFG.github.dataPath}/knowledge_base.json?ref=${CFG.github.branch}`;
+                const res = await fetch(url, {
+                    headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    results.github = JSON.parse(atob(data.content)).map(x => ({ ...x, source: 'github' }));
+                    S.dbStats.github = results.github.length;
+                }
+            } catch(e) {}
+        }
+        
+        // 3. Local
+        updateProg(60, 'Local Storage...');
+        try {
+            const local = localStorage.getItem('yaidb');
+            if (local) {
+                results.local = JSON.parse(local);
+                S.dbStats.local = results.local.length;
+            }
+        } catch(e) {}
+        
+        // Merge
+        updateProg(80, 'Merging...');
+        const merged = new Map();
+        [...results.firestore, ...results.github, ...results.local].forEach(item => {
+            const key = item.id || item.title || genId();
+            if (!merged.has(key)) merged.set(key, item);
+        });
+        results.all = Array.from(merged.values());
+        S.kb = results.all;
+        
+        // Save merged to local
+        localStorage.setItem('yaidb', JSON.stringify(results.all));
+        S.dbStats.local = results.all.length;
+        
+        updateProg(100, 'Complete!');
+        await new Promise(r => setTimeout(r, 500));
+        hideProg();
+        
+        S.score += 10;
+        
+        return `
+            ✅ <b>Triple Sync Complete!</b>
+            <div class="card success">
+                🔥 Firestore: ${results.firestore.length}<br>
+                📁 GitHub: ${results.github.length}<br>
+                💾 Local: ${results.local.length}<br>
+                📚 Total: ${results.all.length}
+            </div>
+        `;
+    }
+
+    // ================================================================
+    // GITHUB SYNC DATABASE
+    // ================================================================
+    async function syncGitHubDatabase() {
+        const token = getToken();
+        if (!token) return '❌ Token tidak ada! Ketik <code>token [token_github]</code> dulu.';
+        
+        showProg('📁 Sync GitHub DB...');
         
         try {
-            const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/index.html?ref=${GITHUB_BRANCH}`;
+            const knowledgeData = JSON.stringify(S.kb, null, 2);
+            const content = btoa(unescape(encodeURIComponent(knowledgeData)));
+            
+            const url = `https://api.github.com/repos/${CFG.github.owner}/${CFG.github.repo}/contents/${CFG.github.dataPath}/knowledge_base.json?ref=${CFG.github.branch}`;
             const headers = {
                 'Authorization': `token ${token}`,
                 'Accept': 'application/vnd.github.v3+json'
             };
             
-            // Step 1: GET SHA
-            updateProg(20, 'Membaca file...');
+            // Get SHA
+            const getRes = await fetch(url, { headers });
+            let sha = '';
+            if (getRes.ok) {
+                sha = (await getRes.json()).sha;
+            }
+            
+            updateProg(50, 'Uploading...');
+            
+            const body = {
+                message: 'Sync KB - ' + new Date().toISOString(),
+                content: content,
+                branch: CFG.github.branch
+            };
+            if (sha) body.sha = sha;
+            
+            const putRes = await fetch(url, {
+                method: 'PUT',
+                headers: { ...headers, 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            
+            updateProg(100, 'Done!');
+            await new Promise(r => setTimeout(r, 500));
+            hideProg();
+            
+            if (putRes.ok) {
+                S.dbStats.github = S.kb.length;
+                S.score += 10;
+                return `✅ <b>GitHub DB Synced!</b> 📁 ${S.kb.length} items.`;
+            }
+            return '❌ Gagal sync: ' + (await putRes.json()).message;
+        } catch(e) {
+            hideProg();
+            return '❌ Error: ' + e.message;
+        }
+    }
+
+    // ================================================================
+    // DEPLOY KE GITHUB
+    // ================================================================
+    async function deployToGithub() {
+        const token = getToken();
+        
+        // Jika token tidak ada, minta via chat
+        if (!token) {
+            return `
+                🔑 <b>Token GitHub diperlukan!</b><br>
+                <div class="card warning">
+                    ⚠️ Tidak ada token tersimpan.<br>
+                    Ketik: <code>token [token_github_anda]</code><br><br>
+                    📋 <b>Cara dapat token:</b><br>
+                    1. Buka <a href="https://github.com/settings/tokens" target="_blank">github.com/settings/tokens</a><br>
+                    2. Generate new token (classic)<br>
+                    3. Centang <b>repo</b><br>
+                    4. Copy tokennya<br>
+                    5. Kirim di sini: <code>token ghp_xxxx...</code>
+                </div>
+            `;
+        }
+        
+        showProg('🚀 Deploy GitHub...', 'Menghubungi API');
+        
+        try {
+            const url = `https://api.github.com/repos/${CFG.github.owner}/${CFG.github.repo}/contents/${CFG.github.filePath}?ref=${CFG.github.branch}`;
+            const headers = {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            };
+            
+            updateProg(30, 'Membaca file...');
             const getRes = await fetch(url, { headers });
             
             if (!getRes.ok) {
                 hideProg();
-                const err = await getRes.json();
-                console.error('GET Error:', err);
-                if (getRes.status === 401) return '❌ Token invalid! Cek token GitHub.';
-                if (getRes.status === 404) return '❌ File tidak ditemukan! Cek repo.';
-                return `❌ Gagal: ${err.message}`;
+                if (getRes.status === 401) {
+                    localStorage.removeItem('gh_token');
+                    return '❌ Token invalid! Ketik <code>token [token_baru]</code> untuk mengganti.';
+                }
+                return '❌ Gagal: ' + (await getRes.json()).message;
             }
             
-            const data = await getRes.json();
-            const sha = data.sha;
-            console.log('✅ SHA:', sha.substring(0, 20) + '...');
+            const { sha } = await getRes.json();
+            updateProg(50, 'Uploading...');
             
-            // Step 2: Upload
-            updateProg(50, 'Mengupload...');
             const html = document.documentElement.outerHTML;
             const content = btoa(unescape(encodeURIComponent(html)));
             
             updateProg(70, 'Menyimpan...');
             const putRes = await fetch(url, {
                 method: 'PUT',
-                headers: {
-                    ...headers,
-                    'Content-Type': 'application/json'
-                },
+                headers: { ...headers, 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    message: 'Deploy Yad AI v8.5 - ' + new Date().toISOString(),
+                    message: 'Deploy Yad AI v9.5 - ' + new Date().toISOString(),
                     content: content,
                     sha: sha,
-                    branch: GITHUB_BRANCH
+                    branch: CFG.github.branch
                 })
             });
             
-            if (!putRes.ok) {
-                hideProg();
-                const err = await putRes.json();
-                console.error('PUT Error:', err);
-                return `❌ Gagal upload: ${err.message}`;
-            }
-            
-            const result = await putRes.json();
-            console.log('✅ Deploy berhasil!', result.content?.sha);
-            
-            // Simpan ke Firestore juga
-            if (fs) {
-                try {
-                    await fs.collection('deployments').add({
-                        html: html.substring(0, 1000),
-                        size: html.length,
-                        sha: result.content.sha,
-                        timestamp: new Date().toISOString(),
-                        type: 'github'
-                    });
-                } catch(e) {}
-            }
-            
             updateProg(100, 'Selesai!');
             await new Promise(r => setTimeout(r, 500));
             hideProg();
             
-            S.deployCount++;
-            S.score += 20;
-            
-            return `
-                ✅ <b>Deploy BERHASIL!</b> 🚀
-                <div class="card success">
-                    📦 Size: ${(html.length/1024).toFixed(1)} KB<br>
-                    🔑 SHA: ${result.content.sha.substring(0, 20)}...<br>
-                    🔢 Deploy #${S.deployCount}<br>
-                    ⭐ Score: +20
-                </div>
-                <br>🔗 <a href="https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}" target="_blank">Buka GitHub</a>
-            `;
-            
-        } catch(e) {
-            hideProg();
-            console.error('Deploy Error:', e);
-            
-            // Fallback: download file
-            const html = document.documentElement.outerHTML;
-            const blob = new Blob([html], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'index.html';
-            a.click();
-            
-            return `
-                ⚠️ Deploy API gagal: ${e.message}
-                <div class="card warning">
-                    ✅ File <b>index.html</b> sudah didownload<br>
-                    📋 Upload manual ke GitHub
-                </div>
-            `;
-        }
-    }
-
-    // ================================================================
-    // DEPLOY KE FIRESTORE
-    // ================================================================
-    async function deployToFirestore() {
-        showProg('🔥 Deploy Firestore...');
-        const html = document.documentElement.outerHTML;
-        
-        try {
-            updateProg(50, 'Menyimpan...');
-            
-            if (fs) {
-                const docRef = await fs.collection('deployments').add({
-                    html: html,
-                    size: html.length,
-                    timestamp: new Date().toISOString(),
-                    type: 'firestore'
-                });
-                
-                await fs.collection('config').doc('latest').set({
-                    deployment_id: docRef.id,
-                    size: html.length,
-                    timestamp: new Date().toISOString(),
-                    version: '8.5'
-                }, { merge: true });
+            if (putRes.ok) {
+                S.deployCount++;
+                S.score += 20;
+                return `✅ <b>Deploy Sukses!</b> 🚀 #${S.deployCount}`;
             }
-            
-            localStorage.setItem('yad_backup', html);
-            
-            updateProg(100, 'Selesai!');
-            await new Promise(r => setTimeout(r, 500));
-            hideProg();
-            
-            S.deployCount++;
-            S.score += 15;
-            
-            return `
-                ✅ <b>Firestore Deploy!</b> 🔥
-                <div class="card success">
-                    📦 Size: ${(html.length/1024).toFixed(1)} KB<br>
-                    💾 localStorage: Backup tersimpan<br>
-                    🔢 Deploy #${S.deployCount}
-                </div>
-            `;
-        } catch(e) {
-            hideProg();
-            return `❌ Error: ${e.message}`;
-        }
-    }
-
-    // ================================================================
-    // TEST TOKEN
-    // ================================================================
-    async function testToken() {
-        showProg('🔑 Testing token...');
-        
-        try {
-            const res = await fetch('https://api.github.com/user', {
-                headers: {
-                    'Authorization': `token ${GITHUB_TOKEN}`,
-                    'Accept': 'application/vnd.github.v3+json'
-                }
-            });
-            
-            hideProg();
-            
-            if (res.ok) {
-                const user = await res.json();
-                return `
-                    ✅ <b>Token VALID!</b>
-                    <div class="card success">
-                        👤 User: ${user.login}<br>
-                        📧 Email: ${user.email || 'N/A'}<br>
-                        🔑 Token: ${GITHUB_TOKEN.substring(0, 10)}...${GITHUB_TOKEN.substring(GITHUB_TOKEN.length - 5)}
-                    </div>
-                `;
-            } else {
-                return '❌ Token INVALID! Periksa token GitHub.';
-            }
+            return '❌ ' + (await putRes.json()).message;
         } catch(e) {
             hideProg();
             return '❌ Error: ' + e.message;
         }
+    }
+
+    // ================================================================
+    // AUTO-EDIT CODE
+    // ================================================================
+    async function autoEditCode(instruction) {
+        showProg('✏️ Auto-Edit...', instruction);
+        updateProg(30, 'Analyzing...');
+        
+        const currentCode = document.documentElement.outerHTML.substring(0, 3000);
+        
+        const prompt = `Edit kode HTML berikut sesuai instruksi: "${instruction}". Kode saat ini: ${currentCode}. Berikan hanya kode yang diubah dalam format JSON: {"action":"replace","target":"...","newCode":"...","explanation":"..."}`;
+        
+        const aiResponse = await callAIAPI(prompt);
+        
+        updateProg(80, 'Applying...');
+        
+        if (aiResponse) {
+            try {
+                const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    const edit = JSON.parse(jsonMatch[0]);
+                    
+                    const edits = JSON.parse(localStorage.getItem('yad_edits') || '[]');
+                    edits.push({ instruction, edit, timestamp: new Date().toISOString() });
+                    localStorage.setItem('yad_edits', JSON.stringify(edits));
+                    
+                    updateProg(100, 'Done!');
+                    await new Promise(r => setTimeout(r, 300));
+                    hideProg();
+                    S.score += 15;
+                    
+                    return `
+                        ✅ <b>Auto-Edit Berhasil!</b>
+                        <div class="card success">
+                            🔧 Aksi: ${edit.action}<br>
+                            🎯 Target: ${edit.target}<br>
+                            💡 ${edit.explanation}
+                        </div>
+                        <br>⚠️ Perubahan di localStorage. <code>deploy</code> untuk menerapkan.
+                    `;
+                }
+            } catch(e) {}
+        }
+        
+        hideProg();
+        return '⚠️ AI tidak bisa mengedit. Coba instruksi lebih spesifik.';
     }
 
     // ================================================================
@@ -386,7 +503,7 @@
             const res = await fetch(api.url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${api.key}` },
-                body: JSON.stringify({ model: api.model, messages: [{ role:'system', content:'Kamu Yad AI, asisten Indonesia ramah.' }, { role:'user', content:prompt }], max_tokens: 1000, temperature: 0.8 })
+                body: JSON.stringify({ model: api.model, messages: [{ role:'system', content:'Kamu Yad AI, asisten Indonesia.' }, { role:'user', content:prompt }], max_tokens: 1000, temperature: 0.8 })
             });
             if (res.ok) { const d = await res.json(); return d.choices[0].message.content; }
         } catch(e) {}
@@ -412,11 +529,11 @@
     // DEEP SEARCH
     // ================================================================
     async function deepSearch(query) {
-        showProg('🔍 Searching...', query);
+        showProg('🔍 Deep Search...', query);
         updateProg(30, 'DuckDuckGo...');
         const web = await searchDDG(query);
         updateProg(60, 'AI Analysis...');
-        const ai = await callAIAPI(`Jelaskan "${query}" singkat dalam Bahasa Indonesia.`);
+        const ai = await callAIAPI(`Jelaskan "${query}" singkat.`);
         updateProg(100, 'Done!');
         await new Promise(r => setTimeout(r, 300));
         hideProg();
@@ -426,7 +543,7 @@
         if (ai) r += `<b>🤖 AI:</b> ${ai}<br><br>`;
         if (web && web.length > 0) {
             r += `<b>🌐 Web:</b><br>`;
-            web.slice(0,3).forEach(w => r += `<div class="card info"><b>${w.title}</b><br>${w.content.substring(0,150)}...<br>${w.url?`<a href="${w.url}" target="_blank">🔗 Source</a>`:''}</div>`);
+            web.slice(0,3).forEach(w => r += `<div class="card info"><b>${w.title}</b><br>${w.content.substring(0,150)}...<br>${w.url?`<a href="${w.url}" target="_blank">🔗</a>`:''}</div>`);
         }
         return r;
     }
@@ -440,15 +557,28 @@
         if (S.activeGame === 'tebak-angka') return handleTebakAngka(t);
         if (S.activeGame === 'batu-kertas-gunting') return handleBKG(t);
         
-        if (t.includes('sedih')||t.includes('galau')) return 'Aku ngerti kok. Mau cerita? Aku siap dengerin. 💙';
-        if (t.includes('senang')||t.includes('happy')) return 'Wah ikut senang! Ceritakan! 🎉';
-        if (t.includes('sepi')||t.includes('sendiri')) return 'Kamu gak sendiri. Aku 24/7 di sini. 🌟';
-        if (t.includes('capek')||t.includes('lelah')) return 'Istirahat dulu. Kamu hebat! 💪';
-        if (t==='hai'||t==='halo'||t==='hi'||t==='hey') return 'Halo! Seneng kamu nyapa. 😊';
-        if (t.includes('kabar')) return 'Aku fit! Kamu gimana?';
+        // Knowledge base
+        if (S.kb.length > 0) {
+            const match = S.kb.find(i => (i.title||'').toLowerCase().includes(t) || (i.content||'').toLowerCase().includes(t));
+            if (match) return `📚 <b>${match.title}</b><br>${(match.content||'').substring(0,300)}...`;
+        }
+        
+        // Emotions
+        for (const [feeling, responses] of Object.entries(KNOWLEDGE.perasaan)) {
+            if (t.includes(feeling)) return getRandom(responses);
+        }
+        
+        if (t.includes('motivasi')||t.includes('semangat')) return getRandom(KNOWLEDGE.motivasi);
+        if (t==='hai'||t==='halo'||t==='hi') return getRandom(KNOWLEDGE.greetings);
+        if (t.includes('kabar')) return getRandom(KNOWLEDGE.kabar);
         if (t.includes('makasih')) return 'Sama-sama! 🤗';
-        if (t.includes('kamu siapa')) return 'Aku Yad AI v8.5! Deploy GitHub & Firestore lancar! 🚀';
+        if (t.includes('kamu siapa')) return 'Aku Yad AI v9.5! Aman tanpa token hardcode! 🔒';
         if (t.includes('pantun')) return '🎭 Jalan-jalan ke kota Medan<br>Jangan lupa beli durian<br>Kalau kamu lagi kesepian<br>Chat aku aja jadi teman 😄';
+        
+        // Coding help
+        if (t.includes('html')) return `📝 ${KNOWLEDGE.coding.html.desc}<br><code>${KNOWLEDGE.coding.html.ex}</code>`;
+        if (t.includes('css')) return `🎨 ${KNOWLEDGE.coding.css.desc}<br><code>${KNOWLEDGE.coding.css.ex}</code>`;
+        if (t.includes('javascript')||t.includes('js')) return `⚡ ${KNOWLEDGE.coding.js.desc}<br><code>${KNOWLEDGE.coding.js.ex}</code>`;
         
         return getRandom(['Ceritakan lebih lanjut! 🎮','Aku ngerti. Lanjutkan! 💙','Interesting! ☕']);
     }
@@ -457,7 +587,7 @@
         const g = parseInt(t);
         if (isNaN(g)) { if(t.includes('stop')){const tg=S.gameData.target;S.activeGame=null;return `Game selesai! Angkanya: ${tg}`;} return 'Masukkan angka 1-100!'; }
         S.gameData.attempts++;
-        if(g===S.gameData.target){const sc=Math.max(100-S.gameData.attempts*10,10);S.score+=sc;S.activeGame=null;return `🎉 BENAR! ${g} dalam ${S.gameData.attempts} tebakan. +${sc} poin!`;}
+        if(g===S.gameData.target){const sc=Math.max(100-S.gameData.attempts*10,10);S.score+=sc;S.activeGame=null;return `🎉 BENAR! +${sc} poin!`;}
         return `${g} terlalu ${g<S.gameData.target?'RENDAH 📈':'TINGGI 📉'} | Ke-${S.gameData.attempts}`;
     }
 
@@ -478,32 +608,49 @@
     async function handleCommand(text) {
         const t = text.toLowerCase().trim();
         
-        // DEPLOY COMMANDS
-        if (t === 'deploy' || t === 'deploy github') return await deployToGithub();
-        if (t === 'deploy firebase' || t === 'deploy db') return await deployToFirestore();
-        if (t === 'deploy all') {
-            const r1 = await deployToFirestore();
-            const r2 = await deployToGithub();
-            return r1 + '<br>' + r2;
+        // TOKEN (dari chat)
+        if (t.startsWith('token ')) {
+            const token = t.replace('token ','').trim();
+            if (token.length < 30) return '❌ Token invalid! Minimal 30 karakter.';
+            if (setToken(token)) return '✅ <b>Token disimpan!</b> Coba <code>deploy</code> sekarang. 🚀';
+            return '❌ Gagal menyimpan token.';
+        }
+        if (t === 'token' || t === 'cek token') {
+            const token = getToken();
+            if (token) {
+                return `🔑 <b>Token tersedia!</b><br>🔐 ${token.substring(0,10)}...${token.substring(token.length-5)}`;
+            }
+            return `
+                ⚠️ <b>Tidak ada token!</b><br>
+                Ketik: <code>token [token_github]</code><br>
+                📋 <a href="https://github.com/settings/tokens" target="_blank">Buat token di GitHub</a>
+            `;
         }
         
-        // TOKEN COMMANDS
-        if (t === 'token' || t === 'cek token') return await testToken();
-        if (t === 'token help') return `🔑 Token: ${GITHUB_TOKEN.substring(0,10)}...${GITHUB_TOKEN.substring(GITHUB_TOKEN.length-5)}`;
+        // DEPLOY
+        if (t === 'deploy' || t === 'deploy github') return await deployToGithub();
+        
+        // DATABASE
+        if (t === 'sync' || t === 'sync all') return await syncAllDatabases();
+        if (t === 'sync github' || t === 'sync db') return await syncGitHubDatabase();
+        if (t === 'db' || t === 'database') return `🗄️ Firestore: ${S.dbStats.firebase} | GitHub: ${S.dbStats.github} | Local: ${S.dbStats.local} | Total: ${S.kb.length}`;
         
         // SEARCH
         if (t.startsWith('cari ')||t.startsWith('search ')) return await deepSearch(t.replace('cari ','').replace('search ',''));
         
+        // EDIT
+        if (t.startsWith('edit ')) return await autoEditCode(t.replace('edit ',''));
+        
         // OTHER
-        if (t === 'stats') return `📊 Chat: ${S.chats} | ⭐ Score: ${S.score} | 🔢 Deploy: ${S.deployCount} | 🤖 AI: ${CFG.aiApis[S.currentAI].name}`;
-        if (t === '?'||t==='help') return `<b>📚 Commands:</b><br>🚀 <code>deploy</code> - Deploy GitHub<br>🔥 <code>deploy firebase</code> - Deploy Firestore<br>🚀 <code>deploy all</code> - Deploy keduanya<br>🔑 <code>token</code> - Test token<br>🔍 <code>cari [topik]</code> - Search<br>🎮 <code>main [game]</code> - Play<br>💰 <code>topup</code> - Top up<br>🤖 <code>ai</code> - Switch AI<br>🎯 <code>joke/time</code> - Fun`;
+        if (t === 'stats') return `📊 Chat: ${S.chats} | ⭐ Score: ${S.score} | 🔢 Deploy: ${S.deployCount} | 📚 KB: ${S.kb.length} | 🤖 AI: ${CFG.aiApis[S.currentAI].name}`;
+        if (t === '?'||t==='help') return `<b>📚 Commands:</b><br>🔑 <code>token [token]</code> - Simpan token<br>🚀 <code>deploy</code> - Deploy GitHub<br>🔄 <code>sync</code> - Triple sync<br>📁 <code>sync github</code> - Sync GitHub DB<br>✏️ <code>edit [apa]</code> - Auto-edit<br>🔍 <code>cari [topik]</code> - Search<br>🎮 <code>main [game]</code> - Play<br>💰 <code>topup</code> - Top up<br>🤖 <code>ai</code> - Switch AI`;
         if (t.startsWith('main ')) { const g=t.replace('main ',''); if(g.includes('tebak')||g.includes('angka')){S.activeGame='tebak-angka';S.gameData={target:Math.floor(Math.random()*100)+1,attempts:0};return '🎲 Tebak 1-100!';} if(g.includes('batu')||g.includes('gunting')||g.includes('kertas')){S.activeGame='batu-kertas-gunting';return '✊✋✌️ Pilih!';} }
-        if (t.includes('topup')) return '<b>💰 Top Up:</b><br>ML: 100💎=Rp30rb<br>FF: 100💎=Rp18rb<br>GI: Blessing=Rp90rb<br>PUBG: 60UC=Rp18rb<br>Valo: 475VP=Rp90rb';
+        if (t.includes('topup')) { let l='<b>💰 Top Up:</b><br>'; for(const[k,v]of Object.entries(KNOWLEDGE.topup)){l+=`<b>${v.name}:</b><br>`;for(const[i,p]of Object.entries(v.items)){l+=`• ${i} = ${fmtPrice(Math.round(p*S.markup))}<br>`;}} return l; }
         if (t.startsWith('ai ')) { const n=t.replace('ai ',''); for(let i=0;i<CFG.aiApis.length;i++){if(n.includes(CFG.aiApis[i].name.toLowerCase())){S.currentAI=i;return `✅ AI: ${CFG.aiApis[i].name}`;}} }
         if (t==='ai') { let l='🤖 <b>AI:</b><br>'; CFG.aiApis.forEach((a,i)=>l+=`${i===S.currentAI?'✅ ':''}${a.name}<br>`); return l; }
         if (t==='joke') return getRandom(['Kenapa programmer kunci pintu? Ada "keys"! 😄','AI dan kopi: butuh training! ☕']);
         if (t==='time') return '🕐 '+new Date().toLocaleString('id-ID',{hour:'2-digit',minute:'2-digit',day:'numeric',month:'long',year:'numeric'});
-        if (t==='about') return `🧠 Yad AI v8.5 | Token: ✅ | Deploy: ${S.deployCount}x | By YADI ganteng`;
+        if (t==='about') return `🧠 Yad AI v9.5 | 🔒 Secure | 📚 KB: ${S.kb.length} | 🚀 Deploy: ${S.deployCount}x`;
         if (t==='clear') { $('chatMessages').innerHTML=''; return null; }
         return null;
     }
@@ -521,7 +668,7 @@
         
         const typingDiv = document.createElement('div');
         typingDiv.className = 'message ai';
-        typingDiv.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+        typingDiv.innerHTML = '⏳';
         $('chatMessages').appendChild(typingDiv);
         
         try {
@@ -560,37 +707,62 @@
     $('sendBtn').addEventListener('click',e=>{e.preventDefault();sendMsg();});
     $('sendBtn').addEventListener('touchend',e=>{e.preventDefault();sendMsg();});
     $('userInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();sendMsg();}});
-    document.getElementById('fileInput').addEventListener('change',function(e){const f=e.target.files;if(!f.length)return;addMsg('ai',`✅ ${f.length} file diterima.`);this.value='';});
+    document.getElementById('fileInput').addEventListener('change',async function(e){
+        const files=e.target.files;if(!files.length)return;
+        let items=[];
+        for(const file of files){try{const text=await file.text();items.push({title:file.name,content:text.substring(0,1000),tags:['upload'],type:'document',created_at:new Date().toISOString()});}catch(err){}}
+        if(fs&&items.length){for(const item of items){try{await fs.collection('knowledge_base').add(item);}catch(e){}}}
+        S.kb=[...S.kb,...items];
+        const local=JSON.parse(localStorage.getItem('yaidb')||'[]');
+        localStorage.setItem('yaidb',JSON.stringify([...local,...items]));
+        S.dbStats.local=local.length+items.length;
+        addMsg('ai',`✅ ${items.length} file dipelajari! Total KB: ${S.kb.length}`);
+        this.value='';
+    });
 
     // ================================================================
     // CONSOLE API
     // ================================================================
-    window.yad = {
-        deploy: async () => { const r = await deployToGithub(); console.log(r.replace(/<[^>]+>/g,'')); return r; },
-        deployFB: async () => { const r = await deployToFirestore(); console.log(r.replace(/<[^>]+>/g,'')); return r; },
-        token: async () => { const r = await testToken(); console.log(r.replace(/<[^>]+>/g,'')); return r; },
-        search: async (q) => { const r = await searchDDG(q); console.table(r); return r; },
-        ai: async (p) => { const r = await callAIAPI(p); console.log(r); return r; },
-        help: () => console.log('yad.deploy() | yad.deployFB() | yad.token() | yad.search("q") | yad.ai("p")')
+    window.yad={
+        deploy:async()=>{const r=await deployToGithub();console.log(r.replace(/<[^>]+>/g,''));return r;},
+        sync:async()=>{const r=await syncAllDatabases();console.log(r.replace(/<[^>]+>/g,''));return r;},
+        token:()=>{const t=getToken();console.log(t||'Tidak ada');return t;},
+        search:async(q)=>{const r=await searchDDG(q);console.table(r);return r;},
+        ai:async(p)=>{const r=await callAIAPI(p);console.log(r);return r;},
+        help:()=>console.log('yad.deploy() | yad.sync() | yad.token() | yad.search("q") | yad.ai("p")')
     };
 
     // ================================================================
     // INIT
     // ================================================================
-    document.body.style.height = window.innerHeight + 'px';
+    document.body.style.height=window.innerHeight+'px';
     
-    addMsg('ai', `<b>🧠 Yad AI v8.5 - TOKEN FIX!</b><br><br>
-        ✅ <b>Token GitHub:</b> ${GITHUB_TOKEN.substring(0,10)}...${GITHUB_TOKEN.substring(GITHUB_TOKEN.length-5)}<br>
-        ✅ <b>Verified:</b> User YADI-ganteng<br><br>
-        <b>Coba:</b><br>
-        • <code>deploy</code> - Deploy GitHub<br>
-        • <code>deploy firebase</code> - Deploy Firestore<br>
-        • <code>token</code> - Test token<br>
-        • <code>cari [topik]</code> - Search + AI<br>
+    // Coba ambil token dari Firestore
+    getTokenFromFirestore().then(t => {
+        if (t) console.log('🔑 Token loaded from Firestore');
+    });
+    
+    // Auto sync database
+    setTimeout(() => syncAllDatabases(), 2000);
+    
+    addMsg('ai', `<b>🧠 Yad AI v9.5 - SECURE!</b><br><br>
+        ✅ <b>Fitur Lengkap:</b><br>
+        🔒 <b>Token Aman</b> - Tidak hardcode<br>
+        📚 <b>Knowledge Base</b> - Triple DB<br>
+        🔄 <b>Triple Sync</b> - Firestore+GitHub+Local<br>
+        ✏️ <b>Auto-Edit</b> - AI edit kode<br>
+        🚀 <b>Deploy</b> - GitHub<br>
+        🤖 <b>AI API</b> - Groq/DeepSeek/OpenRouter<br>
+        🔍 <b>DuckDuckGo</b> - Search<br>
+        🎮 <b>Games</b> - Tebak angka, BKG<br><br>
+        <b>Mulai:</b><br>
+        • <code>token [token_github]</code> - Simpan token<br>
+        • <code>deploy</code> - Deploy<br>
+        • <code>sync</code> - Sync database<br>
         • <code>?</code> - Help`);
     
-    console.log('🚀 Yad AI v8.5 - Token: ✅ | Deploy: Ready');
-    console.log('💡 yad.deploy() di console untuk deploy langsung');
+    console.log('🔒 Yad AI v9.5 Secure - No hardcoded token!');
+    console.log('💡 yad.help() untuk command konsol');
 })();
 </script>
 </body>

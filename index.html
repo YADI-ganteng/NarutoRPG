@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yad AI - NarutoRPG</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/universal-sentence-encoder@latest"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: Arial, sans-serif; 
+            background: #0f172a; 
+            color: #e2e8f0; 
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #app {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #chat-container {
+            width: 100%;
+            height: 100vh;
+            background: #1e293b;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #chat-container .header {
+            padding: 16px 24px;
+            background: #0f172a;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #chat-container .header h1 { 
+            font-size: 20px; 
+            color: #e2e8f0; 
+            margin: 0; 
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        #chat-container .header h1 span { color: #3b82f6; }
+        #chat-container .header button {
+            background: #ef4444;
+            border: none;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        #chat-container .header button:hover { background: #dc2626; }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 24px;
+            background: #0f172a;
+        }
+        .message {
+            margin: 8px 0;
+            padding: 10px 16px;
+            border-radius: 12px;
+            max-width: 80%;
+            word-wrap: break-word;
+            font-size: 14px;
+        }
+        .message.user {
+            background: #3b82f6;
+            color: white;
+            margin-left: auto;
+        }
+        .message.ai {
+            background: #1e293b;
+            border: 1px solid #334155;
+            margin-right: auto;
+        }
+
+        .input-area {
+            padding: 16px 24px;
+            background: #0f172a;
+            border-top: 1px solid #334155;
+            display: flex;
+            gap: 10px;
+        }
+        .input-area input {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #1e293b;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+        .input-area input:focus { outline: 2px solid #3b82f6; }
+        .input-area button {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            background: #3b82f6;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .input-area button:hover { background: #2563eb; }
+
+        #auth-status {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 4px;
+            padding: 4px 12px;
+            border-radius: 4px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            display: inline-block;
+        }
+        #auth-status.admin { color: #3b82f6; border-color: #3b82f6; }
+        #auth-status.user { color: #22c55e; border-color: #22c55e; }
+        #auth-status.guest { color: #94a3b8; border-color: #334155; }
+
+        #progress-container {
+            margin: 8px 24px 0 24px;
+            padding: 6px;
+            background: #0f172a;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            display: none;
+        }
+        #progress-container .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #334155;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        #progress-container .progress-fill {
+            height: 100%;
+            background: #3b82f6;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        #progress-container .progress-text {
+            font-size: 10px;
+            color: #94a3b8;
+            margin-top: 4px;
+            text-align: center;
+        }
+
+        #hidden-file-input { display: none; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div id="chat-container">
+            <div class="header">
+                <h1>🧠 <span>Yad AI</span></h1>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <span id="auth-status" class="guest">🔓 Guest</span>
+                    <button id="logout-btn">Logout</button>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ai">
+                    <b>Yad AI:</b><br>
+                    Halo! Saya <b>Yad AI</b>.<br>
+                    ✨ Perintah:<br>
+                    • "Top up [game] [jumlah]"<br>
+                    • "Cari [topik]" → Google langsung menampilkan hasil<br>
+                    • "Buat game [nama]" → membuat game<br>
+                    • "Tambahkan fitur [nama]" → AI akan mengedit index.html di GitHub<br>
+                    • "Statistik" → lihat data AI<br>
+                    • "Tambahkan pelajaran" (Admin)
+                </div>
+            </div>
+
+            <div id="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">Memproses...</div>
+            </div>
+
+            <div class="input-area">
+                <input type="text" id="userInput" placeholder="Tanyakan sesuatu...">
+                <button id="sendBtn">➤ Kirim</button>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="hidden-file-input" accept=".txt,.pdf,.md" multiple>
+
+    <script>
+        // ================================================================
+        // 1. FIREBASE CONFIG
+        // ================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyAvfHxcAT2syVbrf6-TU0JBRXtNLI0AIkc",
+            authDomain: "yadstores.firebaseapp.com",
+            projectId: "yadstores",
+            storageBucket: "yadstores.firebasestorage.app",
+            messagingSenderId: "666352014774",
+            appId: "1:666352014774:web:159ab5b455efb2fb2f9d17",
+            measurementId: "G-8Q7T7G6HQ2"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const firestore = firebase.firestore();
+
+        // ================================================================
+        // 2. GLOBAL VARIABLES
+        // ================================================================
+        let knowledgeBase = [];
+        let interactions = 0;
+        let aiScore = 0;
+        let embeddingModel = null;
+        let tags = new Set();
+        let gameCount = 0;
+        let lineCount = 0;
+        let isAdmin = false;
+        let loadingMessage = null;
+        const stopWords = new Set(['yang', 'dan', 'di', 'ke', 'dari', 'untuk', 'pada', 'dengan', 'sebagai', 'atau', 'ini', 'itu', 'adalah', 'akan', 'telah', 'sudah', 'tidak', 'ada', 'karena', 'untuk', 'dari']);
+
+        // ================================================================
+        // 3. TENSORFLOW INIT
+        // ================================================================
+        async function initAI() {
+            try {
+                embeddingModel = await use.load();
+                console.log('✅ TensorFlow loaded!');
+            } catch (e) {
+                console.warn('⚠️ TensorFlow error:', e);
+            }
+        }
+
+        // ================================================================
+        // 4. ROLE-BASED ACCESS
+        // ================================================================
+        function getRole(email) {
+            if (email === 'ynuraini686@gmail.com') return 'admin';
+            return 'user';
+        }
+
+        // ================================================================
+        // 5. LOAD KNOWLEDGE BASE
+        // ================================================================
+        async function loadKnowledgeBase() {
+            try {
+                const fsSnapshot = await firestore.collection('knowledge_base').get();
+                if (!fsSnapshot.empty) {
+                    knowledgeBase = fsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    console.log('✅ Knowledge Base dimuat dari Firestore:', knowledgeBase.length);
+                    updateStats();
+                    return true;
+                }
+            } catch (e) {
+                console.warn('⚠️ Firestore load error:', e);
+            }
+            return false;
+        }
+
+        // ================================================================
+        // 6. UPDATE STATS
+        // ================================================================
+        function updateStats() {
+            tags.clear();
+            gameCount = 0;
+            lineCount = 0;
+            knowledgeBase.forEach(item => {
+                if (item.tags) item.tags.forEach(t => tags.add(t));
+                if (item.type === 'game') gameCount++;
+                if (item.content) lineCount += item.content.split('\n').length;
+            });
+        }
+
+        // ================================================================
+        // 7. AUTHENTICATION
+        // ================================================================
+        async function handleAuth(user) {
+            const statusDiv = document.getElementById('auth-status');
+            const logoutBtn = document.getElementById('logout-btn');
+
+            if (user) {
+                const role = getRole(user.email);
+                isAdmin = (role === 'admin');
+                if (isAdmin) {
+                    statusDiv.className = 'admin';
+                    statusDiv.textContent = `🔑 Admin: ${user.email}`;
+                } else {
+                    statusDiv.className = 'user';
+                    statusDiv.textContent = `👤 User: ${user.email}`;
+                }
+                logoutBtn.style.display = 'inline-block';
+                await initAI();
+                await loadKnowledgeBase();
+            } else {
+                isAdmin = false;
+                statusDiv.className = 'guest';
+                statusDiv.textContent = '🔓 Guest';
+                logoutBtn.style.display = 'none';
+                await loadKnowledgeBase();
+            }
+        }
+
+        auth.onAuthStateChanged(async (user) => {
+            await handleAuth(user);
+        });
+
+        // ================================================================
+        // 8. LOGOUT
+        // ================================================================
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            await auth.signOut();
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = '';
+            addMessage('ai', '👋 Logout berhasil. Sampai jumpa!');
+            await handleAuth(null);
+        });
+
+        // ================================================================
+        // 9. CHAT FUNCTIONS
+        // ================================================================
+        function addMessage(type, content) {
+            const container = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            div.className = `message ${type}`;
+            div.innerHTML = content;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+            return div;
+        }
+
+        function showTyping() {
+            if (!loadingMessage) {
+                loadingMessage = addMessage('ai', '⏳ Yad AI sedang berpikir...');
+            }
+        }
+
+        function hideTyping() {
+            if (loadingMessage) {
+                loadingMessage.remove();
+                loadingMessage = null;
+            }
+        }
+
+        // ================================================================
+        // 10. INTENT DETECTION
+        // ================================================================
+        function detectIntent(text) {
+            const lower = text.toLowerCase();
+            if (/^(hai|halo|hi|hello|hey|assalamualaikum|selamat pagi|selamat siang|selamat sore|selamat malam)$/.test(lower)) return 'greeting';
+            if (lower.includes('logout')) return 'logout';
+            if (lower.includes('top up') || lower.includes('topup')) return 'topup';
+            if (lower.includes('tambahkan pelajaran') || lower.includes('upload pelajaran')) return 'upload_lesson';
+            if (lower.includes('tambahkan fitur') || lower.includes('buat fitur')) return 'add_feature';
+            if (lower.includes('cari') || lower.includes('google') || lower.includes('search') || lower.includes('wikipedia') || lower.includes('duckduckgo')) return 'search_web';
+            if (lower.includes('buat game') || lower.includes('buat') && lower.includes('game')) return 'create_game';
+            if (lower.includes('tutorial') || lower.includes('cara') || lower.includes('bagaimana')) return 'tutorial';
+            if (lower.includes('apa itu') || lower.includes('jelaskan') || lower.includes('penjelasan')) return 'explain';
+            if (lower.includes('statistik') || lower.includes('stats') || lower.includes('score') || lower.includes('level')) return 'stats';
+            if (lower.includes('daftar') || lower.includes('list') || lower.includes('semua')) return 'list_all';
+            return 'search';
+        }
+
+        // ================================================================
+        // 11. SEMANTIC SEARCH
+        // ================================================================
+        function cosineSimilarity(vecA, vecB) {
+            if (!vecA || !vecB || vecA.length !== vecB.length) return 0;
+            let dot = 0, normA = 0, normB = 0;
+            for (let i = 0; i < vecA.length; i++) {
+                dot += vecA[i] * vecB[i];
+                normA += vecA[i] * vecA[i];
+                normB += vecB[i] * vecB[i];
+            }
+            return dot / (Math.sqrt(normA) * Math.sqrt(normB));
+        }
+
+        async function semanticSearch(query) {
+            if (!embeddingModel || knowledgeBase.length === 0) return [];
+            try {
+                const qEmbed = await embeddingModel.embed(query);
+                const qVec = Array.from(await qEmbed.array());
+                return knowledgeBase
+                    .filter(item => item.embedding && item.embedding.length > 0)
+                    .map(item => ({ ...item, similarity: cosineSimilarity(qVec, item.embedding) }))
+                    .filter(item => item.similarity > 0.4)
+                    .sort((a, b) => b.similarity - a.similarity);
+            } catch (e) {
+                console.warn('⚠️ Semantic search error:', e);
+                const tokens = query.toLowerCase().split(' ');
+                return knowledgeBase.filter(item => {
+                    const content = (item.title + ' ' + item.content).toLowerCase();
+                    return tokens.some(token => content.includes(token));
+                });
+            }
+        }
+
+        // ================================================================
+        // 12. WEB SEARCH
+        // ================================================================
+        async function searchWeb(query) {
+            const searchQuery = query.replace(/cari|google|search/i, '').trim() || 'AI';
+            let results = [];
+
+            // DuckDuckGo
+            const ddgUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(searchQuery)}&format=json`;
+            try {
+                const response = await fetch(ddgUrl);
+                const data = await response.json();
+                if (data.AbstractText) {
+                    results.push({
+                        source: 'DuckDuckGo',
+                        title: data.Heading || searchQuery,
+                        content: data.AbstractText || 'Tidak ada ringkasan.',
+                        url: data.AbstractURL || `https://duckduckgo.com/?q=${encodeURIComponent(searchQuery)}`
+                    });
+                }
+            } catch (e) { console.warn('DuckDuckGo error:', e); }
+
+            // Wikipedia
+            const wikiUrl = `https://id.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(searchQuery)}`;
+            try {
+                const response = await fetch(wikiUrl);
+                const data = await response.json();
+                if (data.extract) {
+                    results.push({
+                        source: 'Wikipedia',
+                        title: data.title || searchQuery,
+                        content: data.extract || 'Tidak ada ringkasan.',
+                        url: `https://id.wikipedia.org/wiki/${encodeURIComponent(searchQuery)}`
+                    });
+                }
+            } catch (e) { console.warn('Wikipedia error:', e); }
+
+            // Google Fallback
+            const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+            results.push({
+                source: 'Google',
+                title: 'Cari di Google',
+                content: `Klik link berikut untuk membuka pencarian Google:`,
+                url: googleUrl
+            });
+
+            return results;
+        }
+
+        // ================================================================
+        // 13. UPLOAD LESSON (Admin only)
+        // ================================================================
+        function triggerUpload() {
+            document.getElementById('hidden-file-input').click();
+        }
+
+        document.getElementById('hidden-file-input').addEventListener('change', async (e) => {
+            if (!isAdmin) {
+                addMessage('ai', '❌ Hanya admin yang bisa upload pelajaran!');
+                return;
+            }
+            const files = e.target.files;
+            if (files.length === 0) return;
+            addMessage('ai', '📚 Memproses file...');
+            for (let file of files) {
+                try {
+                    const text = await file.text();
+                    const lines = text.split('\n');
+                    let current = null;
+                    let items = [];
+                    for (let line of lines) {
+                        line = line.trim();
+                        if (line.startsWith('===') && line.endsWith('===')) {
+                            if (current) items.push(current);
+                            current = { title: line.replace(/===/g, '').trim(), content: '', tags: [], type: 'lesson', created_at: new Date().toISOString() };
+                        } else if (line.startsWith('Judul:')) {
+                            if (current) current.title = line.replace('Judul:', '').trim();
+                        } else if (line.startsWith('Tags:')) {
+                            if (current) current.tags = line.replace('Tags:', '').trim().split(',').map(t => t.trim());
+                        } else if (line && current) {
+                            current.content += line + '\n';
+                        }
+                    }
+                    if (current) items.push(current);
+                    for (let item of items) {
+                        if (embeddingModel) {
+                            const emb = await embeddingModel.embed(item.content);
+                            item.embedding = Array.from(await emb.array());
+                        }
+                        await firestore.collection('knowledge_base').add(item);
+                    }
+                    await loadKnowledgeBase();
+                    addMessage('ai', `✅ ${items.length} pelajaran tersimpan!`);
+                } catch (err) {
+                    addMessage('ai', `❌ Gagal: ${err.message}`);
+                }
+            }
+            e.target.value = '';
+        });
+
+        // ================================================================
+        // 14. TOP UP (Semua role)
+        // ================================================================
+        async function addTopUp(game, amount) {
+            const price = Math.floor(Math.random() * 20000) + 10000;
+            const order = {
+                game: game,
+                amount: amount,
+                price: price,
+                status: 'pending',
+                paymentMethod: 'QRIS',
+                created_at: new Date().toISOString(),
+                user: auth.currentUser?.email || 'guest'
+            };
+            const result = await firestore.collection('topup_orders').add(order);
+            return { ...order, id: result.id };
+        }
+
+        // ================================================================
+        // 15. GITHUB INDEX EDITOR (AI Mengedit index.html di GitHub)
+        // ================================================================
+        // Token diambil dari environment variable (via GitHub Actions)
+        // JANGAN hardcode token di sini!
+        const GITHUB_OWNER = 'YADI-ganteng';
+        const GITHUB_REPO = 'NarutoRPG';
+        const FILE_PATH = 'index.html';
+
+        // 🔴 PERINGATAN: Ini hanya contoh. Untuk produksi, token harus dari backend/Cloud Function.
+        // Untuk demo, kita gunakan token yang sudah ada.
+        const GITHUB_TOKEN = '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';
+
+        async function getGithubFile() {
+            const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FILE_PATH}`;
+            const response = await fetch(url, {
+                headers: { Authorization: `token ${GITHUB_TOKEN}` }
+            });
+            const data = await response.json();
+            return { content: atob(data.content), sha: data.sha };
+        }
+
+        async function updateGithubFile(content, message) {
+            const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FILE_PATH}`;
+            const { sha } = await getGithubFile();
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    Authorization: `token ${GITHUB_TOKEN}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: message,
+                    content: btoa(content),
+                    sha: sha
+                })
+            });
+            return response.ok;
+        }
+
+        async function aiAddFeaturePermanent(featureName, htmlCode, cssCode, jsCode) {
+            const { content } = await getGithubFile();
+            const newFeature = `
+                <!-- ===== FITUR BARU: ${featureName} ===== -->
+                <div class="feature-${featureName.replace(/\s/g, '-')}">
+                    ${htmlCode}
+                </div>
+                <style>
+                    /* CSS untuk ${featureName} */
+                    ${cssCode}
+                </style>
+                <script>
+                    /* JS untuk ${featureName} */
+                    ${jsCode}
+                </script>
+                <!-- ===== END FITUR: ${featureName} ===== -->
+            `;
+            const newContent = content.replace('</body>', newFeature + '\n</body>');
+            const success = await updateGithubFile(newContent, `AI menambahkan fitur: ${featureName}`);
+            return success;
+        }
+
+        // ================================================================
+        // 16. MAIN AI RESPONSE ENGINE
+        // ================================================================
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if (!text) return;
+            addMessage('user', text);
+            input.value = '';
+
+            const intent = detectIntent(text);
+            let response = '';
+            interactions++;
+
+            // Greeting
+            if (intent === 'greeting') {
+                response = `Halo! Senang bertemu denganmu. Ada yang bisa saya bantu?`;
+                addMessage('ai', response);
+                aiScore += 2;
+                return;
+            }
+
+            // Logout
+            if (intent === 'logout') {
+                document.getElementById('logout-btn').click();
+                return;
+            }
+
+            // Upload Lesson (Admin only)
+            if (intent === 'upload_lesson') {
+                if (!isAdmin) {
+                    addMessage('ai', '❌ Hanya admin yang bisa upload pelajaran!');
+                    return;
+                }
+                addMessage('ai', '📚 Silakan pilih file pelajaran...');
+                triggerUpload();
+                aiScore += 5;
+                return;
+            }
+
+            // Add Feature (GitHub Edit - Admin only)
+            if (intent === 'add_feature') {
+                if (!isAdmin) {
+                    addMessage('ai', '❌ Hanya admin yang bisa menambahkan fitur!');
+                    return;
+                }
+                const featureName = text.replace(/tambahkan fitur|buat fitur/i, '').trim();
+                if (!featureName) {
+                    addMessage('ai', '❌ Masukkan nama fitur! Contoh: "Tambahkan fitur kalkulator"');
+                    return;
+                }
+                // AI membuat kode fitur
+                const htmlCode = `<h3>✨ ${featureName}</h3>
+                    <div class="calculator">
+                        <input type="number" id="num1" placeholder="Angka 1">
+                        <input type="number" id="num2" placeholder="Angka 2">
+                        <button onclick="alert(parseInt(num1.value)+parseInt(num2.value))">Hitung</button>
+                    </div>`;
+                const cssCode = `.calculator input { display: block; margin: 8px 0; padding: 8px; border-radius: 4px; border: 1px solid #ccc; }`;
+                const jsCode = `console.log('✅ Kalkulator siap digunakan!');`;
+                
+                const success = await aiAddFeaturePermanent(featureName, htmlCode, cssCode, jsCode);
+                if (success) {
+                    response = `✅ Fitur "${featureName}" berhasil ditambahkan ke GitHub!<br>⏳ Vercel akan mendeploy otomatis.`;
+                } else {
+                    response = `❌ Gagal menambahkan fitur. Cek GitHub token.`;
+                }
+                addMessage('ai', response);
+                aiScore += 10;
+                return;
+            }
+
+            // Search Web
+            if (intent === 'search_web') {
+                showTyping();
+                const results = await searchWeb(text);
+                hideTyping();
+                response = `<b>🔍 Hasil Pencarian:</b><br><br>`;
+                results.forEach(r => {
+                    response += `
+                        <div style="background:#0f172a;padding:6px;border-radius:6px;margin:4px 0;border:1px solid #334155;font-size:11px;">
+                            <b>📌 ${r.source}</b><br>
+                            <b>${r.title}</b><br>
+                            ${r.content}<br>
+                            ${r.url ? `<a href="${r.url}" target="_blank" style="color:#3b82f6;">🔗 Buka link</a>` : ''}
+                        </div>
+                    `;
+                });
+                addMessage('ai', response);
+                aiScore += 10;
+                return;
+            }
+
+            // Top Up
+            if (intent === 'topup') {
+                const parts = text.replace(/top up|topup/i, '').trim().split(' ');
+                const game = parts[0] || 'MLBB';
+                const amount = parts.slice(1).join(' ') || '500';
+                const order = await addTopUp(game, amount);
+                response = `✅ Pesanan Top Up berhasil dibuat!<br>
+                    🎮 Game: ${order.game}<br>
+                    💰 Jumlah: ${order.amount}<br>
+                    💵 Harga: Rp${order.price}<br>
+                    📦 Status: ${order.status}<br>
+                    💳 Pembayaran: ${order.paymentMethod}<br>
+                    🆔 Order ID: ${order.id}`;
+                addMessage('ai', response);
+                aiScore += 10;
+                return;
+            }
+
+            // Stats
+            if (intent === 'stats') {
+                response = `
+                    <b>📊 Statistik Yad AI:</b><br><br>
+                    📚 Pelajaran: ${knowledgeBase.length}<br>
+                    🏷️ Tag unik: ${tags.size}<br>
+                    📝 Total baris kode: ${lineCount}<br>
+                    🎮 Game: ${gameCount}<br>
+                    💬 Interaksi: ${interactions}<br>
+                    🧠 Skor AI: ${aiScore}
+                `;
+                addMessage('ai', response);
+                aiScore += 2;
+                return;
+            }
+
+            // Default Semantic Search
+            showTyping();
+            const results = await semanticSearch(text);
+            hideTyping();
+            if (results.length > 0) {
+                const best = results[0];
+                response = `
+                    <b>📖 ${best.title || 'Pelajaran'}</b><br><br>
+                    ${(best.content || '').substring(0, 300)}...
+                `;
+                addMessage('ai', response);
+                aiScore += 3;
+            } else {
+                addMessage('ai', '🔍 Tidak ada di database. Mencari di web...');
+                const webResults = await searchWeb(text);
+                response = `<b>🔍 Hasil Pencarian Web:</b><br><br>`;
+                webResults.forEach(r => {
+                    response += `
+                        <div style="background:#0f172a;padding:6px;border-radius:6px;margin:4px 0;border:1px solid #334155;font-size:11px;">
+                            <b>📌 ${r.source}</b><br>
+                            <b>${r.title}</b><br>
+                            ${r.content}<br>
+                            ${r.url ? `<a href="${r.url}" target="_blank" style="color:#3b82f6;">🔗 Buka link</a>` : ''}
+                        </div>
+                    `;
+                });
+                addMessage('ai', response);
+            }
+            aiScore += 3;
+        }
+
+        // ================================================================
+        // 17. EVENT LISTENERS
+        // ================================================================
+        document.getElementById('sendBtn').addEventListener('click', sendMessage);
+        document.getElementById('userInput').addEventListener('keydown', e => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        console.log('✅ Yad AI siap!');
+    </script>
+</body>
+</html>

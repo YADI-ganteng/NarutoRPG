@@ -1,0 +1,11 @@
+{
+  "appName": "Yad AI",
+  "version": "2.0.0",
+  "created": "2026-07-21T07:04:09.387Z",
+  "settings": {
+    "priceMarkup": 1.2,
+    "defaultDatabase": "firebase",
+    "theme": "dark",
+    "language": "id"
+  }
+}

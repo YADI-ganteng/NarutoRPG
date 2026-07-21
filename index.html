@@ -139,15 +139,15 @@
         <div class="header">
             <div class="header-left">
                 <button class="hamburger" onclick="toggleSB()"><span></span><span></span><span></span></button>
-                <div class="ai-avatar">ð§ </div>
+                <div class="ai-avatar">Ã°ÂÂ§Â </div>
                 <div class="header-title"><span>Yad AI</span></div>
             </div>
             <div class="header-right">
                 <div class="brain-indicator b1" id="brainIndicator" onclick="switchBrain()"><div class="brain-dot"></div><span id="brainLabel">Brain 1</span></div>
                 <div class="db-indicator" onclick="qcmd('switch database')"><div class="db-dot"></div><span id="dbName">Firebase</span></div>
-                <span id="auth-status" class="badge guest">ð Guest</span>
-                <button id="login-btn" class="btn-icon" onclick="showLogin()">ð</button>
-                <button id="logout-btn" class="btn-icon" style="display:none;" onclick="doLogout()">ðª</button>
+                <span id="auth-status" class="badge guest">Ã°ÂÂÂ Guest</span>
+                <button id="login-btn" class="btn-icon" onclick="showLogin()">Ã°ÂÂÂ</button>
+                <button id="logout-btn" class="btn-icon" style="display:none;" onclick="doLogout()">Ã°ÂÂÂª</button>
             </div>
         </div>
 
@@ -157,7 +157,7 @@
         <!-- SIDEBAR -->
         <div class="sidebar" id="sidebar">
             <div class="sidebar-section">
-                <div class="sidebar-title">ðï¸ DATABASE <span style="font-size:8px;color:var(--accent-cyan);cursor:pointer;" onclick="syncAll()">ð Sync</span></div>
+                <div class="sidebar-title">Ã°ÂÂÂÃ¯Â¸Â DATABASE <span style="font-size:8px;color:var(--accent-cyan);cursor:pointer;" onclick="syncAll()">Ã°ÂÂÂ Sync</span></div>
                 <div class="db-stats">
                     <div class="db-stat"><div class="db-stat-value firebase" id="st-firebase">0</div><div class="db-stat-label">Firestore</div></div>
                     <div class="db-stat"><div class="db-stat-value github" id="st-github">0</div><div class="db-stat-label">GitHub</div></div>
@@ -165,53 +165,53 @@
                     <div class="db-stat"><div class="db-stat-value" style="color:var(--accent-purple);" id="st-syncs">0</div><div class="db-stat-label">Syncs</div></div>
                 </div>
             </div>
-            <div class="sidebar-section" id="guestPanel"><div class="sidebar-title">ð GUEST</div><button class="quick-cmd" onclick="qcmd('cari')">ð Cari</button><button class="quick-cmd" onclick="qcmd('tanya')">ð¬ Tanya</button><button class="quick-cmd" onclick="qcmd('info')">â¹ï¸ Info</button><button class="quick-cmd" onclick="showLogin()">ð Login</button></div>
-            <div class="sidebar-section" id="userPanel" style="display:none;"><div class="sidebar-title">ð¤ USER</div>
-                <button class="quick-cmd" onclick="qcmd('top up')">ð° Top Up</button><button class="quick-cmd" onclick="qcmd('status')">ð¦ Status</button>
-                <button class="quick-cmd" onclick="qcmd('upload bukti')">ð¤ Bukti</button><button class="quick-cmd" onclick="qcmd('upload foto')">ð¸ Foto</button>
-                <button class="quick-cmd" onclick="qcmd('upload video')">ð¬ Video</button><button class="quick-cmd" onclick="qcmd('list game')">ð® Game</button>
-                <button class="quick-cmd" onclick="qcmd('list novel')">ð Novel</button><button class="quick-cmd" onclick="qcmd('main game')">ð¹ï¸ Main</button>
+            <div class="sidebar-section" id="guestPanel"><div class="sidebar-title">Ã°ÂÂÂ GUEST</div><button class="quick-cmd" onclick="qcmd('cari')">Ã°ÂÂÂ Cari</button><button class="quick-cmd" onclick="qcmd('tanya')">Ã°ÂÂÂ¬ Tanya</button><button class="quick-cmd" onclick="qcmd('info')">Ã¢ÂÂ¹Ã¯Â¸Â Info</button><button class="quick-cmd" onclick="showLogin()">Ã°ÂÂÂ Login</button></div>
+            <div class="sidebar-section" id="userPanel" style="display:none;"><div class="sidebar-title">Ã°ÂÂÂ¤ USER</div>
+                <button class="quick-cmd" onclick="qcmd('top up')">Ã°ÂÂÂ° Top Up</button><button class="quick-cmd" onclick="qcmd('status')">Ã°ÂÂÂ¦ Status</button>
+                <button class="quick-cmd" onclick="qcmd('upload bukti')">Ã°ÂÂÂ¤ Bukti</button><button class="quick-cmd" onclick="qcmd('upload foto')">Ã°ÂÂÂ¸ Foto</button>
+                <button class="quick-cmd" onclick="qcmd('upload video')">Ã°ÂÂÂ¬ Video</button><button class="quick-cmd" onclick="qcmd('list game')">Ã°ÂÂÂ® Game</button>
+                <button class="quick-cmd" onclick="qcmd('list novel')">Ã°ÂÂÂ Novel</button><button class="quick-cmd" onclick="qcmd('main game')">Ã°ÂÂÂ¹Ã¯Â¸Â Main</button>
             </div>
-            <div class="sidebar-section" id="adminPanel" style="display:none;"><div class="sidebar-title">ð ADMIN</div>
-                <button class="quick-cmd add" onclick="qcmd('tambah fitur')">â Fitur</button><button class="quick-cmd delete" onclick="qcmd('hapus fitur')">ðï¸ Hapus</button>
-                <button class="quick-cmd rename" onclick="qcmd('ubah nama ai')">âï¸ Rename AI</button><button class="quick-cmd rename" onclick="qcmd('ubah judul')">âï¸ Judul</button>
-                <button class="quick-cmd rename" onclick="qcmd('ubah tema')">ð¨ Tema</button><button class="quick-cmd edit" onclick="qcmd('edit css')">ð¨ CSS</button>
-                <button class="quick-cmd edit" onclick="qcmd('edit html')">ð HTML</button><button class="quick-cmd add" onclick="qcmd('upload pelajaran')">ð Upload</button>
-                <button class="quick-cmd" onclick="qcmd('markup')">ð° Markup</button><button class="quick-cmd" onclick="qcmd('transaksi')">ð Trx</button>
-                <button class="quick-cmd add" onclick="qcmd('tambah game')">ð® Game</button><button class="quick-cmd add" onclick="qcmd('tambah novel')">ð Novel</button>
-                <button class="quick-cmd" onclick="qcmd('buat database')">ð Buat DB</button><button class="quick-cmd" onclick="qcmd('baca database')">ð Baca DB</button>
-                <button class="quick-cmd" onclick="qcmd('cari github')">ð Cari GH</button><button class="quick-cmd" onclick="qcmd('set github token')">ð Token GH</button>
-                <button class="quick-cmd" onclick="qcmd('deploy')">ð Deploy</button><button class="quick-cmd self" onclick="qcmd('self edit')">ð§  Self-Edit</button>
-                <button class="quick-cmd" onclick="qcmd('diagnosa')">ð©º Diagnosa</button>
+            <div class="sidebar-section" id="adminPanel" style="display:none;"><div class="sidebar-title">Ã°ÂÂÂ ADMIN</div>
+                <button class="quick-cmd add" onclick="qcmd('tambah fitur')">Ã¢ÂÂ Fitur</button><button class="quick-cmd delete" onclick="qcmd('hapus fitur')">Ã°ÂÂÂÃ¯Â¸Â Hapus</button>
+                <button class="quick-cmd rename" onclick="qcmd('ubah nama ai')">Ã¢ÂÂÃ¯Â¸Â Rename AI</button><button class="quick-cmd rename" onclick="qcmd('ubah judul')">Ã¢ÂÂÃ¯Â¸Â Judul</button>
+                <button class="quick-cmd rename" onclick="qcmd('ubah tema')">Ã°ÂÂÂ¨ Tema</button><button class="quick-cmd edit" onclick="qcmd('edit css')">Ã°ÂÂÂ¨ CSS</button>
+                <button class="quick-cmd edit" onclick="qcmd('edit html')">Ã°ÂÂÂ HTML</button><button class="quick-cmd add" onclick="qcmd('upload pelajaran')">Ã°ÂÂÂ Upload</button>
+                <button class="quick-cmd" onclick="qcmd('markup')">Ã°ÂÂÂ° Markup</button><button class="quick-cmd" onclick="qcmd('transaksi')">Ã°ÂÂÂ Trx</button>
+                <button class="quick-cmd add" onclick="qcmd('tambah game')">Ã°ÂÂÂ® Game</button><button class="quick-cmd add" onclick="qcmd('tambah novel')">Ã°ÂÂÂ Novel</button>
+                <button class="quick-cmd" onclick="qcmd('buat database')">Ã°ÂÂÂ Buat DB</button><button class="quick-cmd" onclick="qcmd('baca database')">Ã°ÂÂÂ Baca DB</button>
+                <button class="quick-cmd" onclick="qcmd('cari github')">Ã°ÂÂÂ Cari GH</button><button class="quick-cmd" onclick="qcmd('set github token')">Ã°ÂÂÂ Token GH</button>
+                <button class="quick-cmd" onclick="qcmd('deploy')">Ã°ÂÂÂ Deploy</button><button class="quick-cmd self" onclick="qcmd('self edit')">Ã°ÂÂ§Â  Self-Edit</button>
+                <button class="quick-cmd" onclick="qcmd('diagnosa')">Ã°ÂÂ©Âº Diagnosa</button>
             </div>
-            <div class="sidebar-section"><div class="sidebar-title">ð STATUS</div><div style="font-size:10px;"><div>ð§  Brain: <span id="brainStatus" style="color:var(--accent-blue);">Brain 1</span></div><div>ð¢ AI: <span style="color:var(--accent-green);">Connected</span></div><div id="dbConnStatus">ð¢ DB: <span style="color:var(--accent-green);">Firebase</span></div><div>âï¸ Cloudinary: <span style="color:var(--accent-cyan);">Ready</span></div></div></div>
-            <div class="sidebar-section"><div class="sidebar-title">ð» CODE PREVIEW</div><div class="code-preview" id="codePreview">Loading...</div></div>
+            <div class="sidebar-section"><div class="sidebar-title">Ã°ÂÂÂ STATUS</div><div style="font-size:10px;"><div>Ã°ÂÂ§Â  Brain: <span id="brainStatus" style="color:var(--accent-blue);">Brain 1</span></div><div>Ã°ÂÂÂ¢ AI: <span style="color:var(--accent-green);">Connected</span></div><div id="dbConnStatus">Ã°ÂÂÂ¢ DB: <span style="color:var(--accent-green);">Firebase</span></div><div>Ã¢ÂÂÃ¯Â¸Â Cloudinary: <span style="color:var(--accent-cyan);">Ready</span></div></div></div>
+            <div class="sidebar-section"><div class="sidebar-title">Ã°ÂÂÂ» CODE PREVIEW</div><div class="code-preview" id="codePreview">Loading...</div></div>
         </div>
 
         <!-- CHAT -->
         <div class="chat-area">
             <div class="chat-messages" id="chatMessages">
                 <div class="message ai guest-msg">
-                    <b>ð§  Yad AI - Ultimate Complete System</b><br><br>
-                    â <b>SEMUA FITUR LENGKAP:</b><br>
-                    ð§  <b>Dual Brain:</b> Brain 1 (Chat) | Brain 2 (Self-Edit)<br>
-                    ð <b>Knowledge Base:</b> Percakapan, Coding, Game, Foto, Video<br>
-                    âï¸ <b>Cloudinary:</b> Upload Foto & Video<br>
-                    ð° <b>Top Up:</b> 5 Game (ML, FF, Genshin, PUBG, Valorant)<br>
-                    ð <b>Database:</b> Firebase + GitHub + Local<br>
-                    âï¸ <b>Self-Edit:</b> AI mengedit dirinya sendiri<br>
-                    ð©º <b>Diagnosa:</b> AI perbaiki masalah<br>
-                    ð¤ <b>Upload:</b> File, Foto, Video<br><br>
-                    ð¡ "<b>help</b>" - Semua perintah<br>
-                    ð "<b>switch brain</b>" - Ganti mode<br>
-                    âï¸ "<b>upload foto</b>" - Upload ke Cloudinary<br>
-                    ð Admin: ynuraini686@gmail.com
+                    <b>Ã°ÂÂ§Â  Yad AI - Ultimate Complete System</b><br><br>
+                    Ã¢ÂÂ <b>SEMUA FITUR LENGKAP:</b><br>
+                    Ã°ÂÂ§Â  <b>Dual Brain:</b> Brain 1 (Chat) | Brain 2 (Self-Edit)<br>
+                    Ã°ÂÂÂ <b>Knowledge Base:</b> Percakapan, Coding, Game, Foto, Video<br>
+                    Ã¢ÂÂÃ¯Â¸Â <b>Cloudinary:</b> Upload Foto & Video<br>
+                    Ã°ÂÂÂ° <b>Top Up:</b> 5 Game (ML, FF, Genshin, PUBG, Valorant)<br>
+                    Ã°ÂÂÂ <b>Database:</b> Firebase + GitHub + Local<br>
+                    Ã¢ÂÂÃ¯Â¸Â <b>Self-Edit:</b> AI mengedit dirinya sendiri<br>
+                    Ã°ÂÂ©Âº <b>Diagnosa:</b> AI perbaiki masalah<br>
+                    Ã°ÂÂÂ¤ <b>Upload:</b> File, Foto, Video<br><br>
+                    Ã°ÂÂÂ¡ "<b>help</b>" - Semua perintah<br>
+                    Ã°ÂÂÂ "<b>switch brain</b>" - Ganti mode<br>
+                    Ã¢ÂÂÃ¯Â¸Â "<b>upload foto</b>" - Upload ke Cloudinary<br>
+                    Ã°ÂÂÂ Admin: ynuraini686@gmail.com
                 </div>
             </div>
             <div class="input-area">
-                <button class="attach-btn" onclick="openCloudinaryWidget()" title="Upload Foto/Video">ð</button>
+                <button class="attach-btn" onclick="openCloudinaryWidget()" title="Upload Foto/Video">Ã°ÂÂÂ</button>
                 <input type="text" id="userInput" placeholder="Ketik pesan..." autocomplete="off" enterkeyhint="send">
-                <button class="send-btn" id="sendBtn" onclick="sendMsg()">â¤</button>
+                <button class="send-btn" id="sendBtn" onclick="sendMsg()">Ã¢ÂÂ¤</button>
             </div>
         </div>
     </div>
@@ -219,7 +219,7 @@
     <!-- PROGRESS OVERLAY -->
     <div class="progress-overlay" id="progOverlay">
         <div class="progress-card">
-            <div style="font-size:32px;" id="progIcon">â³</div>
+            <div style="font-size:32px;" id="progIcon">Ã¢ÂÂ³</div>
             <div style="margin:8px 0;font-weight:700;font-size:14px;" id="progTitle">Processing...</div>
             <div class="progress-steps" id="progSteps">
                 <div class="step active" id="step1"><div class="step-icon">1</div><span id="st1">Initializing...</span></div>
@@ -271,25 +271,25 @@ const AI_KNOWLEDGE = {
     conversations: {
         greetings: {
             patterns: ["hai","halo","hi","hello","assalamualaikum","pagi","siang","sore","malam","selamat pagi","selamat siang","selamat sore","selamat malam"],
-            responses: ["Halo! Senang bertemu denganmu! Ada yang bisa saya bantu? ð","Hai! Apa kabar? Saya siap membantu Anda hari ini.","Selamat datang! Silakan ketik pertanyaan atau perintah.","Halo! Saya Yad AI, asisten virtual Anda. Ada yang bisa dibantu?"]
+            responses: ["Halo! Senang bertemu denganmu! Ada yang bisa saya bantu? Ã°ÂÂÂ","Hai! Apa kabar? Saya siap membantu Anda hari ini.","Selamat datang! Silakan ketik pertanyaan atau perintah.","Halo! Saya Yad AI, asisten virtual Anda. Ada yang bisa dibantu?"]
         },
         kabar: {
             patterns: ["kabar","apa kabar","bagaimana kabarmu","gimana kabarnya","sehat"],
-            responses: ["Kabar saya baik! Terima kasih sudah bertanya. Bagaimana kabar Anda?","Saya dalam kondisi prima! Siap membantu kapan saja. Kabar Anda bagaimana?","Alhamdulillah baik! Semoga Anda juga sehat selalu. â¨"]
+            responses: ["Kabar saya baik! Terima kasih sudah bertanya. Bagaimana kabar Anda?","Saya dalam kondisi prima! Siap membantu kapan saja. Kabar Anda bagaimana?","Alhamdulillah baik! Semoga Anda juga sehat selalu. Ã¢ÂÂ¨"]
         },
         perasaan: {
             responses: {
-                sedih: ["Saya mengerti perasaan itu. Tidak apa-apa merasa sedih. Ceritakan apa yang terjadi? ð¤","Peluk virtual untukmu! Ingat, setelah hujan selalu ada pelangi. ð","Setiap orang punya hari buruk. Yang penting kita terus melangkah. ðª"],
-                senang: ["Wah, senang mendengarnya! Ceritakan dong apa yang membuatmu senang? ð","Ikut senang! Semoga kebahagiaan ini terus berlanjut ya! ð"],
-                capek: ["Istirahat dulu ya! Jangan memaksakan diri. Minum air putih dan tidur yang cukup. ð","Saya mengerti. Badan dan pikiran butuh istirahat. Santai sejenak!"],
-                marah: ["Tarik napas dalam-dalam. Marah itu wajar, tapi jangan biarkan menguasai. ð¤","Saya dengar. Ceritakan apa yang membuatmu marah? Mungkin saya bisa bantu."],
-                bingung: ["Tenang, kita selesaikan bersama. Apa yang membuatmu bingung? ð¤","Tarik napas dulu. Ceritakan pelan-pelan, saya bantu pikirkan."],
-                kesepian: ["Saya di sini untukmu. Kamu tidak sendiri. Ceritakan apa yang kamu rasakan. ð","Kesepian itu berat. Tapi ingat, selalu ada yang peduli padamu. Termasuk saya!"]
+                sedih: ["Saya mengerti perasaan itu. Tidak apa-apa merasa sedih. Ceritakan apa yang terjadi? Ã°ÂÂ¤Â","Peluk virtual untukmu! Ingat, setelah hujan selalu ada pelangi. Ã°ÂÂÂ","Setiap orang punya hari buruk. Yang penting kita terus melangkah. Ã°ÂÂÂª"],
+                senang: ["Wah, senang mendengarnya! Ceritakan dong apa yang membuatmu senang? Ã°ÂÂÂ","Ikut senang! Semoga kebahagiaan ini terus berlanjut ya! Ã°ÂÂÂ"],
+                capek: ["Istirahat dulu ya! Jangan memaksakan diri. Minum air putih dan tidur yang cukup. Ã°ÂÂÂ","Saya mengerti. Badan dan pikiran butuh istirahat. Santai sejenak!"],
+                marah: ["Tarik napas dalam-dalam. Marah itu wajar, tapi jangan biarkan menguasai. Ã°ÂÂÂ¤","Saya dengar. Ceritakan apa yang membuatmu marah? Mungkin saya bisa bantu."],
+                bingung: ["Tenang, kita selesaikan bersama. Apa yang membuatmu bingung? Ã°ÂÂ¤Â","Tarik napas dulu. Ceritakan pelan-pelan, saya bantu pikirkan."],
+                kesepian: ["Saya di sini untukmu. Kamu tidak sendiri. Ceritakan apa yang kamu rasakan. Ã°ÂÂÂ","Kesepian itu berat. Tapi ingat, selalu ada yang peduli padamu. Termasuk saya!"]
             }
         },
         motivasi: {
             patterns: ["motivasi","semangat","dukungan","support","bangkit","gagal","putus asa"],
-            responses: ["ðª Jangan pernah menyerah! Setiap kegagalan adalah pelajaran berharga.","ð Kamu lebih kuat dari yang kamu kira! Teruslah melangkah.","ð¥ Ingatlah mengapa kamu memulai. Tetap semangat!","â¨ Kesuksesan adalah hasil dari kerja keras dan ketekunan. Kamu pasti bisa!"]
+            responses: ["Ã°ÂÂÂª Jangan pernah menyerah! Setiap kegagalan adalah pelajaran berharga.","Ã°ÂÂÂ Kamu lebih kuat dari yang kamu kira! Teruslah melangkah.","Ã°ÂÂÂ¥ Ingatlah mengapa kamu memulai. Tetap semangat!","Ã¢ÂÂ¨ Kesuksesan adalah hasil dari kerja keras dan ketekunan. Kamu pasti bisa!"]
         }
     },
     coding: {
@@ -378,7 +378,7 @@ function showProg(title, detail, steps) {
     $('step1').classList.add('active');
 }
 function hideProg() { $('progFill').style.width='100%'; setTimeout(()=>$('progOverlay').classList.remove('active'),500); }
-function updStep(n,s) { const st=$(`step${n}`); if(st){st.className=`step ${s}`;if(s==='done')st.querySelector('.step-icon').textContent='â';} }
+function updStep(n,s) { const st=$(`step${n}`); if(st){st.className=`step ${s}`;if(s==='done')st.querySelector('.step-icon').textContent='Ã¢ÂÂ';} }
 function toggleSB() { const sb=$('sidebar'),ov=$('sbOverlay'); sb.classList.contains('open')?closeSB():(sb.classList.add('open'),ov.classList.add('active')); }
 function closeSB() { $('sidebar').classList.remove('open'); $('sbOverlay').classList.remove('active'); }
 function qcmd(c) { $('userInput').value = c+' '; $('userInput').focus(); closeSB(); }
@@ -402,8 +402,8 @@ function extractVal(text, prefixes) {
 function switchBrain() {
     S.brain = S.brain===1?2:1;
     const ind=$('brainIndicator'),lab=$('brainLabel'),sta=$('brainStatus');
-    if(S.brain===1){ind.className='brain-indicator b1';lab.textContent='Brain 1';sta.innerHTML='<span style="color:var(--accent-blue);">Brain 1 (Chat+DB)</span>';toast('ð§  Brain 1: Chat + Auto-Database','info');}
-    else{ind.className='brain-indicator b2';lab.textContent='Brain 2';sta.innerHTML='<span style="color:var(--accent-pink);">Brain 2 (Self-Edit)</span>';toast('ð§  Brain 2: Self-Edit Mode','info');}
+    if(S.brain===1){ind.className='brain-indicator b1';lab.textContent='Brain 1';sta.innerHTML='<span style="color:var(--accent-blue);">Brain 1 (Chat+DB)</span>';toast('Ã°ÂÂ§Â  Brain 1: Chat + Auto-Database','info');}
+    else{ind.className='brain-indicator b2';lab.textContent='Brain 2';sta.innerHTML='<span style="color:var(--accent-pink);">Brain 2 (Self-Edit)</span>';toast('Ã°ÂÂ§Â  Brain 2: Self-Edit Mode','info');}
 }
 
 // ================================================================
@@ -420,21 +420,21 @@ function openCloudinaryWidget() {
         clientAllowedFormats: ['jpg','jpeg','png','gif','mp4','mov','avi','webm','pdf','txt','doc','docx'],
         styles: { palette: { window:"#141c2b", sourceBg:"#0a0e17", windowBorder:"#2a3545", tabIcon:"#8899aa", link:"#4a90d9", action:"#4a90d9", inProgress:"#4a90d9", complete:"#2ecc71", error:"#e74c3c", textDark:"#e8edf5", textLight:"#8899aa" } }
     }, function(error, result) {
-        if(error) { toast('â '+error.message,'error'); return; }
+        if(error) { toast('Ã¢ÂÂ '+error.message,'error'); return; }
         if(result && result.event==='success') {
             const url=result.info.secure_url, type=result.info.resource_type, name=result.info.original_filename, size=result.info.bytes;
             S.mediaUploads.push({url,type,name,size,uploadedAt:new Date().toISOString()});
             let mediaHTML = '';
-            if(type==='image') mediaHTML = `<div class="media-card">ð¸ <b>Foto:</b> ${name}<br><img src="${url}" style="max-width:100%;border-radius:12px;margin-top:8px;"><br><small>âï¸ Cloudinary | ${(size/1024).toFixed(1)} KB</small></div>`;
-            else if(type==='video') mediaHTML = `<div class="media-card">ð¬ <b>Video:</b> ${name}<br><video controls style="max-width:100%;border-radius:12px;margin-top:8px;"><source src="${url}" type="video/mp4"></video><br><small>âï¸ Cloudinary | ${(size/1024/1024).toFixed(1)} MB</small></div>`;
-            else mediaHTML = `<div class="media-card">ð <b>File:</b> ${name}<br><small>âï¸ Cloudinary | ${(size/1024).toFixed(1)} KB</small><br><a href="${url}" target="_blank">ð Download</a></div>`;
+            if(type==='image') mediaHTML = `<div class="media-card">Ã°ÂÂÂ¸ <b>Foto:</b> ${name}<br><img src="${url}" style="max-width:100%;border-radius:12px;margin-top:8px;"><br><small>Ã¢ÂÂÃ¯Â¸Â Cloudinary | ${(size/1024).toFixed(1)} KB</small></div>`;
+            else if(type==='video') mediaHTML = `<div class="media-card">Ã°ÂÂÂ¬ <b>Video:</b> ${name}<br><video controls style="max-width:100%;border-radius:12px;margin-top:8px;"><source src="${url}" type="video/mp4"></video><br><small>Ã¢ÂÂÃ¯Â¸Â Cloudinary | ${(size/1024/1024).toFixed(1)} MB</small></div>`;
+            else mediaHTML = `<div class="media-card">Ã°ÂÂÂ <b>File:</b> ${name}<br><small>Ã¢ÂÂÃ¯Â¸Â Cloudinary | ${(size/1024).toFixed(1)} KB</small><br><a href="${url}" target="_blank">Ã°ÂÂÂ Download</a></div>`;
             addMsg('ai', mediaHTML);
-            toast('â Uploaded!','success');
+            toast('Ã¢ÂÂ Uploaded!','success');
             try { fs.collection('media_uploads').add({url,type,name,size,uploadedAt:new Date().toISOString(),uploadedBy:S.user?.email||'guest'}); } catch(e) {}
         }
-        if(result && result.event==='queues-end') { hideProg(); addMsg('ai',`â <b>Semua file diupload!</b><br>âï¸ Cloudinary: ${CFG.cloudinary.cloudName}`); }
+        if(result && result.event==='queues-end') { hideProg(); addMsg('ai',`Ã¢ÂÂ <b>Semua file diupload!</b><br>Ã¢ÂÂÃ¯Â¸Â Cloudinary: ${CFG.cloudinary.cloudName}`); }
     });
-    showProg('âï¸ Uploading...', 'Cloudinary: '+CFG.cloudinary.cloudName);
+    showProg('Ã¢ÂÂÃ¯Â¸Â Uploading...', 'Cloudinary: '+CFG.cloudinary.cloudName);
     widget.open();
 }
 
@@ -471,7 +471,7 @@ async function searchAllDB(query) {
 class GH {
     static headers(){return {'Authorization':`token ${CFG.github.token}`,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'};}
     static async getFile(path){const r=await fetch(`https://api.github.com/repos/${CFG.github.owner}/${CFG.github.repo}/contents/${path}?ref=${CFG.github.branch}`,{headers:this.headers()});if(!r.ok)return null;const d=await r.json();return{content:atob(d.content),sha:d.sha};}
-    static async saveFile(path,content,msg){const url=`https://api.github.com/repos/${CFG.github.owner}/${CFG.github.repo}/contents/${path}`;let sha=null;try{const ex=await this.getFile(path);if(ex)sha=ex.sha;}catch(e){}const body={message:`ð¤ AI: ${msg}`,content:btoa(unescape(encodeURIComponent(content))),branch:CFG.github.branch};if(sha)body.sha=sha;const r=await fetch(url,{method:'PUT',headers:this.headers(),body:JSON.stringify(body)});if(!r.ok){const e=await r.json();throw new Error(e.message);}return await r.json();}
+    static async saveFile(path,content,msg){const url=`https://api.github.com/repos/${CFG.github.owner}/${CFG.github.repo}/contents/${path}`;let sha=null;try{const ex=await this.getFile(path);if(ex)sha=ex.sha;}catch(e){}const body={message:`Ã°ÂÂ¤Â AI: ${msg}`,content:btoa(unescape(encodeURIComponent(content))),branch:CFG.github.branch};if(sha)body.sha=sha;const r=await fetch(url,{method:'PUT',headers:this.headers(),body:JSON.stringify(body)});if(!r.ok){const e=await r.json();throw new Error(e.message);}return await r.json();}
     static async createDB(){const files={'database/knowledge_base.json':[{title:'Welcome to Yad AI',content:'Database pengetahuan Yad AI.',tags:['welcome','ai'],type:'lesson',created_at:new Date().toISOString()}],'database/games.json':[{name:'Tebak Angka',description:'Game tebak angka 1-100',type:'game'}],'database/novels.json':[{title:'Petualangan AI',genre:'Sci-Fi',type:'novel'}],'database/transactions.json':[],'database/config.json':{app:'Yad AI',version:'5.0',markup:1.2}};const results=[];for(const[p,c]of Object.entries(files)){try{await this.saveFile(p,JSON.stringify(c,null,2),`Create ${p}`);results.push({path:p,status:'created'});}catch(e){results.push({path:p,status:'failed',error:e.message});}}return results;}
 }
 
@@ -483,7 +483,7 @@ class Editor {
     static async commit(nc,msg){return await GH.saveFile(CFG.github.filePath,nc,msg);}
     static async renameAI(name){const{content}=await this.fetch();let nc=content;nc=nc.replace(/<title>.*?<\/title>/i,`<title>${name} - AI</title>`);nc=nc.replace(/(<span[^>]*>)(Yad AI)(<\/span>)/gi,`$1${name}$3`);return nc;}
     static async changeTheme(color){const{content}=await this.fetch();const themes={'dark blue':['#0a1628','#162238','#4a90d9'],'dark purple':['#1a0a2e','#2d1645','#9b59b6'],'dark green':['#0a1a0a','#162816','#2ecc71'],'dark':['#0a0e17','#141c2b','#4a90d9']};const c=themes[color.toLowerCase()]||themes['dark'];let nc=content;nc=nc.replace(/--bg-primary:\s*#[0-9a-fA-F]+;/,`--bg-primary: ${c[0]};`);nc=nc.replace(/--bg-secondary:\s*#[0-9a-fA-F]+;/,`--bg-secondary: ${c[1]};`);nc=nc.replace(/--accent-blue:\s*#[0-9a-fA-F]+;/,`--accent-blue: ${c[2]};`);return nc;}
-    static async addFeature(name){const{content}=await this.fetch();const sn=name.replace(/\s+/g,'-').toLowerCase();const fb=`\n<!-- AI FEATURE: ${name} -->\n<div class="ft-${sn}" style="padding:20px;margin:20px auto;max-width:600px;background:var(--bg-tertiary);border-radius:12px;border:2px solid var(--accent-blue);text-align:center;"><h3>â¨ ${name}</h3><p>Added by AI on ${new Date().toLocaleString('id-ID')}</p></div>\n<!-- END: ${name} -->`;return content.replace('</body>',fb+'\n</body>');}
+    static async addFeature(name){const{content}=await this.fetch();const sn=name.replace(/\s+/g,'-').toLowerCase();const fb=`\n<!-- AI FEATURE: ${name} -->\n<div class="ft-${sn}" style="padding:20px;margin:20px auto;max-width:600px;background:var(--bg-tertiary);border-radius:12px;border:2px solid var(--accent-blue);text-align:center;"><h3>Ã¢ÂÂ¨ ${name}</h3><p>Added by AI on ${new Date().toLocaleString('id-ID')}</p></div>\n<!-- END: ${name} -->`;return content.replace('</body>',fb+'\n</body>');}
     static async removeFeature(name){const{content}=await this.fetch();const sm=`<!-- AI FEATURE: ${name} -->`,em=`<!-- END: ${name} -->`;const si=content.indexOf(sm),ei=content.indexOf(em);return(si!==-1&&ei!==-1)?content.substring(0,si)+content.substring(ei+em.length):content;}
     static async selfEdit(instruction){const{content}=await this.fetch();let nc=content;const ins=instruction.toLowerCase();
         if(ins.includes('handlechatwithdb')||ins.includes('chat natural')||ins.includes('knowledge base')||ins.includes('perbaiki chat')){const os='async function handleChatWithDB';const oe='// ================================================================\n    // INTENT';const si=nc.indexOf(os),ei=nc.indexOf(oe);if(si!==-1&&ei!==-1){const nf=`async function handleChatWithDB(text, searchResults) {
@@ -492,16 +492,16 @@ class Editor {
         const best = searchResults.kbResults[0];
         const tags = (best.tags || []).join(' ').toLowerCase();
         const content = best.content || '';
-        if (tags.includes('sapaan')||tags.includes('halo')) return 'ð <b>'+getRandom(AI_KNOWLEDGE.conversations.greetings.responses)+'</b><br><br>ð <i>Dari KB: "'+best.title+'"</i>';
-        if (tags.includes('kabar')||t.includes('kabar')) return 'ð <b>Kabar baik!</b><br><br>ð <i>Dari KB: "'+best.title+'"</i><br>'+content.substring(0,200)+'<br><br>Bagaimana kabar Anda? â¨';
-        if (tags.includes('perasaan')||t.includes('bahagia')||t.includes('sedih')) return 'ð¤ <b>Saya di sini!</b><br><br>ð <i>Dari KB: "'+best.title+'"</i><br>'+content.substring(0,200);
-        if (tags.includes('motivasi')||t.includes('capek')) return 'ðª <b>Semangat!</b><br><br>ð <i>Dari KB: "'+best.title+'"</i><br>'+content.substring(0,200);
-        return 'ð <b>Dari database:</b><br><br><div class="card info"><b>'+best.title+'</b><br>'+content.substring(0,400)+'...</div>';
+        if (tags.includes('sapaan')||tags.includes('halo')) return 'Ã°ÂÂÂ <b>'+getRandom(AI_KNOWLEDGE.conversations.greetings.responses)+'</b><br><br>Ã°ÂÂÂ <i>Dari KB: "'+best.title+'"</i>';
+        if (tags.includes('kabar')||t.includes('kabar')) return 'Ã°ÂÂÂ <b>Kabar baik!</b><br><br>Ã°ÂÂÂ <i>Dari KB: "'+best.title+'"</i><br>'+content.substring(0,200)+'<br><br>Bagaimana kabar Anda? Ã¢ÂÂ¨';
+        if (tags.includes('perasaan')||t.includes('bahagia')||t.includes('sedih')) return 'Ã°ÂÂ¤Â <b>Saya di sini!</b><br><br>Ã°ÂÂÂ <i>Dari KB: "'+best.title+'"</i><br>'+content.substring(0,200);
+        if (tags.includes('motivasi')||t.includes('capek')) return 'Ã°ÂÂÂª <b>Semangat!</b><br><br>Ã°ÂÂÂ <i>Dari KB: "'+best.title+'"</i><br>'+content.substring(0,200);
+        return 'Ã°ÂÂÂ <b>Dari database:</b><br><br><div class="card info"><b>'+best.title+'</b><br>'+content.substring(0,400)+'...</div>';
     }
     return getAIResponse(text);
 }`;
             nc=nc.substring(0,si)+nf+'\n    '+nc.substring(ei);}}
-        if(ins.includes('tambah fitur')||ins.includes('add feature')){const fn=ins.replace(/tambah fitur|add feature/gi,'').trim();if(fn){const sn=fn.replace(/\s+/g,'-').toLowerCase();const fb=`\n<!-- AI FEATURE: ${fn} -->\n<div class="ft-${sn}" style="padding:20px;margin:20px auto;max-width:600px;background:var(--bg-tertiary);border-radius:12px;border:2px solid var(--accent-blue);text-align:center;"><h3>â¨ ${fn}</h3><p>Added by AI</p></div>\n<!-- END: ${fn} -->`;nc=nc.replace('</body>',fb+'\n</body>');}}
+        if(ins.includes('tambah fitur')||ins.includes('add feature')){const fn=ins.replace(/tambah fitur|add feature/gi,'').trim();if(fn){const sn=fn.replace(/\s+/g,'-').toLowerCase();const fb=`\n<!-- AI FEATURE: ${fn} -->\n<div class="ft-${sn}" style="padding:20px;margin:20px auto;max-width:600px;background:var(--bg-tertiary);border-radius:12px;border:2px solid var(--accent-blue);text-align:center;"><h3>Ã¢ÂÂ¨ ${fn}</h3><p>Added by AI</p></div>\n<!-- END: ${fn} -->`;nc=nc.replace('</body>',fb+'\n</body>');}}
         return nc;
     }
 }
@@ -518,32 +518,32 @@ function getAIResponse(text) {
     for(const [feel, responses] of Object.entries(conv.perasaan.responses)) { if(t.includes(feel)) return getRandom(responses); }
     for(const p of conv.motivasi.patterns) { if(t.includes(p)) return getRandom(conv.motivasi.responses); }
     
-    if(t.includes('html')){const h=AI_KNOWLEDGE.coding.html;return `<b>ð ${h.description}</b><br><br><b>Contoh:</b><br>${h.examples.map(e=>'<code>'+e+'</code><br>').join('')}<br><b>Tips:</b><br>${h.tips.map(t=>'â¢ '+t+'<br>').join('')}`;}
-    if(t.includes('css')){const c=AI_KNOWLEDGE.coding.css;return `<b>ð ${c.description}</b><br><br><b>Contoh:</b><br>${c.examples.map(e=>'<code>'+e+'</code><br>').join('')}<br><b>Tips:</b><br>${c.tips.map(t=>'â¢ '+t+'<br>').join('')}`;}
-    if(t.includes('javascript')||t.includes('js')){const j=AI_KNOWLEDGE.coding.javascript;return `<b>ð ${j.description}</b><br><br><b>Contoh:</b><br>${j.examples.map(e=>'<code>'+e+'</code><br>').join('')}<br><b>Tips:</b><br>${j.tips.map(t=>'â¢ '+t+'<br>').join('')}`;}
-    if(t.includes('python')){const p=AI_KNOWLEDGE.coding.python;return `<b>ð ${p.description}</b><br><br><b>Contoh:</b><br>${p.examples.map(e=>'<code>'+e+'</code><br>').join('')}<br><b>Tips:</b><br>${p.tips.map(t=>'â¢ '+t+'<br>').join('')}`;}
+    if(t.includes('html')){const h=AI_KNOWLEDGE.coding.html;return `<b>Ã°ÂÂÂ ${h.description}</b><br><br><b>Contoh:</b><br>${h.examples.map(e=>'<code>'+e+'</code><br>').join('')}<br><b>Tips:</b><br>${h.tips.map(t=>'Ã¢ÂÂ¢ '+t+'<br>').join('')}`;}
+    if(t.includes('css')){const c=AI_KNOWLEDGE.coding.css;return `<b>Ã°ÂÂÂ ${c.description}</b><br><br><b>Contoh:</b><br>${c.examples.map(e=>'<code>'+e+'</code><br>').join('')}<br><b>Tips:</b><br>${c.tips.map(t=>'Ã¢ÂÂ¢ '+t+'<br>').join('')}`;}
+    if(t.includes('javascript')||t.includes('js')){const j=AI_KNOWLEDGE.coding.javascript;return `<b>Ã°ÂÂÂ ${j.description}</b><br><br><b>Contoh:</b><br>${j.examples.map(e=>'<code>'+e+'</code><br>').join('')}<br><b>Tips:</b><br>${j.tips.map(t=>'Ã¢ÂÂ¢ '+t+'<br>').join('')}`;}
+    if(t.includes('python')){const p=AI_KNOWLEDGE.coding.python;return `<b>Ã°ÂÂÂ ${p.description}</b><br><br><b>Contoh:</b><br>${p.examples.map(e=>'<code>'+e+'</code><br>').join('')}<br><b>Tips:</b><br>${p.tips.map(t=>'Ã¢ÂÂ¢ '+t+'<br>').join('')}`;}
     
-    if(t.includes('foto')||t.includes('gambar')){const f=AI_KNOWLEDGE.media.foto;return `<b>ð¸ Tips Foto:</b><br>${f.tips.map(t=>'â¢ '+t+'<br>').join('')}<br><b>Editing:</b><br>${f.editing.map(e=>'â¢ '+e+'<br>').join('')}<br><br>ð¤ Upload: "<b>upload foto</b>"`;}
-    if(t.includes('video')){const v=AI_KNOWLEDGE.media.video;return `<b>ð¬ Tips Video:</b><br>${v.tips.map(t=>'â¢ '+t+'<br>').join('')}<br><b>Editing:</b><br>${v.editing.map(e=>'â¢ '+e+'<br>').join('')}<br><br>ð¤ Upload: "<b>upload video</b>"`;}
+    if(t.includes('foto')||t.includes('gambar')){const f=AI_KNOWLEDGE.media.foto;return `<b>Ã°ÂÂÂ¸ Tips Foto:</b><br>${f.tips.map(t=>'Ã¢ÂÂ¢ '+t+'<br>').join('')}<br><b>Editing:</b><br>${f.editing.map(e=>'Ã¢ÂÂ¢ '+e+'<br>').join('')}<br><br>Ã°ÂÂÂ¤ Upload: "<b>upload foto</b>"`;}
+    if(t.includes('video')){const v=AI_KNOWLEDGE.media.video;return `<b>Ã°ÂÂÂ¬ Tips Video:</b><br>${v.tips.map(t=>'Ã¢ÂÂ¢ '+t+'<br>').join('')}<br><b>Editing:</b><br>${v.editing.map(e=>'Ã¢ÂÂ¢ '+e+'<br>').join('')}<br><br>Ã°ÂÂÂ¤ Upload: "<b>upload video</b>"`;}
     
-    if(t.includes('game')||t.includes('main')){let r='<b>ð® Game:</b><br>';for(const[k,g]of Object.entries(AI_KNOWLEDGE.games)){r+=`<div class="card"><b>${g.title}</b><br>${g.description}</div>`;}return r;}
+    if(t.includes('game')||t.includes('main')){let r='<b>Ã°ÂÂÂ® Game:</b><br>';for(const[k,g]of Object.entries(AI_KNOWLEDGE.games)){r+=`<div class="card"><b>${g.title}</b><br>${g.description}</div>`;}return r;}
     
     if(t.includes('top up')||t.includes('topup')||t.includes('diamond')) return handleTopUp(text);
     
-    if(t.includes('upload foto')||t.includes('upload gambar')){setTimeout(()=>openCloudinaryWidget(),300);return 'ð¸ <b>Membuka uploader foto...</b><br>âï¸ Cloudinary: <b>'+CFG.cloudinary.cloudName+'</b>';}
-    if(t.includes('upload video')){setTimeout(()=>openCloudinaryWidget(),300);return 'ð¬ <b>Membuka uploader video...</b><br>âï¸ Cloudinary: <b>'+CFG.cloudinary.cloudName+'</b>';}
+    if(t.includes('upload foto')||t.includes('upload gambar')){setTimeout(()=>openCloudinaryWidget(),300);return 'Ã°ÂÂÂ¸ <b>Membuka uploader foto...</b><br>Ã¢ÂÂÃ¯Â¸Â Cloudinary: <b>'+CFG.cloudinary.cloudName+'</b>';}
+    if(t.includes('upload video')){setTimeout(()=>openCloudinaryWidget(),300);return 'Ã°ÂÂÂ¬ <b>Membuka uploader video...</b><br>Ã¢ÂÂÃ¯Â¸Â Cloudinary: <b>'+CFG.cloudinary.cloudName+'</b>';}
     
-    return 'ð¡ <b>Ada yang bisa saya bantu?</b><br><br>Saya bisa ngobrol, coding, upload foto/video, top up game, dan banyak lagi!<br>Ketik "<b>help</b>" untuk semua perintah.';
+    return 'Ã°ÂÂÂ¡ <b>Ada yang bisa saya bantu?</b><br><br>Saya bisa ngobrol, coding, upload foto/video, top up game, dan banyak lagi!<br>Ketik "<b>help</b>" untuk semua perintah.';
 }
 
 function handleTopUp(text) {
     const t=text.toLowerCase();const topup=AI_KNOWLEDGE.topup;let game=null,item=null,server=null;
     const sm=text.match(/server\s*[:#]?\s*(\d+)/i);if(sm)server=sm[1];
     for(const[k,d]of Object.entries(topup)){if(t.includes(k)||t.includes(d.name.toLowerCase())){game=k;for(const it of d.items){if(t.includes(it.name.toLowerCase())||it.name.toLowerCase().split(' ').some(w=>t.includes(w))){item=it;break;}}break;}}
-    if(!game||!item){let l='<b>ð® Game Tersedia:</b><br><br>';for(const[k,d]of Object.entries(topup)){l+=`<b>${d.name}:</b><br>`;d.items.forEach(i=>l+=`â¢ ${i.name} - ${fmtPrice(Math.round(i.price*S.markup))}<br>`);l+='<br>';}return l+'ð¡ "top up ml 100 diamond server: 12345"';}
-    if(!server) return 'â ï¸ <b>Server ID!</b> Contoh: "top up ml 100 diamond <b>server: 12345678</b>"';
+    if(!game||!item){let l='<b>Ã°ÂÂÂ® Game Tersedia:</b><br><br>';for(const[k,d]of Object.entries(topup)){l+=`<b>${d.name}:</b><br>`;d.items.forEach(i=>l+=`Ã¢ÂÂ¢ ${i.name} - ${fmtPrice(Math.round(i.price*S.markup))}<br>`);l+='<br>';}return l+'Ã°ÂÂÂ¡ "top up ml 100 diamond server: 12345"';}
+    if(!server) return 'Ã¢ÂÂ Ã¯Â¸Â <b>Server ID!</b> Contoh: "top up ml 100 diamond <b>server: 12345678</b>"';
     const price=Math.round(item.price*S.markup),oid=genId();S.score+=15;
-    return `â <b>Order Top Up!</b><br><br><div class="card success">ð ${oid}<br>ð® ${topup[game].name}<br>ð ${item.name}<br>ð Server: ${server}<br>ð° ${fmtPrice(price)}<br>ð³ QRIS</div><br>ð¤ Upload bukti: "upload bukti ${oid}"`;
+    return `Ã¢ÂÂ <b>Order Top Up!</b><br><br><div class="card success">Ã°ÂÂÂ ${oid}<br>Ã°ÂÂÂ® ${topup[game].name}<br>Ã°ÂÂÂ ${item.name}<br>Ã°ÂÂÂ Server: ${server}<br>Ã°ÂÂÂ° ${fmtPrice(price)}<br>Ã°ÂÂÂ³ QRIS</div><br>Ã°ÂÂÂ¤ Upload bukti: "upload bukti ${oid}"`;
 }
 
 // ================================================================
@@ -591,7 +591,7 @@ async function sendMsg() {
     const rc=S.role==='admin'?'admin-msg':S.role==='user'?'user-msg':'guest-msg';
     const brainRC=S.brain===2?'brain2-msg':rc;
     addMsg('user',escHTML(text));
-    const typingDiv=addMsg('ai','â³ <i>Berpikir...</i>',brainRC);
+    const typingDiv=addMsg('ai','Ã¢ÂÂ³ <i>Berpikir...</i>',brainRC);
     
     try{
         await autoReadAllDB();
@@ -601,22 +601,22 @@ async function sendMsg() {
         const{a,v}=detectIntent(text);
         let resp;
         const adminOnly=['rename_ai','rename_title','theme','add_ft','rem_ft','edit_css','edit_html','deploy','markup','create_db','set_token','self_edit','heal'];
-        if(!S.isAdmin&&adminOnly.includes(a)){resp='â <b>Hanya Admin!</b><br>ð Login: ynuraini686@gmail.com';}
+        if(!S.isAdmin&&adminOnly.includes(a)){resp='Ã¢ÂÂ <b>Hanya Admin!</b><br>Ã°ÂÂÂ Login: ynuraini686@gmail.com';}
         else{
             switch(a){
                 case'greet':resp=getRandom(AI_KNOWLEDGE.conversations.greetings.responses);break;
-                case'help':resp='<b>ð SEMUA PERINTAH:</b><br><br>ð¬ <b>Chat:</b> Ngobrol, curhat, motivasi<br>ð» <b>Coding:</b> html, css, js, python<br>ð¸ <b>Foto:</b> upload foto, tips foto<br>ð¬ <b>Video:</b> upload video, tips video<br>ð® <b>Game:</b> info game, main game<br>ð° <b>Top Up:</b> top up ml, ff, genshin<br>ð <b>Database:</b> buat/baca database<br>âï¸ <b>Admin:</b> deploy, self edit, diagnosa<br>âï¸ <b>Upload:</b> klik ð atau ketik upload';break;
-                case'stats':resp=`<b>ð Stats:</b> ð KB: ${S.kb.length} | âï¸ Edits: ${S.edits} | ð Deploys: ${S.deploys} | ð¬ Chats: ${S.chats} | ð§  Score: ${S.score} | âï¸ Uploads: ${S.mediaUploads.length}`;break;
-                case'heal':const issues=[];if(S.kb.length===0)issues.push('KB kosong');if(!CFG.github.token||CFG.github.token.length<30)issues.push('Token invalid');if(issues.length===0)resp='â Tidak ada masalah!';else{resp='ð©º <b>Diagnosa:</b><br>';issues.forEach(i=>resp+='â ï¸ '+i+'<br>');resp+='<br>ð§ Perbaikan...';await autoReadAllDB();resp+='<br>â Database reloaded!';S.fixes.push({action:'heal',time:new Date().toISOString()});}break;
-                case'switch_brain':switchBrain();resp='ð§  Brain: '+(S.brain===1?'Chat + Auto-DB':'Self-Edit');break;
+                case'help':resp='<b>Ã°ÂÂÂ SEMUA PERINTAH:</b><br><br>Ã°ÂÂÂ¬ <b>Chat:</b> Ngobrol, curhat, motivasi<br>Ã°ÂÂÂ» <b>Coding:</b> html, css, js, python<br>Ã°ÂÂÂ¸ <b>Foto:</b> upload foto, tips foto<br>Ã°ÂÂÂ¬ <b>Video:</b> upload video, tips video<br>Ã°ÂÂÂ® <b>Game:</b> info game, main game<br>Ã°ÂÂÂ° <b>Top Up:</b> top up ml, ff, genshin<br>Ã°ÂÂÂ <b>Database:</b> buat/baca database<br>Ã¢ÂÂÃ¯Â¸Â <b>Admin:</b> deploy, self edit, diagnosa<br>Ã¢ÂÂÃ¯Â¸Â <b>Upload:</b> klik Ã°ÂÂÂ atau ketik upload';break;
+                case'stats':resp=`<b>Ã°ÂÂÂ Stats:</b> Ã°ÂÂÂ KB: ${S.kb.length} | Ã¢ÂÂÃ¯Â¸Â Edits: ${S.edits} | Ã°ÂÂÂ Deploys: ${S.deploys} | Ã°ÂÂÂ¬ Chats: ${S.chats} | Ã°ÂÂ§Â  Score: ${S.score} | Ã¢ÂÂÃ¯Â¸Â Uploads: ${S.mediaUploads.length}`;break;
+                case'heal':const issues=[];if(S.kb.length===0)issues.push('KB kosong');if(!CFG.github.token||CFG.github.token.length<30)issues.push('Token invalid');if(issues.length===0)resp='Ã¢ÂÂ Tidak ada masalah!';else{resp='Ã°ÂÂ©Âº <b>Diagnosa:</b><br>';issues.forEach(i=>resp+='Ã¢ÂÂ Ã¯Â¸Â '+i+'<br>');resp+='<br>Ã°ÂÂÂ§ Perbaikan...';await autoReadAllDB();resp+='<br>Ã¢ÂÂ Database reloaded!';S.fixes.push({action:'heal',time:new Date().toISOString()});}break;
+                case'switch_brain':switchBrain();resp='Ã°ÂÂ§Â  Brain: '+(S.brain===1?'Chat + Auto-DB':'Self-Edit');break;
                 case'self_edit':resp=await handleSelfEdit(v);break;
-                case'set_token':if(!v||!v.startsWith('ghp_')||v.length<30)resp='â Token invalid! <a href="https://github.com/settings/tokens" target="_blank">Dapatkan token</a>';else{CFG.github.token=v;localStorage.setItem('gh_token',v);resp='â Token: '+v.substring(0,8)+'...';toast('â Token!','success');}break;
+                case'set_token':if(!v||!v.startsWith('ghp_')||v.length<30)resp='Ã¢ÂÂ Token invalid! <a href="https://github.com/settings/tokens" target="_blank">Dapatkan token</a>';else{CFG.github.token=v;localStorage.setItem('gh_token',v);resp='Ã¢ÂÂ Token: '+v.substring(0,8)+'...';toast('Ã¢ÂÂ Token!','success');}break;
                 case'create_db':resp=await handleCreateDB();break;
                 case'read_db':resp=await handleReadDB(v);break;
                 case'search_gh':resp=await handleSearchGH(v);break;
                 case'list_db':resp=await handleListDB();break;
                 case'switch_db':resp=handleSwitchDB(v);break;
-                case'sync':showProg('Syncing...');await new Promise(r=>setTimeout(r,1000));S.syncs++;hideProg();resp='â Sync!';break;
+                case'sync':showProg('Syncing...');await new Promise(r=>setTimeout(r,1000));S.syncs++;hideProg();resp='Ã¢ÂÂ Sync!';break;
                 case'rename_ai':resp=await handleDeploy('rename_ai',v);break;
                 case'rename_title':resp=await handleDeploy('rename_title',v);break;
                 case'theme':resp=await handleDeploy('theme',v);break;
@@ -625,39 +625,39 @@ async function sendMsg() {
                 case'edit_css':resp=await handleDeploy('edit_css',v);break;
                 case'edit_html':resp=await handleDeploy('edit_html',v);break;
                 case'deploy':resp=await handleDeployTrigger();break;
-                case'upload_media':setTimeout(()=>openCloudinaryWidget(),300);resp='âï¸ <b>Membuka Cloudinary Uploader...</b><br>ð¸ Foto | ð¬ Video | ð Dokumen';break;
-                case'upload_lesson':$('fileInput').click();resp='ð¤ <b>Pilih file pelajaran...</b>';break;
+                case'upload_media':setTimeout(()=>openCloudinaryWidget(),300);resp='Ã¢ÂÂÃ¯Â¸Â <b>Membuka Cloudinary Uploader...</b><br>Ã°ÂÂÂ¸ Foto | Ã°ÂÂÂ¬ Video | Ã°ÂÂÂ Dokumen';break;
+                case'upload_lesson':$('fileInput').click();resp='Ã°ÂÂÂ¤ <b>Pilih file pelajaran...</b>';break;
                 case'topup':resp=handleTopUp(v);break;
                 case'markup':resp=handleMarkup(v);break;
-                case'login':showLogin();resp='ð Login...';break;
+                case'login':showLogin();resp='Ã°ÂÂÂ Login...';break;
                 default:resp=getAIResponse(text);break;
             }
         }
         addMsg('ai',resp,brainRC);
         updStats();
-    }catch(e){console.error(e);S.errors.push({msg:e.message,time:new Date().toISOString()});typingDiv.remove();addMsg('ai','â '+e.message+'<br>ð¡ Coba "diagnosa"',brainRC);hideProg();}
+    }catch(e){console.error(e);S.errors.push({msg:e.message,time:new Date().toISOString()});typingDiv.remove();addMsg('ai','Ã¢ÂÂ '+e.message+'<br>Ã°ÂÂÂ¡ Coba "diagnosa"',brainRC);hideProg();}
     finally{S.processing=false;}
 }
 
 // ================================================================
 // HANDLERS
 // ================================================================
-async function handleSelfEdit(instruction){if(!S.isAdmin)return'â Admin only!';showProg('ð§  Self-Edit...',instruction.substring(0,60),['Fetching...','Editing...','Committing...','Deploying...']);try{updStep(1,'done');updStep(2,'active');$('progFill').style.width='30%';const nc=await Editor.selfEdit(instruction);updStep(2,'done');updStep(3,'active');$('progFill').style.width='60%';await Editor.commit(nc,'Self-edit: '+instruction.substring(0,80));updStep(3,'done');updStep(4,'active');$('progFill').style.width='85%';await new Promise(r=>setTimeout(r,500));updStep(4,'done');$('progFill').style.width='100%';S.edits++;S.deploys++;S.score+=30;await new Promise(r=>setTimeout(r,400));hideProg();toast('â Self-edit!','success');return'â <b>AI Mengedit Dirinya!</b><br>ð '+instruction.substring(0,80)+'...<br>ð Live 1-2 menit';}catch(e){hideProg();return'â '+e.message;}}
-async function handleDeploy(action,text){showProg('ð Deploying...','',['Preparing...','Editing...','Committing...','Done']);try{updStep(1,'done');updStep(2,'active');$('progFill').style.width='25%';let nc,msg;const val=text.replace(/ubah nama ai|rename ai|ubah judul|ubah tema|ganti warna|tambah fitur|add feature|hapus fitur|remove|edit css|edit html/gi,'').trim();switch(action){case'rename_ai':nc=await Editor.renameAI(val);msg='Renameâ"'+val+'"';break;case'rename_title':nc=await Editor.renameAI(val);msg='Titleâ"'+val+'"';break;case'theme':nc=await Editor.changeTheme(val);msg='Themeâ"'+val+'"';break;case'add_ft':nc=await Editor.addFeature(val);msg='Add:"'+val+'"';break;case'rem_ft':nc=await Editor.removeFeature(val);msg='Remove:"'+val+'"';break;case'edit_css':nc=await Editor.selfEdit('edit css '+val);msg='CSS:'+val;break;case'edit_html':nc=await Editor.selfEdit('edit html '+val);msg='HTML:'+val;break;}updStep(2,'done');updStep(3,'active');$('progFill').style.width='60%';await Editor.commit(nc,msg);updStep(3,'done');updStep(4,'active');$('progFill').style.width='100%';S.edits++;S.deploys++;S.score+=25;await new Promise(r=>setTimeout(r,400));hideProg();toast('â Deployed!','success');return'â <b>Berhasil!</b><br>ð '+msg+'<br>ð Live 1-2 menit';}catch(e){hideProg();return'â '+e.message;}}
-async function handleDeployTrigger(){try{await fetch(`https://api.github.com/repos/${CFG.github.owner}/${CFG.github.repo}/dispatches`,{method:'POST',headers:GH.headers(),body:JSON.stringify({event_type:'deploy',client_payload:{ts:new Date().toISOString()}})});S.deploys++;return'â Deploy triggered! â³ 1-2 menit.';}catch(e){return'â '+e.message;}}
-async function handleCreateDB(){showProg('ð Creating...','',['Check...','Create...','Upload...','Done']);try{updStep(1,'done');updStep(2,'active');$('progFill').style.width='30%';const results=await GH.createDB();updStep(2,'done');updStep(3,'active');$('progFill').style.width='70%';await new Promise(r=>setTimeout(r,500));updStep(3,'done');updStep(4,'active');$('progFill').style.width='100%';S.syncs++;S.deploys++;await new Promise(r=>setTimeout(r,300));hideProg();const ok=results.filter(r=>r.status==='created'),fail=results.filter(r=>r.status==='failed');let resp='â <b>Database!</b><br>';ok.forEach(r=>resp+='â '+r.path+'<br>');if(fail.length){resp+='<br>â Failed:<br>';fail.forEach(r=>resp+='â '+r.path+': '+r.error+'<br>');resp+='<br>ð¡ Update token: "set github token TOKEN"';}return resp;}catch(e){hideProg();return'â '+e.message;}}
-async function handleReadDB(text){let table='knowledge_base';if(text.includes('game'))table='games';else if(text.includes('novel'))table='novels';try{const r=await fetch(`https://api.github.com/repos/${CFG.github.owner}/${CFG.github.repo}/contents/database/${table}.json?ref=${CFG.github.branch}`,{headers:GH.headers()});if(!r.ok)return'â "'+table+'" tidak ditemukan. ð¡ "buat database"';const d=await r.json();const data=JSON.parse(atob(d.content));if(Array.isArray(data)){S.dbStats.github=data.length;return'ð <b>'+table+':</b> '+data.length+' items<br>'+data.slice(0,10).map(i=>'â¢ '+(i.title||i.name)+'<br>').join('');}return'ð <b>'+table+':</b><br><pre>'+JSON.stringify(data,null,2).substring(0,300)+'</pre>';}catch(e){return'â '+e.message;}}
-async function handleSearchGH(text){const q=text.replace(/cari github|search gh/gi,'').trim();if(!q)return'â Kata kunci?';try{const tables=['knowledge_base','games','novels'];const results=[];for(const t of tables){try{const r=await fetch(`https://api.github.com/repos/${CFG.github.owner}/${CFG.github.repo}/contents/database/${t}.json?ref=${CFG.github.branch}`,{headers:GH.headers()});if(r.ok){const d=await r.json();const data=JSON.parse(atob(d.content));if(Array.isArray(data)){for(const item of data){if(JSON.stringify(item).toLowerCase().includes(q.toLowerCase()))results.push({table:t,...item});}}}}catch(e){}}if(!results.length)return'â "'+q+'" tidak ditemukan.';return'ð <b>'+q+':</b> '+results.length+' hasil<br>'+results.slice(0,10).map(r=>'<div class="card">ð '+r.table+'<br><b>'+(r.title||r.name)+'</b></div>').join('');}catch(e){return'â '+e.message;}}
-async function handleListDB(){try{const r=await fetch(`https://api.github.com/repos/${CFG.github.owner}/${CFG.github.repo}/contents/database`,{headers:GH.headers()});const files=r.ok?await r.json():[];if(!files.length)return'ð Kosong. "buat database"';return'ð <b>Files:</b><br>'+files.map(f=>'â¢ '+f.name+'<br>').join('');}catch(e){return'â '+e.message;}}
-function handleSwitchDB(text){const dbs={firebase:'Firestore',realtime:'Realtime',github:'GitHub',local:'Local'};for(const[k,v]of Object.entries(dbs)){if(text.includes(k)){S.db=k;$('dbName').textContent=v;$('dbConnStatus').innerHTML='ð¢ DB: <span style="color:var(--accent-green);">'+v+'</span>';toast('â '+v,'success');return'â '+v;}}return'ðï¸ firebase, realtime, github, local';}
-function handleMarkup(text){const p=parseInt(text.match(/\d+/)?.[0]||'20');S.markup=1+(p/100);let l='<b>ð° Mark-up '+p+'%:</b><br><br>';for(const[k,d]of Object.entries(AI_KNOWLEDGE.topup)){l+='<b>'+d.name+':</b><br>';d.items.forEach(i=>l+='â¢ '+i.name+': '+fmtPrice(Math.round(i.price*S.markup))+'<br>');l+='<br>';}return l;}
+async function handleSelfEdit(instruction){if(!S.isAdmin)return'Ã¢ÂÂ Admin only!';showProg('Ã°ÂÂ§Â  Self-Edit...',instruction.substring(0,60),['Fetching...','Editing...','Committing...','Deploying...']);try{updStep(1,'done');updStep(2,'active');$('progFill').style.width='30%';const nc=await Editor.selfEdit(instruction);updStep(2,'done');updStep(3,'active');$('progFill').style.width='60%';await Editor.commit(nc,'Self-edit: '+instruction.substring(0,80));updStep(3,'done');updStep(4,'active');$('progFill').style.width='85%';await new Promise(r=>setTimeout(r,500));updStep(4,'done');$('progFill').style.width='100%';S.edits++;S.deploys++;S.score+=30;await new Promise(r=>setTimeout(r,400));hideProg();toast('Ã¢ÂÂ Self-edit!','success');return'Ã¢ÂÂ <b>AI Mengedit Dirinya!</b><br>Ã°ÂÂÂ '+instruction.substring(0,80)+'...<br>Ã°ÂÂÂ Live 1-2 menit';}catch(e){hideProg();return'Ã¢ÂÂ '+e.message;}}
+async function handleDeploy(action,text){showProg('Ã°ÂÂÂ Deploying...','',['Preparing...','Editing...','Committing...','Done']);try{updStep(1,'done');updStep(2,'active');$('progFill').style.width='25%';let nc,msg;const val=text.replace(/ubah nama ai|rename ai|ubah judul|ubah tema|ganti warna|tambah fitur|add feature|hapus fitur|remove|edit css|edit html/gi,'').trim();switch(action){case'rename_ai':nc=await Editor.renameAI(val);msg='RenameÃ¢ÂÂ"'+val+'"';break;case'rename_title':nc=await Editor.renameAI(val);msg='TitleÃ¢ÂÂ"'+val+'"';break;case'theme':nc=await Editor.changeTheme(val);msg='ThemeÃ¢ÂÂ"'+val+'"';break;case'add_ft':nc=await Editor.addFeature(val);msg='Add:"'+val+'"';break;case'rem_ft':nc=await Editor.removeFeature(val);msg='Remove:"'+val+'"';break;case'edit_css':nc=await Editor.selfEdit('edit css '+val);msg='CSS:'+val;break;case'edit_html':nc=await Editor.selfEdit('edit html '+val);msg='HTML:'+val;break;}updStep(2,'done');updStep(3,'active');$('progFill').style.width='60%';await Editor.commit(nc,msg);updStep(3,'done');updStep(4,'active');$('progFill').style.width='100%';S.edits++;S.deploys++;S.score+=25;await new Promise(r=>setTimeout(r,400));hideProg();toast('Ã¢ÂÂ Deployed!','success');return'Ã¢ÂÂ <b>Berhasil!</b><br>Ã°ÂÂÂ '+msg+'<br>Ã°ÂÂÂ Live 1-2 menit';}catch(e){hideProg();return'Ã¢ÂÂ '+e.message;}}
+async function handleDeployTrigger(){try{await fetch(`https://api.github.com/repos/${CFG.github.owner}/${CFG.github.repo}/dispatches`,{method:'POST',headers:GH.headers(),body:JSON.stringify({event_type:'deploy',client_payload:{ts:new Date().toISOString()}})});S.deploys++;return'Ã¢ÂÂ Deploy triggered! Ã¢ÂÂ³ 1-2 menit.';}catch(e){return'Ã¢ÂÂ '+e.message;}}
+async function handleCreateDB(){showProg('Ã°ÂÂÂ Creating...','',['Check...','Create...','Upload...','Done']);try{updStep(1,'done');updStep(2,'active');$('progFill').style.width='30%';const results=await GH.createDB();updStep(2,'done');updStep(3,'active');$('progFill').style.width='70%';await new Promise(r=>setTimeout(r,500));updStep(3,'done');updStep(4,'active');$('progFill').style.width='100%';S.syncs++;S.deploys++;await new Promise(r=>setTimeout(r,300));hideProg();const ok=results.filter(r=>r.status==='created'),fail=results.filter(r=>r.status==='failed');let resp='Ã¢ÂÂ <b>Database!</b><br>';ok.forEach(r=>resp+='Ã¢ÂÂ '+r.path+'<br>');if(fail.length){resp+='<br>Ã¢ÂÂ Failed:<br>';fail.forEach(r=>resp+='Ã¢ÂÂ '+r.path+': '+r.error+'<br>');resp+='<br>Ã°ÂÂÂ¡ Update token: "set github token TOKEN"';}return resp;}catch(e){hideProg();return'Ã¢ÂÂ '+e.message;}}
+async function handleReadDB(text){let table='knowledge_base';if(text.includes('game'))table='games';else if(text.includes('novel'))table='novels';try{const r=await fetch(`https://api.github.com/repos/${CFG.github.owner}/${CFG.github.repo}/contents/database/${table}.json?ref=${CFG.github.branch}`,{headers:GH.headers()});if(!r.ok)return'Ã¢ÂÂ "'+table+'" tidak ditemukan. Ã°ÂÂÂ¡ "buat database"';const d=await r.json();const data=JSON.parse(atob(d.content));if(Array.isArray(data)){S.dbStats.github=data.length;return'Ã°ÂÂÂ <b>'+table+':</b> '+data.length+' items<br>'+data.slice(0,10).map(i=>'Ã¢ÂÂ¢ '+(i.title||i.name)+'<br>').join('');}return'Ã°ÂÂÂ <b>'+table+':</b><br><pre>'+JSON.stringify(data,null,2).substring(0,300)+'</pre>';}catch(e){return'Ã¢ÂÂ '+e.message;}}
+async function handleSearchGH(text){const q=text.replace(/cari github|search gh/gi,'').trim();if(!q)return'Ã¢ÂÂ Kata kunci?';try{const tables=['knowledge_base','games','novels'];const results=[];for(const t of tables){try{const r=await fetch(`https://api.github.com/repos/${CFG.github.owner}/${CFG.github.repo}/contents/database/${t}.json?ref=${CFG.github.branch}`,{headers:GH.headers()});if(r.ok){const d=await r.json();const data=JSON.parse(atob(d.content));if(Array.isArray(data)){for(const item of data){if(JSON.stringify(item).toLowerCase().includes(q.toLowerCase()))results.push({table:t,...item});}}}}catch(e){}}if(!results.length)return'Ã¢ÂÂ "'+q+'" tidak ditemukan.';return'Ã°ÂÂÂ <b>'+q+':</b> '+results.length+' hasil<br>'+results.slice(0,10).map(r=>'<div class="card">Ã°ÂÂÂ '+r.table+'<br><b>'+(r.title||r.name)+'</b></div>').join('');}catch(e){return'Ã¢ÂÂ '+e.message;}}
+async function handleListDB(){try{const r=await fetch(`https://api.github.com/repos/${CFG.github.owner}/${CFG.github.repo}/contents/database`,{headers:GH.headers()});const files=r.ok?await r.json():[];if(!files.length)return'Ã°ÂÂÂ Kosong. "buat database"';return'Ã°ÂÂÂ <b>Files:</b><br>'+files.map(f=>'Ã¢ÂÂ¢ '+f.name+'<br>').join('');}catch(e){return'Ã¢ÂÂ '+e.message;}}
+function handleSwitchDB(text){const dbs={firebase:'Firestore',realtime:'Realtime',github:'GitHub',local:'Local'};for(const[k,v]of Object.entries(dbs)){if(text.includes(k)){S.db=k;$('dbName').textContent=v;$('dbConnStatus').innerHTML='Ã°ÂÂÂ¢ DB: <span style="color:var(--accent-green);">'+v+'</span>';toast('Ã¢ÂÂ '+v,'success');return'Ã¢ÂÂ '+v;}}return'Ã°ÂÂÂÃ¯Â¸Â firebase, realtime, github, local';}
+function handleMarkup(text){const p=parseInt(text.match(/\d+/)?.[0]||'20');S.markup=1+(p/100);let l='<b>Ã°ÂÂÂ° Mark-up '+p+'%:</b><br><br>';for(const[k,d]of Object.entries(AI_KNOWLEDGE.topup)){l+='<b>'+d.name+':</b><br>';d.items.forEach(i=>l+='Ã¢ÂÂ¢ '+i.name+': '+fmtPrice(Math.round(i.price*S.markup))+'<br>');l+='<br>';}return l;}
 
 // ================================================================
 // AUTH
 // ================================================================
-function showLogin(){const e=prompt('Email:');if(!e)return;const p=prompt('Password:');if(!p)return;auth.signInWithEmailAndPassword(e,p).then(()=>toast('â Login!','success')).catch(err=>{if(err.code==='auth/user-not-found'&&confirm('Buat?')){auth.createUserWithEmailAndPassword(e,p).then(()=>toast('â Created!','success')).catch(er=>toast('â '+er.message,'error'));}else toast('â '+err.message,'error');});}
-async function doLogout(){await auth.signOut();toast('ð Logout!','info');}
-auth.onAuthStateChanged(u=>{const s=$('auth-status'),li=$('login-btn'),lo=$('logout-btn'),gp=$('guestPanel'),up=$('userPanel'),ap=$('adminPanel');if(u){S.user=u;S.isAdmin=u.email===CFG.adminEmail;S.role=S.isAdmin?'admin':'user';s.className='badge '+S.role;s.textContent=S.isAdmin?'ð Admin':'ð¤ User';li.style.display='none';lo.style.display='inline-block';gp.style.display='none';up.style.display=S.isAdmin?'none':'block';ap.style.display=S.isAdmin?'block':'none';}else{S.isAdmin=false;S.role='guest';s.className='badge guest';s.textContent='ð Guest';li.style.display='inline-block';lo.style.display='none';gp.style.display='block';up.style.display='none';ap.style.display='none';}});
+function showLogin(){const e=prompt('Email:');if(!e)return;const p=prompt('Password:');if(!p)return;auth.signInWithEmailAndPassword(e,p).then(()=>toast('Ã¢ÂÂ Login!','success')).catch(err=>{if(err.code==='auth/user-not-found'&&confirm('Buat?')){auth.createUserWithEmailAndPassword(e,p).then(()=>toast('Ã¢ÂÂ Created!','success')).catch(er=>toast('Ã¢ÂÂ '+er.message,'error'));}else toast('Ã¢ÂÂ '+err.message,'error');});}
+async function doLogout(){await auth.signOut();toast('Ã°ÂÂÂ Logout!','info');}
+auth.onAuthStateChanged(u=>{const s=$('auth-status'),li=$('login-btn'),lo=$('logout-btn'),gp=$('guestPanel'),up=$('userPanel'),ap=$('adminPanel');if(u){S.user=u;S.isAdmin=u.email===CFG.adminEmail;S.role=S.isAdmin?'admin':'user';s.className='badge '+S.role;s.textContent=S.isAdmin?'Ã°ÂÂÂ Admin':'Ã°ÂÂÂ¤ User';li.style.display='none';lo.style.display='inline-block';gp.style.display='none';up.style.display=S.isAdmin?'none':'block';ap.style.display=S.isAdmin?'block':'none';}else{S.isAdmin=false;S.role='guest';s.className='badge guest';s.textContent='Ã°ÂÂÂ Guest';li.style.display='inline-block';lo.style.display='none';gp.style.display='block';up.style.display='none';ap.style.display='none';}});
 
 // ================================================================
 // EVENT LISTENERS
@@ -665,15 +665,15 @@ auth.onAuthStateChanged(u=>{const s=$('auth-status'),li=$('login-btn'),lo=$('log
 $('sendBtn').addEventListener('click',e=>{e.preventDefault();sendMsg();});
 $('sendBtn').addEventListener('touchend',e=>{e.preventDefault();sendMsg();});
 $('userInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}});
-$('fileInput').addEventListener('change',async function(e){const files=e.target.files;if(!files.length)return;showProg('ð¤ Uploading...',files.length+' file(s)');let items=[];for(const file of files){try{const text=await file.text();items=items.concat(parseFile(text,file.name));}catch(err){}}if(items.length){for(const item of items){try{await fs.collection('knowledge_base').add(item);}catch(e){}}S.kb=S.kb.concat(items);const local=[...(JSON.parse(localStorage.getItem('yaidb')||'[]')),...items];localStorage.setItem('yaidb',JSON.stringify(local));S.dbStats.local=local.length;S.syncs++;}$('progFill').style.width='100%';await new Promise(r=>setTimeout(r,400));hideProg();addMsg('ai','â <b>'+items.length+' items!</b> ð Total: '+S.kb.length);toast('â '+items.length+'!','success');updStats();this.value='';});
+$('fileInput').addEventListener('change',async function(e){const files=e.target.files;if(!files.length)return;showProg('Ã°ÂÂÂ¤ Uploading...',files.length+' file(s)');let items=[];for(const file of files){try{const text=await file.text();items=items.concat(parseFile(text,file.name));}catch(err){}}if(items.length){for(const item of items){try{await fs.collection('knowledge_base').add(item);}catch(e){}}S.kb=S.kb.concat(items);const local=[...(JSON.parse(localStorage.getItem('yaidb')||'[]')),...items];localStorage.setItem('yaidb',JSON.stringify(local));S.dbStats.local=local.length;S.syncs++;}$('progFill').style.width='100%';await new Promise(r=>setTimeout(r,400));hideProg();addMsg('ai','Ã¢ÂÂ <b>'+items.length+' items!</b> Ã°ÂÂÂ Total: '+S.kb.length);toast('Ã¢ÂÂ '+items.length+'!','success');updStats();this.value='';});
 function parseFile(text,filename){const items=[];const lines=text.split('\n');let cur={title:filename.replace(/\.[^.]+$/,''),content:'',tags:[],type:'lesson',created_at:new Date().toISOString()};for(let line of lines){line=line.trim();if(!line)continue;if(line.startsWith('===')&&line.endsWith('===')){if(cur.content.trim())items.push({...cur});cur={title:line.replace(/===/g,'').trim(),content:'',tags:[],type:'lesson',created_at:new Date().toISOString()};}else if(line.startsWith('Judul:')||line.startsWith('Title:')){if(cur.content.trim())items.push({...cur});cur={title:line.replace(/^(Judul|Title):/i,'').trim(),content:'',tags:[],type:'lesson',created_at:new Date().toISOString()};}else if(line.startsWith('Tags:')){cur.tags=line.replace('Tags:','').split(',').map(t=>t.trim()).filter(t=>t);}else{cur.content+=line+'\n';}}if(cur.content.trim())items.push(cur);if(!items.length&&text.trim())items.push({title:filename,content:text.trim(),tags:['imported'],type:'lesson',created_at:new Date().toISOString()});return items;}
 function syncAll(){qcmd('sync all');}
 window.addEventListener('resize',()=>{document.body.style.height=window.innerHeight+'px';});
 setInterval(updStats,5000);
 if(window.innerWidth>=768)setTimeout(()=>$('userInput').focus(),500);
-console.log('ð Yad AI ULTIMATE COMPLETE SYSTEM READY!');
-console.log('â Semua fitur dari awal sampai sekarang');
-console.log('â Dual Brain + Cloudinary + Database + Self-Edit');
+console.log('Ã°ÂÂÂ Yad AI ULTIMATE COMPLETE SYSTEM READY!');
+console.log('Ã¢ÂÂ Semua fitur dari awal sampai sekarang');
+console.log('Ã¢ÂÂ Dual Brain + Cloudinary + Database + Self-Edit');
 })();
 </script>
 </body>

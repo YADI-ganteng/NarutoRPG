@@ -94,9 +94,14 @@
 const CFG={firebase:{apiKey:"AIzaSyAvfHxcAT2syVbrf6-TU0JBRXtNLI0AIkc",authDomain:"yadstores.firebaseapp.com",projectId:"yadstores",storageBucket:"yadstores.firebasestorage.app",messagingSenderId:"666352014774",appId:"1:666352014774:web:159ab5b455efb2fb2f9d17",measurementId:"G-8Q7T7G6HQ2",databaseURL:"https://yadstores-default-rtdb.asia-southeast1.firebasedatabase.app"},adminEmail:'ynuraini686@gmail.com',github:{owner:'YADI-ganteng',repo:'NarutoRPG',filePath:'index.html',token:localStorage.getItem('gh_token')||'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',branch:'main',dataPath:'database'},cloudinary:{cloudName:'b8at16d3',apiKey:'671378325589697',uploadPreset:'koinku_uploads'}};
 const AI_PROVIDERS=[{name:"DeepSeek",apiKey:"sk-9f4577079ddb4bd7a6dfebdb1161889c",url:"https://api.deepseek.com/v1/chat/completions",active:true,model:"deepseek-chat"},{name:"Groq",apiKey:"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",url:"https://api.groq.com/openai/v1/chat/completions",active:true,model:"llama3-70b-8192"}];
 
+// =============================================
+// BACKEND VERCEL URL (SUDAH DIISI)
+// =============================================
+const BACKEND_URL = "https://yad-ai-backend-meny.vercel.app";
+
 firebase.initializeApp(CFG.firebase);
 const auth=firebase.auth(),fs=firebase.firestore();
-const S={db:'firebase',isAdmin:false,user:null,role:'guest',processing:false,kb:[],syncs:0,edits:0,deploys:0,chats:0,score:0,markup:1.2,activeGame:null,gameData:null,dbStats:{firebase:0,github:0,local:0},mediaUploads:[],currentProvider:'deepseek'};
+const S={db:'firebase',isAdmin:false,user:null,role:'guest',processing:false,kb:[],syncs:0,edits:0,deploys:0,chats:0,score:0,markup:1.2,activeGame:null,gameData:null,dbStats:{firebase:0,github:0,local:0},mediaUploads:[],currentProvider:'deepseek',pyodide:null,notebook:{cells:[],outputs:[]}};
 const $=id=>document.getElementById(id);
 const toast=(m,t)=>{var c=$('toastContainer'),ex=c.querySelector('.toast');if(ex)ex.remove();var d=document.createElement('div');d.className='toast '+(t||'info');d.textContent=m;c.appendChild(d);setTimeout(function(){d.style.opacity='0';d.style.transition='opacity 0.3s';setTimeout(function(){d.remove();},300);},2500);};
 function addMsg(type,content){var c=$('chatMessages'),d=document.createElement('div');d.className='message '+type;d.innerHTML=content;c.appendChild(d);setTimeout(function(){c.scrollTo({top:c.scrollHeight,behavior:'smooth'});},100);return d;}
@@ -107,6 +112,66 @@ function genId(){return Date.now().toString(36)+Math.random().toString(36).subst
 function fmtPrice(p){return'Rp'+p.toLocaleString('id-ID');}
 function getRandom(arr){return arr[Math.floor(Math.random()*arr.length)];}
 
+// === PYODIDE NOTEBOOK ===
+async function initPyodide(){if(S.pyodide)return;showProg('Memuat Python...','Pyodide loading...');try{S.pyodide=await loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/'});hideProg();toast('Python siap!','success');}catch(e){hideProg();toast('Gagal load Python','error');throw e;}}
+
+async function runPython(code){if(!S.pyodide)await initPyodide();try{var result=S.pyodide.runPython(code);var output=typeof result==='undefined'?'(None)':String(result);return{output:output,error:null};}catch(e){return{output:null,error:e.message};}}
+
+function renderNotebook(){var html='<div class="notebook-container">';
+for(var i=0;i<S.notebook.cells.length;i++){var cell=S.notebook.cells[i];
+html+='<div class="notebook-cell code">';
+html+='<div class="cell-label">📝 Cell #'+(i+1)+'</div>';
+html+='<pre>'+escHTML(cell.code)+'</pre>';
+if(cell.output!==undefined){html+='<div class="notebook-cell output"><div class="cell-label">📤 Output</div>';
+if(cell.error)html+='<div class="error-text">'+escHTML(cell.error)+'</div>';
+else html+='<div class="output-text">'+escHTML(cell.output)+'</div>';
+html+='</div>';}
+html+='</div>';}
+html+='<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">';
+html+='<button class="run-btn" onclick="window.runCell('+S.notebook.cells.length+')">➕ Tambah Cell</button>';
+html+='<button class="run-btn" onclick="window.runAllCells()">▶️ Run All</button>';
+html+='<button class="run-btn" style="background:var(--accent-red);" onclick="window.clearNotebook()">🗑️ Clear</button>';
+html+='</div></div>';return html;}
+
+window.runCell=function(index){var input=prompt('Masukkan kode Python:');if(input===null)return;S.notebook.cells.push({code:input,output:undefined,error:null});runNotebookCell(S.notebook.cells.length-1);};
+window.runAllCells=function(){for(var i=0;i<S.notebook.cells.length;i++){runNotebookCell(i);}};
+window.clearNotebook=function(){S.notebook.cells=[];S.notebook.outputs=[];addMsg('ai','🧹 Notebook cleared!');};
+
+async function runNotebookCell(index){var cell=S.notebook.cells[index];if(!cell)return;showProg('Menjalankan Python...','Cell #'+(index+1));var result=await runPython(cell.code);cell.output=result.output;cell.error=result.error;hideProg();addMsg('ai',renderNotebook());}
+
+async function handleNotebookCommand(text){var parts=text.split(' ');var cmd=parts[0].toLowerCase();
+if(cmd==='nb'||cmd==='notebook'){var sub=parts.slice(1).join(' ').trim();
+if(sub===''||sub==='show'){return S.notebook.cells.length?renderNotebook():'Notebook kosong. Ketik <code>nb [kode]</code> untuk mulai.';}
+if(sub==='clear'){S.notebook.cells=[];S.notebook.outputs=[];return'🧹 Notebook cleared!';}
+if(sub==='run'){var result=await runAllCells();return renderNotebook();}
+var code=sub;S.notebook.cells.push({code:code,output:undefined,error:null});await runNotebookCell(S.notebook.cells.length-1);return renderNotebook();}
+return null;}
+
+// === VERCEL BACKEND (PYTHON + NUMPY/PANDAS) ===
+async function runViaVercel(code) {
+    showProg('Menjalankan Python via Vercel...', code);
+    try {
+        const response = await fetch(BACKEND_URL + '/run', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: code })
+        });
+        const data = await response.json();
+        hideProg();
+        if (data.success) {
+            let output = data.output || '(tidak ada output)';
+            if (data.error) output += '\n\n⚠️ Stderr: ' + data.error;
+            return output;
+        } else {
+            return '❌ Error:\n' + data.error;
+        }
+    } catch (e) {
+        hideProg();
+        return '❌ Error API: ' + e.message;
+    }
+}
+
+// === AI CALL ===
 async function callAI(messages){var p=AI_PROVIDERS.find(function(x){return x.name.toLowerCase()===S.currentProvider;})||AI_PROVIDERS[0];try{var r=await fetch(p.url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+p.apiKey},body:JSON.stringify({model:p.model,messages:messages.slice(-20),max_tokens:1000,temperature:0.7})});if(!r.ok)return null;var d=await r.json();return d.choices?.[0]?.message?.content||null;}catch(e){return null;}}
 
 function solveMath(text){var t=text.toLowerCase();if(/(\d+)\s*([\+\-\*\/\^])\s*(\d+)/.test(t)){try{return'Hasil: '+eval(text.replace(/\^/g,'**'));}catch(e){}}if(t.includes('faktorial')||t.includes('!')){var m=t.match(/(\d+)\s*!/);if(m){var n=parseInt(m[1]),f=1;for(var i=2;i<=n;i++)f*=i;return n+'! = '+f.toLocaleString();}}if(t.includes('akar')){var m=t.match(/akar\s*(?:dari)?\s*(\d+)/i);if(m)return'Akar '+m[1]+' = '+Math.sqrt(parseFloat(m[1])).toFixed(4);}if(t.includes('sin(')||t.includes('cos(')||t.includes('tan(')){var m=t.match(/(sin|cos|tan)\s*\(\s*(\d+)\s*\)/i);if(m){var fn=m[1].toLowerCase(),val=parseFloat(m[2]),rad=val*(Math.PI/180),result;if(fn==='sin')result=Math.sin(rad);else if(fn==='cos')result=Math.cos(rad);else result=Math.tan(rad);return fn+'('+val+') = '+result.toFixed(4);}}return null;}
@@ -129,6 +194,8 @@ if(t.startsWith('set github token ')){var token=t.replace('set github token ',''
 if(t=='joke')return{a:'joke'};if(t=='fact')return{a:'fact'};if(t=='time')return{a:'time'};
 if(t=='quote')return{a:'quote'};if(t.startsWith('hitung '))return{a:'calc',v:t.replace('hitung ','')};
 if(t=='markup')return{a:'markup_list'};if(t.startsWith('markup '))return{a:'markup',v:t.replace('markup ','')};
+if(t.startsWith('nb ')||t.startsWith('notebook '))return{a:'notebook',v:t};if(t==='nb'||t==='notebook')return{a:'notebook',v:''};
+if(t.startsWith('py ')||t.startsWith('python '))return{a:'python',v:t.replace(/^(py|python)\s+/,'')};
 return null;}
 
 async function sendMsg(){if(S.processing)return;var input=$('userInput'),text=input.value.trim();if(!text)return;S.processing=true;input.value='';S.chats++;S.score++;addMsg('user',escHTML(text));var typingDiv=addMsg('ai','Berpikir...');
@@ -138,7 +205,7 @@ case'search':resp=await deepSearch(cmd.v);break;
 case'compare':resp=await compareItems(cmd.v);break;
 case'deploy':resp=await autoDeploy();break;
 case'self_edit':if(!S.isAdmin)resp='Admin only!';else resp=await selfEdit(cmd.v);break;
-case'help':resp='Commands: cari, bandingkan, hitung, coding, kimia, fisika, topup, main, deploy, self edit, ai, stats, db, foto, video, short, youtube, joke, fact, time, quote, ?';break;
+case'help':resp='Commands: cari, bandingkan, hitung, coding, kimia, fisika, topup, main, deploy, self edit, ai, stats, db, foto, video, short, youtube, joke, fact, time, quote, nb, notebook, py, python';break;
 case'stats':resp='KB:'+S.kb.length+' | Deploys:'+S.deploys+' | Chats:'+S.chats+' | Score:'+S.score;break;
 case'db':resp='Firestore:'+S.dbStats.firebase+' | Local:'+S.dbStats.local;break;
 case'topup':resp=handleTopUp(cmd.v);break;
@@ -157,6 +224,8 @@ case'time':resp=new Date().toLocaleString('id-ID',{weekday:'long',year:'numeric'
 case'quote':resp=getRandom(['"Hidup adalah perjalanan." - Emerson','"Jangan menyerah."']);break;
 case'calc':try{resp='Hasil: '+eval(cmd.v);}catch(e){resp='Format: hitung 5+3';}break;
 case'markup_list':resp=handleMarkup('20');break;case'markup':resp=handleMarkup(cmd.v);break;
+case'notebook':resp=await handleNotebookCommand(cmd.v);break;
+case'python':resp=await runViaVercel(cmd.v);break;
 }}
 if(!resp){var t=text.toLowerCase();if(/[+\-*\/^]/.test(t)||t.includes('hitung')||t.includes('sin')||t.includes('cos')||t.includes('faktorial')||t.includes('akar'))resp=solveMath(text);else if(t.includes('unsur')||t.includes('atom')||t.includes('mr ')||t.includes('ph ')||t.includes('kimia'))resp=solveChemistry(text);}
 if(!resp){if(S.activeGame==='tebak-angka'){var g=parseInt(text);if(isNaN(g)){if(text.includes('stop')){S.activeGame=null;resp='Game berakhir! Angka: '+S.gameData.target;}else resp='Masukkan angka!';}else{S.gameData.attempts++;if(g===S.gameData.target){var s=S.gameData.attempts;S.activeGame=null;S.score+=10;resp=s===1?'WOW! SEKALI! '+S.gameData.target+'!':'Benar! '+S.gameData.target+' dalam '+s+' tebakan!';}else resp=g<S.gameData.target?g+' RENDAH!':g+' TINGGI!';}}

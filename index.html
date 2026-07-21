@@ -3,16 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Yad AI - Complete</title>
+    <title>Yad AI - Super Intelligent v8.0</title>
     
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/universal-sentence-encoder@latest"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-    <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     
     <style>
         :root{--bg-primary:#0a0e17;--bg-secondary:#141c2b;--bg-tertiary:#1e2a3a;--text-primary:#e8edf5;--text-secondary:#8899aa;--accent-blue:#4a90d9;--accent-purple:#7c5ce7;--accent-green:#2ecc71;--accent-red:#e74c3c;--accent-gold:#f39c12;--accent-cyan:#00bcd4;--accent-pink:#e91e63;--border-color:#2a3545;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--safe-bottom:env(safe-area-inset-bottom,0px);--transition:all 0.3s ease}
@@ -70,12 +65,10 @@
         <div class="chat-area">
             <div class="chat-messages" id="chatMessages">
                 <div class="message ai">
-                    <b>Yad AI - Complete</b><br><br>
-                    Chat Natural | Math | Chemistry | Physics | Coding<br>
-                    Search | Compare | Deploy | Self-Edit<br>
-                    Top Up | Games | Upload | Notebook<br><br>
-                    Commands: <code>?</code> <code>cari</code> <code>hitung</code> <code>deploy</code><br>
-                    Admin: ynuraini686@gmail.com
+                    <b>Yad AI - Super Intelligent v8.0</b><br><br>
+                    AI dengan pengetahuan coding, logika, perbandingan, analisis, dan penyusunan.<br><br>
+                    Pengetahuan berasal dari Firebase Firestore (unlimited).<br><br>
+                    Ketik <code>?</code> untuk bantuan.
                 </div>
             </div>
             <div class="input-area">
@@ -91,174 +84,268 @@
 
 <script>
 (function(){
-const CFG={firebase:{apiKey:"AIzaSyAvfHxcAT2syVbrf6-TU0JBRXtNLI0AIkc",authDomain:"yadstores.firebaseapp.com",projectId:"yadstores",storageBucket:"yadstores.firebasestorage.app",messagingSenderId:"666352014774",appId:"1:666352014774:web:159ab5b455efb2fb2f9d17",measurementId:"G-8Q7T7G6HQ2",databaseURL:"https://yadstores-default-rtdb.asia-southeast1.firebasedatabase.app"},adminEmail:'ynuraini686@gmail.com',github:{owner:'YADI-ganteng',repo:'NarutoRPG',filePath:'index.html',token:localStorage.getItem('gh_token')||'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',branch:'main',dataPath:'database'},cloudinary:{cloudName:'b8at16d3',apiKey:'671378325589697',uploadPreset:'koinku_uploads'}};
-const AI_PROVIDERS=[{name:"DeepSeek",apiKey:"sk-9f4577079ddb4bd7a6dfebdb1161889c",url:"https://api.deepseek.com/v1/chat/completions",active:true,model:"deepseek-chat"},{name:"Groq",apiKey:"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",url:"https://api.groq.com/openai/v1/chat/completions",active:true,model:"llama3-70b-8192"}];
+// ============================================================
+// KONFIGURASI FIREBASE
+// ============================================================
+const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyAvfHxcAT2syVbrf6-TU0JBRXtNLI0AIkc",
+    authDomain: "yadstores.firebaseapp.com",
+    projectId: "yadstores",
+    storageBucket: "yadstores.firebasestorage.app",
+    messagingSenderId: "666352014774",
+    appId: "1:666352014774:web:159ab5b455efb2fb2f9d17",
+    measurementId: "G-8Q7T7G6HQ2",
+    databaseURL: "https://yadstores-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
 
-// =============================================
-// BACKEND VERCEL URL (SUDAH DIISI)
-// =============================================
-const BACKEND_URL = "https://yad-ai-backend-meny.vercel.app";
+const ADMIN_EMAIL = 'ynuraini686@gmail.com';
+const GITHUB_TOKEN = localStorage.getItem('gh_token') || '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';
 
-firebase.initializeApp(CFG.firebase);
-const auth=firebase.auth(),fs=firebase.firestore();
-const S={db:'firebase',isAdmin:false,user:null,role:'guest',processing:false,kb:[],syncs:0,edits:0,deploys:0,chats:0,score:0,markup:1.2,activeGame:null,gameData:null,dbStats:{firebase:0,github:0,local:0},mediaUploads:[],currentProvider:'deepseek',pyodide:null,notebook:{cells:[],outputs:[]}};
-const $=id=>document.getElementById(id);
-const toast=(m,t)=>{var c=$('toastContainer'),ex=c.querySelector('.toast');if(ex)ex.remove();var d=document.createElement('div');d.className='toast '+(t||'info');d.textContent=m;c.appendChild(d);setTimeout(function(){d.style.opacity='0';d.style.transition='opacity 0.3s';setTimeout(function(){d.remove();},300);},2500);};
-function addMsg(type,content){var c=$('chatMessages'),d=document.createElement('div');d.className='message '+type;d.innerHTML=content;c.appendChild(d);setTimeout(function(){c.scrollTo({top:c.scrollHeight,behavior:'smooth'});},100);return d;}
-function showProg(title,detail){$('progOverlay').classList.add('active');$('progTitle').textContent=title;$('progDetail').textContent=detail||'';$('progFill').style.width='0%';}
-function hideProg(){$('progFill').style.width='100%';setTimeout(function(){$('progOverlay').classList.remove('active');},500);}
-function escHTML(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML;}
-function genId(){return Date.now().toString(36)+Math.random().toString(36).substr(2,9);}
-function fmtPrice(p){return'Rp'+p.toLocaleString('id-ID');}
-function getRandom(arr){return arr[Math.floor(Math.random()*arr.length)];}
+// ============================================================
+// INISIALISASI FIREBASE
+// ============================================================
+firebase.initializeApp(FIREBASE_CONFIG);
+const auth = firebase.auth();
+const fs = firebase.firestore();
 
-// === PYODIDE NOTEBOOK ===
-async function initPyodide(){if(S.pyodide)return;showProg('Memuat Python...','Pyodide loading...');try{S.pyodide=await loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/'});hideProg();toast('Python siap!','success');}catch(e){hideProg();toast('Gagal load Python','error');throw e;}}
+// ============================================================
+// STATE GLOBAL
+// ============================================================
+const S = { isAdmin: false, user: null, role: 'guest', processing: false };
 
-async function runPython(code){if(!S.pyodide)await initPyodide();try{var result=S.pyodide.runPython(code);var output=typeof result==='undefined'?'(None)':String(result);return{output:output,error:null};}catch(e){return{output:null,error:e.message};}}
+// ============================================================
+// AI PROVIDERS
+// ============================================================
+const AI_PROVIDERS = [
+    { name: "DeepSeek", apiKey: "sk-9f4577079ddb4bd7a6dfebdb1161889c", url: "https://api.deepseek.com/v1/chat/completions", model: "deepseek-chat" },
+    { name: "Groq", apiKey: "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", url: "https://api.groq.com/openai/v1/chat/completions", model: "llama3-70b-8192" }
+];
 
-function renderNotebook(){var html='<div class="notebook-container">';
-for(var i=0;i<S.notebook.cells.length;i++){var cell=S.notebook.cells[i];
-html+='<div class="notebook-cell code">';
-html+='<div class="cell-label">📝 Cell #'+(i+1)+'</div>';
-html+='<pre>'+escHTML(cell.code)+'</pre>';
-if(cell.output!==undefined){html+='<div class="notebook-cell output"><div class="cell-label">📤 Output</div>';
-if(cell.error)html+='<div class="error-text">'+escHTML(cell.error)+'</div>';
-else html+='<div class="output-text">'+escHTML(cell.output)+'</div>';
-html+='</div>';}
-html+='</div>';}
-html+='<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">';
-html+='<button class="run-btn" onclick="window.runCell('+S.notebook.cells.length+')">➕ Tambah Cell</button>';
-html+='<button class="run-btn" onclick="window.runAllCells()">▶️ Run All</button>';
-html+='<button class="run-btn" style="background:var(--accent-red);" onclick="window.clearNotebook()">🗑️ Clear</button>';
-html+='</div></div>';return html;}
-
-window.runCell=function(index){var input=prompt('Masukkan kode Python:');if(input===null)return;S.notebook.cells.push({code:input,output:undefined,error:null});runNotebookCell(S.notebook.cells.length-1);};
-window.runAllCells=function(){for(var i=0;i<S.notebook.cells.length;i++){runNotebookCell(i);}};
-window.clearNotebook=function(){S.notebook.cells=[];S.notebook.outputs=[];addMsg('ai','🧹 Notebook cleared!');};
-
-async function runNotebookCell(index){var cell=S.notebook.cells[index];if(!cell)return;showProg('Menjalankan Python...','Cell #'+(index+1));var result=await runPython(cell.code);cell.output=result.output;cell.error=result.error;hideProg();addMsg('ai',renderNotebook());}
-
-async function handleNotebookCommand(text){var parts=text.split(' ');var cmd=parts[0].toLowerCase();
-if(cmd==='nb'||cmd==='notebook'){var sub=parts.slice(1).join(' ').trim();
-if(sub===''||sub==='show'){return S.notebook.cells.length?renderNotebook():'Notebook kosong. Ketik <code>nb [kode]</code> untuk mulai.';}
-if(sub==='clear'){S.notebook.cells=[];S.notebook.outputs=[];return'🧹 Notebook cleared!';}
-if(sub==='run'){var result=await runAllCells();return renderNotebook();}
-var code=sub;S.notebook.cells.push({code:code,output:undefined,error:null});await runNotebookCell(S.notebook.cells.length-1);return renderNotebook();}
-return null;}
-
-// === VERCEL BACKEND (PYTHON + NUMPY/PANDAS) ===
-async function runViaVercel(code) {
-    showProg('Menjalankan Python via Vercel...', code);
+const callAI = async (messages) => {
+    const p = AI_PROVIDERS[0];
     try {
-        const response = await fetch(BACKEND_URL + '/run', {
+        const r = await fetch(p.url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code: code })
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + p.apiKey },
+            body: JSON.stringify({ model: p.model, messages: messages.slice(-20), max_tokens: 2000, temperature: 0.7 })
         });
-        const data = await response.json();
-        hideProg();
-        if (data.success) {
-            let output = data.output || '(tidak ada output)';
-            if (data.error) output += '\n\n⚠️ Stderr: ' + data.error;
-            return output;
-        } else {
-            return '❌ Error:\n' + data.error;
-        }
-    } catch (e) {
-        hideProg();
-        return '❌ Error API: ' + e.message;
+        if (!r.ok) return null;
+        const d = await r.json();
+        return d.choices?.[0]?.message?.content || null;
+    } catch (e) { return null; }
+};
+
+// ============================================================
+// FIRESTORE KNOWLEDGE BASE (UNLIMITED)
+// ============================================================
+
+// Simpan pengetahuan
+const saveKnowledge = async (query, answer, type = 'general') => {
+    try {
+        await fs.collection('knowledge_base').add({
+            query: query,
+            answer: answer,
+            type: type,
+            timestamp: new Date().toISOString()
+        });
+    } catch (e) { console.error('Gagal simpan:', e); }
+};
+
+// Ambil pengetahuan terkait
+const getKnowledge = async (query, limit = 10) => {
+    try {
+        const snapshot = await fs.collection('knowledge_base')
+            .orderBy('timestamp', 'desc')
+            .limit(limit)
+            .get();
+        const results = [];
+        snapshot.forEach(doc => results.push(doc.data()));
+        return results;
+    } catch (e) { return []; }
+};
+
+// ============================================================
+// INTELLIGENT AGENT LOOP
+// ============================================================
+const agentLoop = async (userQuery) => {
+    showProg('AI sedang berpikir...', userQuery);
+    
+    // 1. Ambil pengetahuan terkait dari Firestore
+    const related = await getKnowledge(userQuery);
+    
+    // 2. Susun konteks
+    let context = `Pertanyaan: ${userQuery}\n\n`;
+    if (related.length > 0) {
+        context += `Pengetahuan yang sudah ada (dari database):\n`;
+        related.forEach((r, i) => {
+            context += `- [${i+1}] ${r.answer ? r.answer.substring(0, 200) : '(kosong)'}...\n`;
+        });
     }
-}
+    
+    // 3. Minta AI untuk menganalisis, membandingkan, menyusun, dan menjawab
+    const systemPrompt = `Anda adalah Yad AI, super intelligent assistant. 
+    Tugas Anda: Analisis, bandingkan, susun, dan berikan jawaban terbaik untuk pertanyaan user.
+    Gunakan semua pengetahuan yang ada di konteks. Jika ada yang kurang, gunakan logika Anda sendiri.
+    Jawab dalam bahasa Indonesia dengan jelas, terstruktur, dan profesional.`;
+    
+    const aiResponse = await callAI([
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: context + '\n\nBerikan jawaban yang lengkap, akurat, dan bermanfaat.' }
+    ]);
+    
+    // 4. Simpan jawaban ke database (agar AI semakin pintar)
+    if (aiResponse && aiResponse.length > 50) {
+        await saveKnowledge(userQuery, aiResponse, 'ai_generated');
+    }
+    
+    hideProg();
+    return aiResponse || 'Maaf, saya belum bisa menjawab pertanyaan ini.';
+};
 
-// === AI CALL ===
-async function callAI(messages){var p=AI_PROVIDERS.find(function(x){return x.name.toLowerCase()===S.currentProvider;})||AI_PROVIDERS[0];try{var r=await fetch(p.url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+p.apiKey},body:JSON.stringify({model:p.model,messages:messages.slice(-20),max_tokens:1000,temperature:0.7})});if(!r.ok)return null;var d=await r.json();return d.choices?.[0]?.message?.content||null;}catch(e){return null;}}
+// ============================================================
+// MAIN SEND MESSAGE
+// ============================================================
+const sendMsg = async () => {
+    if (S.processing) return;
+    const input = $('userInput');
+    const text = input.value.trim();
+    if (!text) return;
+    
+    S.processing = true;
+    input.value = '';
+    addMsg('user', escHTML(text));
+    const typingDiv = addMsg('ai', 'Berpikir...');
+    
+    try {
+        const t = text.toLowerCase();
+        let resp = '';
+        
+        // Handle special commands
+        if (t === '?' || t === 'help') {
+            resp = `🧠 <b>Yad AI - Super Intelligent v8.0</b><br><br>
+                    AI ini memiliki pengetahuan dari Firestore (unlimited) tentang:<br>
+                    • Coding (Python, JS, HTML, CSS)<br>
+                    • Logika & Algoritma<br>
+                    • Perbandingan teknologi<br>
+                    • Penyusunan kode & dokumentasi<br>
+                    • Analisis & troubleshooting<br><br>
+                    <b>Perintah:</b><br>
+                    • <code>cari [query]</code> - Analisis mendalam dari database<br>
+                    • <code>analisis [teks/kode]</code> - Analisis mendalam<br>
+                    • <code>bandingkan [A] vs [B]</code> - Perbandingan<br>
+                    • <code>buat kode [instruksi]</code> - Generate kode<br>
+                    • <code>troubleshoot [error]</code> - Debugging<br>
+                    • <code>py [kode]</code> - Jalankan Python via Vercel<br>
+                    <br><i>Semua pengetahuan disimpan di Firestore (unlimited).</i>`;
+        } else if (t.startsWith('cari ')) {
+            resp = await agentLoop(t);
+        } else if (t.startsWith('analisis ') || t.startsWith('bandingkan ') || t.startsWith('buat kode ') || t.startsWith('troubleshoot ')) {
+            resp = await agentLoop(t);
+        } else {
+            resp = await agentLoop(text);
+        }
+        
+        typingDiv.remove();
+        addMsg('ai', resp);
+    } catch (e) {
+        typingDiv.remove();
+        addMsg('ai', 'Error: ' + e.message);
+        hideProg();
+    } finally {
+        S.processing = false;
+    }
+};
 
-function solveMath(text){var t=text.toLowerCase();if(/(\d+)\s*([\+\-\*\/\^])\s*(\d+)/.test(t)){try{return'Hasil: '+eval(text.replace(/\^/g,'**'));}catch(e){}}if(t.includes('faktorial')||t.includes('!')){var m=t.match(/(\d+)\s*!/);if(m){var n=parseInt(m[1]),f=1;for(var i=2;i<=n;i++)f*=i;return n+'! = '+f.toLocaleString();}}if(t.includes('akar')){var m=t.match(/akar\s*(?:dari)?\s*(\d+)/i);if(m)return'Akar '+m[1]+' = '+Math.sqrt(parseFloat(m[1])).toFixed(4);}if(t.includes('sin(')||t.includes('cos(')||t.includes('tan(')){var m=t.match(/(sin|cos|tan)\s*\(\s*(\d+)\s*\)/i);if(m){var fn=m[1].toLowerCase(),val=parseFloat(m[2]),rad=val*(Math.PI/180),result;if(fn==='sin')result=Math.sin(rad);else if(fn==='cos')result=Math.cos(rad);else result=Math.tan(rad);return fn+'('+val+') = '+result.toFixed(4);}}return null;}
+// ============================================================
+// UTILITY FUNCTIONS
+// ============================================================
+const $ = id => document.getElementById(id);
+const toast = (m, t) => {
+    const c = $('toastContainer');
+    const ex = c.querySelector('.toast');
+    if (ex) ex.remove();
+    const d = document.createElement('div');
+    d.className = 'toast ' + (t || 'info');
+    d.textContent = m;
+    c.appendChild(d);
+    setTimeout(() => { d.style.opacity = '0'; d.style.transition = 'opacity 0.3s'; setTimeout(() => d.remove(), 300); }, 2500);
+};
+const addMsg = (type, content) => {
+    const c = $('chatMessages');
+    const d = document.createElement('div');
+    d.className = 'message ' + type;
+    d.innerHTML = content;
+    c.appendChild(d);
+    setTimeout(() => c.scrollTo({ top: c.scrollHeight, behavior: 'smooth' }), 100);
+    return d;
+};
+const showProg = (title, detail) => {
+    $('progOverlay').classList.add('active');
+    $('progTitle').textContent = title;
+    $('progDetail').textContent = detail || '';
+    $('progFill').style.width = '0%';
+};
+const hideProg = () => {
+    $('progFill').style.width = '100%';
+    setTimeout(() => $('progOverlay').classList.remove('active'), 500);
+};
+const escHTML = t => { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; };
 
-function solveChemistry(text){var t=text.toLowerCase();var elements={H:{name:'Hidrogen',Z:1,Ar:1.008},He:{name:'Helium',Z:2,Ar:4.0026},C:{name:'Karbon',Z:6,Ar:12.011},N:{name:'Nitrogen',Z:7,Ar:14.007},O:{name:'Oksigen',Z:8,Ar:15.999},Na:{name:'Natrium',Z:11,Ar:22.99},Fe:{name:'Besi',Z:26,Ar:55.845},Au:{name:'Emas',Z:79,Ar:196.97}};for(var sym in elements){if(t.includes(sym.toLowerCase())&&(t.includes('apa')||t.includes('unsur')||t.includes('element'))){var data=elements[sym];return data.name+' ('+sym+') - Nomor Atom: '+data.Z+', Massa: '+data.Ar;}}if(t.includes('mr ')){var formula=t.replace(/mr\s*/i,'').trim(),total=0;for(var sym in elements){var regex=new RegExp(sym+'(\\d*)','gi'),match;while((match=regex.exec(formula))!==null){var count=match[1]?parseInt(match[1]):1;total+=elements[sym].Ar*count;}}if(total>0)return'Mr '+formula+' = '+total.toFixed(2)+' g/mol';}if(t.includes('ph')){var m=t.match(/ph\s*=\s*(\d+\.?\d*)/i);if(m)return'pH = '+m[1]+' -> [H+] = '+Math.pow(10,-parseFloat(m[1])).toExponential(2)+' M';}return null;}
+// ============================================================
+// EVENT LISTENERS
+// ============================================================
+$('sendBtn').addEventListener('click', (e) => { e.preventDefault(); sendMsg(); });
+$('sendBtn').addEventListener('touchend', (e) => { e.preventDefault(); sendMsg(); });
+$('userInput').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); } });
 
-function parseCmd(text){var t=text.toLowerCase().trim();
-if(t.startsWith('cari '))return{a:'search',v:t.replace('cari ','')};
-if(t.includes(' vs ')||t.startsWith('bandingkan '))return{a:'compare',v:t};
-if(t=='deploy')return{a:'deploy'};if(t.startsWith('self edit '))return{a:'self_edit',v:t.replace('self edit ','')};
-if(t=='?'||t=='help')return{a:'help'};if(t=='stats')return{a:'stats'};if(t=='db')return{a:'db'};
-if(t.startsWith('topup'))return{a:'topup',v:t};if(t.startsWith('main '))return{a:'play',v:t.replace('main ','')};
-if(t=='foto')return{a:'foto'};if(t=='video')return{a:'video'};
-if(t.startsWith('short dari '))return{a:'short_link',v:t.replace('short dari ','')};
-if(t=='short list')return{a:'short_list'};
-if(t.includes('youtube.com')||t.includes('youtu.be'))return{a:'youtube',v:t};
-if(t.startsWith('ai '))return{a:'switch_ai',v:t.replace('ai ','')};
-if(t=='ai')return{a:'ai_status'};if(t=='status deploy')return{a:'deploy_status'};
-if(t.startsWith('set github token ')){var token=t.replace('set github token ','').trim();if(token.length>30)return{a:'set_token',v:token};}
-if(t=='joke')return{a:'joke'};if(t=='fact')return{a:'fact'};if(t=='time')return{a:'time'};
-if(t=='quote')return{a:'quote'};if(t.startsWith('hitung '))return{a:'calc',v:t.replace('hitung ','')};
-if(t=='markup')return{a:'markup_list'};if(t.startsWith('markup '))return{a:'markup',v:t.replace('markup ','')};
-if(t.startsWith('nb ')||t.startsWith('notebook '))return{a:'notebook',v:t};if(t==='nb'||t==='notebook')return{a:'notebook',v:''};
-if(t.startsWith('py ')||t.startsWith('python '))return{a:'python',v:t.replace(/^(py|python)\s+/,'')};
-return null;}
+// ============================================================
+// AUTHENTICATION
+// ============================================================
+const showLogin = () => {
+    const e = prompt('Email:');
+    if (!e) return;
+    const p = prompt('Password:');
+    if (!p) return;
+    auth.signInWithEmailAndPassword(e, p)
+        .then(() => toast('Login berhasil!', 'success'))
+        .catch(err => {
+            if (err.code === 'auth/user-not-found' && confirm('Buat akun?')) {
+                auth.createUserWithEmailAndPassword(e, p)
+                    .then(() => toast('Akun dibuat!', 'success'))
+                    .catch(er => toast('Error: ' + er.message, 'error'));
+            } else {
+                toast('Error: ' + err.message, 'error');
+            }
+        });
+};
+const doLogout = async () => {
+    await auth.signOut();
+    toast('Logout!', 'info');
+};
+auth.onAuthStateChanged(u => {
+    const s = $('auth-status'), li = $('login-btn'), lo = $('logout-btn');
+    if (u) {
+        S.user = u;
+        S.isAdmin = u.email === ADMIN_EMAIL;
+        S.role = S.isAdmin ? 'admin' : 'user';
+        s.className = 'badge ' + S.role;
+        s.textContent = S.isAdmin ? 'Admin' : 'User';
+        li.style.display = 'none';
+        lo.style.display = 'inline-block';
+    } else {
+        S.isAdmin = false;
+        S.role = 'guest';
+        s.className = 'badge guest';
+        s.textContent = 'Guest';
+        li.style.display = 'inline-block';
+        lo.style.display = 'none';
+    }
+});
 
-async function sendMsg(){if(S.processing)return;var input=$('userInput'),text=input.value.trim();if(!text)return;S.processing=true;input.value='';S.chats++;S.score++;addMsg('user',escHTML(text));var typingDiv=addMsg('ai','Berpikir...');
-try{await autoCheckDB();var cmd=parseCmd(text),resp=null;
-if(cmd){switch(cmd.a){
-case'search':resp=await deepSearch(cmd.v);break;
-case'compare':resp=await compareItems(cmd.v);break;
-case'deploy':resp=await autoDeploy();break;
-case'self_edit':if(!S.isAdmin)resp='Admin only!';else resp=await selfEdit(cmd.v);break;
-case'help':resp='Commands: cari, bandingkan, hitung, coding, kimia, fisika, topup, main, deploy, self edit, ai, stats, db, foto, video, short, youtube, joke, fact, time, quote, nb, notebook, py, python';break;
-case'stats':resp='KB:'+S.kb.length+' | Deploys:'+S.deploys+' | Chats:'+S.chats+' | Score:'+S.score;break;
-case'db':resp='Firestore:'+S.dbStats.firebase+' | Local:'+S.dbStats.local;break;
-case'topup':resp=handleTopUp(cmd.v);break;
-case'play':if(cmd.v.includes('tebak')||cmd.v.includes('angka')){S.activeGame='tebak-angka';S.gameData={target:Math.floor(Math.random()*100)+1,attempts:0};resp='Tebak 1-100!';}else if(cmd.v.includes('batu')||cmd.v.includes('gunting')){S.activeGame='batu-kertas-gunting';resp='Pilih: batu, kertas, gunting';}else resp='main tebak angka | main batu kertas gunting';break;
-case'foto':case'video':setTimeout(function(){openCloudinaryWidget();},300);resp='Upload...';break;
-case'short_link':if(!S.isAdmin)resp='Admin only!';else resp=await uploadShort(cmd.v);break;
-case'short_list':resp=getShortList();break;
-case'youtube':resp=await learnYouTube(cmd.v);break;
-case'switch_ai':var pr={deepseek:'DeepSeek',groq:'Groq'};var k=Object.keys(pr).find(function(x){return cmd.v.includes(x);});if(k){S.currentProvider=k;$('ai-badge').textContent=pr[k];toast('AI: '+pr[k],'success');resp='AI: '+pr[k];}else resp='AI: deepseek, groq';break;
-case'ai_status':resp='AI: '+S.currentProvider+' | KB: '+S.kb.length;break;
-case'deploy_status':resp=await checkDeploy();break;
-case'set_token':if(!cmd.v||cmd.v.length<30)resp='Token invalid!';else{CFG.github.token=cmd.v;localStorage.setItem('gh_token',cmd.v);resp='Token: '+cmd.v.substring(0,8)+'...';toast('Token updated!','success');}break;
-case'joke':resp=getRandom(["Keys di keyboard!","AI butuh training!","Koma yang ilang!"]);break;
-case'fact':resp=getRandom(["AI pertama 1950-an.","2.5 quintillion bytes/hari!","JS dibuat 10 hari!"]);break;
-case'time':resp=new Date().toLocaleString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});break;
-case'quote':resp=getRandom(['"Hidup adalah perjalanan." - Emerson','"Jangan menyerah."']);break;
-case'calc':try{resp='Hasil: '+eval(cmd.v);}catch(e){resp='Format: hitung 5+3';}break;
-case'markup_list':resp=handleMarkup('20');break;case'markup':resp=handleMarkup(cmd.v);break;
-case'notebook':resp=await handleNotebookCommand(cmd.v);break;
-case'python':resp=await runViaVercel(cmd.v);break;
-}}
-if(!resp){var t=text.toLowerCase();if(/[+\-*\/^]/.test(t)||t.includes('hitung')||t.includes('sin')||t.includes('cos')||t.includes('faktorial')||t.includes('akar'))resp=solveMath(text);else if(t.includes('unsur')||t.includes('atom')||t.includes('mr ')||t.includes('ph ')||t.includes('kimia'))resp=solveChemistry(text);}
-if(!resp){if(S.activeGame==='tebak-angka'){var g=parseInt(text);if(isNaN(g)){if(text.includes('stop')){S.activeGame=null;resp='Game berakhir! Angka: '+S.gameData.target;}else resp='Masukkan angka!';}else{S.gameData.attempts++;if(g===S.gameData.target){var s=S.gameData.attempts;S.activeGame=null;S.score+=10;resp=s===1?'WOW! SEKALI! '+S.gameData.target+'!':'Benar! '+S.gameData.target+' dalam '+s+' tebakan!';}else resp=g<S.gameData.target?g+' RENDAH!':g+' TINGGI!';}}
-else if(S.activeGame==='batu-kertas-gunting'){if(text.includes('stop')){S.activeGame=null;resp='Game berakhir!';}else{var c=['batu','kertas','gunting'],p=null;if(text.includes('batu'))p='batu';else if(text.includes('kertas'))p='kertas';else if(text.includes('gunting'))p='gunting';if(!p)resp='Pilih: batu, kertas, gunting';else{var ai=c[Math.floor(Math.random()*3)],r='';if(p===ai)r='SERI!';else if((p==='batu'&&ai==='gunting')||(p==='kertas'&&ai==='batu')||(p==='gunting'&&ai==='kertas')){r='MENANG!';S.score+=5;}else r='AI MENANG!';resp='Kamu: '+p+' | AI: '+ai+' | '+r;}}}
-else{var t=text.toLowerCase();if(/^(hai|halo|hi|hello|hallo)/i.test(t))resp='Halo! Ada yang bisa saya bantu?';else if(t.includes('kabar'))resp='Kabar baik! Bagaimana dengan Anda?';else if(t.includes('terima kasih'))resp='Sama-sama!';else if(t.includes('siapa kamu'))resp='Saya Yad AI, asisten virtual.';else if(t.includes('kimia'))resp='Kimia: ilmu tentang materi. Ketik "unsur H" untuk info.';else if(t.includes('fisika'))resp='Fisika: ilmu tentang alam.';else if(t.includes('coding'))resp='Ketik "contoh html" untuk lihat kode.';else{var cr=await callAI([{role:'system',content:'Kamu Yad AI, asisten virtual ramah. Jawab natural dalam bahasa Indonesia.'},{role:'user',content:text}]);resp=cr||'Ketik "?" untuk bantuan.';}}}
-typingDiv.remove();addMsg('ai',resp);}catch(e){typingDiv.remove();addMsg('ai','Error: '+e.message);hideProg();}finally{S.processing=false;}}
-
-async function deepSearch(query){showProg('Mencari...',query);var results={web:[],saved:0};try{var r=await fetch('https://api.duckduckgo.com/?q='+encodeURIComponent(query)+'&format=json&no_html=1');if(r.ok){var d=await r.json();if(d.AbstractText)results.web.push({title:d.Heading||query,content:d.AbstractText,source:'DuckDuckGo'});}}catch(e){}try{var r=await fetch('https://id.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(query));if(r.ok){var d=await r.json();if(d.extract)results.web.push({title:d.title,content:d.extract,source:'Wikipedia'});}}catch(e){}for(var i=0;i<results.web.length;i++){try{await fs.collection('knowledge_base').add({title:results.web[i].title,content:results.web[i].content,tags:['search'],source:results.web[i].source,searched_at:new Date().toISOString()});results.saved++;}catch(e){}}hideProg();S.score+=20;var resp='Search: '+query+' ('+results.web.length+' hasil)<br>';for(var i=0;i<Math.min(results.web.length,3);i++){resp+='<div class="card"><b>'+results.web[i].title+'</b> ('+results.web[i].source+')<br>'+results.web[i].content.substring(0,150)+'...</div>';}return resp;}
-async function compareItems(text){var parts=text.split(/ vs | bandingkan | compare /i);if(parts.length<2)return'Format: bandingkan A vs B';var a=parts[0].trim(),b=parts[1].trim();showProg('Membandingkan...',a+' vs '+b);var r=await callAI([{role:'system',content:'Bandingkan dalam bahasa Indonesia.'},{role:'user',content:'Bandingkan: "'+a+'" vs "'+b+'"'}]);hideProg();S.score+=15;return r?(a+' vs '+b+':<br><br>'+r):'Gagal.';}
-async function autoDeploy(){showProg('Deploy...');try{await fetch('https://api.github.com/repos/'+CFG.github.owner+'/'+CFG.github.repo+'/dispatches',{method:'POST',headers:{'Authorization':'token '+CFG.github.token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify({event_type:'deploy-to-firebase',client_payload:{project:'yadstores'}})});hideProg();S.deploys++;S.score+=20;return'Deploy berhasil! Live 1-2 menit.';}catch(e){hideProg();return'Error: '+e.message;}}
-async function selfEdit(ins){showProg('Self-Edit...');try{var fr=await fetch('https://api.github.com/repos/'+CFG.github.owner+'/'+CFG.github.repo+'/contents/'+CFG.github.filePath+'?ref='+CFG.github.branch,{headers:{'Authorization':'token '+CFG.github.token,'Accept':'application/vnd.github.v3+json','User-Agent':'Yad-AI'}});if(!fr.ok)throw new Error('Fetch failed');var fd=await fr.json(),nc=atob(fd.content),ti=ins.toLowerCase();if(ti.includes('tambah fitur')){var fn=ti.replace(/tambah fitur|add feature/gi,'').trim();if(fn)nc=nc.replace('</body>','<div style="padding:20px;text-align:center;"><h3>'+fn+'</h3><p>Added by AI</p></div>\n</body>');}if(ti.includes('rename ai')||ti.includes('ubah nama')){var nn=ti.replace(/rename ai|ubah nama ai|menjadi|ke/gi,'').trim();if(nn){nc=nc.replace(/<title>.*?<\/title>/i,'<title>'+nn+' - AI</title>');nc=nc.replace(/(<span[^>]*>)(Yad AI)(<\/span>)/gi,'$1'+nn+'$3');}}var cr=await fetch('https://api.github.com/repos/'+CFG.github.owner+'/'+CFG.github.repo+'/contents/'+CFG.github.filePath,{method:'PUT',headers:{'Authorization':'token '+CFG.github.token,'Content-Type':'application/json','User-Agent':'Yad-AI'},body:JSON.stringify({message:'AI Self-Edit',content:btoa(unescape(encodeURIComponent(nc))),sha:fd.sha,branch:CFG.github.branch})});if(!cr.ok)throw new Error('Commit failed');await autoDeploy();hideProg();S.edits++;return'Self-Edit berhasil!';}catch(e){hideProg();return'Error: '+e.message;}}
-async function uploadShort(link){if(!link)return'Link?';if(!link.startsWith('http'))link='https://'+link;showProg('Upload Short...');try{var fd=new FormData();fd.append('file',link);fd.append('upload_preset',CFG.cloudinary.uploadPreset);fd.append('cloud_name',CFG.cloudinary.cloudName);var r=await fetch('https://api.cloudinary.com/v1_1/'+CFG.cloudinary.cloudName+'/auto/upload',{method:'POST',body:fd});var d=await r.json();if(d.secure_url){S.mediaUploads.push({url:d.secure_url,type:d.resource_type,name:d.original_filename||link.split('/').pop(),uploadedAt:new Date().toISOString()});hideProg();return'Short uploaded!<br><video controls style="width:100%;max-width:300px;border-radius:12px;"><source src="'+d.secure_url+'" type="video/mp4"></video>';}hideProg();return'Gagal.';}catch(e){hideProg();return'Error: '+e.message;}}
-function getShortList(){var v=S.mediaUploads.filter(function(m){return m.type==='video';});if(!v.length)return'Kosong.';var r='Shorts:<br>';for(var i=Math.max(0,v.length-10);i<v.length;i++){r+='<div class="card"><video controls style="width:100%;max-width:300px;border-radius:8px;"><source src="'+v[i].url+'" type="video/mp4"></video></div>';}return r;}
-async function learnYouTube(url){var vid=null;var p=[/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/];for(var i=0;i<p.length;i++){var m=url.match(p[i]);if(m){vid=m[1];break;}}if(!vid)return'Link invalid!';var item={title:'Video '+vid,content:'Link: https://youtube.com/watch?v='+vid,tags:['youtube'],type:'lesson',source:'youtube',learned_at:new Date().toISOString()};S.kb.push(item);try{await fs.collection('knowledge_base').add(item);}catch(e){}return'YouTube saved! Total KB: '+S.kb.length;}
-function handleTopUp(text){var t=text.toLowerCase();var topup={'mobile-legends':{name:'Mobile Legends',items:[{name:'100 Diamonds',price:25000},{name:'500 Diamonds',price:120000}]},'free-fire':{name:'Free Fire',items:[{name:'100 Diamonds',price:15000}]},'genshin-impact':{name:'Genshin Impact',items:[{name:'Blessing of Welkin',price:75000}]},'pubg-mobile':{name:'PUBG Mobile',items:[{name:'60 UC',price:15000}]},'valorant':{name:'Valorant',items:[{name:'475 VP',price:75000}]}};var game=null,item=null,server=null;var sm=text.match(/server\s*[:#]?\s*(\d+)/i);if(sm)server=sm[1];for(var k in topup){if(t.includes(k)||t.includes(topup[k].name.toLowerCase())){game=k;for(var i=0;i<topup[k].items.length;i++){if(t.includes(topup[k].items[i].name.toLowerCase())){item=topup[k].items[i];break;}}break;}}if(!game||!item){var l='Game:<br>';for(var k in topup){l+=topup[k].name+':<br>';for(var i=0;i<topup[k].items.length;i++){l+='- '+topup[k].items[i].name+': '+fmtPrice(Math.round(topup[k].items[i].price*S.markup))+'<br>';}l+='<br>';}return l+'"topup ml 100 diamond server: 12345"';}if(!server)return'Server ID?';return'Order!<br>ID: '+genId()+'<br>Game: '+topup[game].name+'<br>Item: '+item.name+'<br>Harga: '+fmtPrice(Math.round(item.price*S.markup));}
-function handleMarkup(text){var p=parseInt(text.match(/\d+/)?.[0]||'20');S.markup=1+(p/100);return'Markup '+p+'%';}
-function openCloudinaryWidget(){cloudinary.createUploadWidget({cloudName:CFG.cloudinary.cloudName,uploadPreset:CFG.cloudinary.uploadPreset,apiKey:CFG.cloudinary.apiKey,sources:['local','url','camera'],multiple:true,maxFileSize:100000000,styles:{palette:{window:"#141c2b",sourceBg:"#0a0e17",windowBorder:"#2a3545",link:"#4a90d9",action:"#4a90d9",complete:"#2ecc71",error:"#e74c3c",textDark:"#e8edf5",textLight:"#8899aa"}}},function(error,result){if(error)return;if(result&&result.event==='success'){var url=result.info.secure_url,type=result.info.resource_type,name=result.info.original_filename;S.mediaUploads.push({url:url,type:type,name:name,size:result.info.bytes,uploadedAt:new Date().toISOString()});var h='';if(type==='image')h='<div class="card"><img src="'+url+'" style="max-width:100%;border-radius:12px;"><small>'+name+'</small></div>';else if(type==='video')h='<div class="card"><video controls style="max-width:100%;border-radius:12px;"><source src="'+url+'" type="video/mp4"></video><small>'+name+'</small></div>';else h='<div class="card">'+name+'</div>';addMsg('ai',h);toast('Uploaded!','success');}}).open();}
-async function autoCheckDB(){try{var s=await fs.collection('knowledge_base').limit(200).get();S.kb=s.docs.map(function(d){return{id:d.id,title:d.data().title,content:d.data().content};});S.dbStats.firebase=S.kb.length;}catch(e){}try{var l=localStorage.getItem('yaidb');if(l)S.dbStats.local=JSON.parse(l).length;}catch(e){}}
-async function checkDeploy(){try{var r=await fetch('https://api.github.com/repos/'+CFG.github.owner+'/'+CFG.github.repo+'/actions/runs?per_page=3',{headers:{'Authorization':'token '+CFG.github.token}});if(!r.ok)return'Gagal.';var d=await r.json();if(!d.workflow_runs||!d.workflow_runs.length)return'Belum ada.';var resp='Deploy:<br>';for(var i=0;i<Math.min(d.workflow_runs.length,3);i++){var run=d.workflow_runs[i];resp+='<div class="card">'+(run.status==='completed'?(run.conclusion==='success'?'OK':'FAIL'):'...')+' '+run.name+'<br>'+run.status+'</div>';}return resp;}catch(e){return'Error: '+e.message;}}
-
-function showLogin(){var e=prompt('Email:');if(!e)return;var p=prompt('Password:');if(!p)return;auth.signInWithEmailAndPassword(e,p).then(function(){toast('Login berhasil!','success');}).catch(function(err){if(err.code==='auth/user-not-found'&&confirm('Buat akun?')){auth.createUserWithEmailAndPassword(e,p).then(function(){toast('Akun dibuat!','success');}).catch(function(er){toast('Error: '+er.message,'error');});}else toast('Error: '+err.message,'error');});}
-async function doLogout(){await auth.signOut();toast('Logout!','info');}
-auth.onAuthStateChanged(function(u){var s=$('auth-status'),li=$('login-btn'),lo=$('logout-btn');if(u){S.user=u;S.isAdmin=u.email===CFG.adminEmail;S.role=S.isAdmin?'admin':'user';s.className='badge '+S.role;s.textContent=S.isAdmin?'Admin':'User';li.style.display='none';lo.style.display='inline-block';}else{S.isAdmin=false;S.role='guest';s.className='badge guest';s.textContent='Guest';li.style.display='inline-block';lo.style.display='none';}});
-
-$('sendBtn').addEventListener('click',function(e){e.preventDefault();sendMsg();});
-$('sendBtn').addEventListener('touchend',function(e){e.preventDefault();sendMsg();});
-$('userInput').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}});
-$('fileInput').addEventListener('change',async function(e){var files=e.target.files;if(!files.length)return;showProg('Upload...');var items=[];for(var i=0;i<files.length;i++){try{var text=await files[i].text();items=items.concat(parseFile(text,files[i].name));}catch(err){}}if(items.length){for(var j=0;j<items.length;j++){try{await fs.collection('knowledge_base').add(items[j]);}catch(e){}}S.kb=S.kb.concat(items);var local=JSON.parse(localStorage.getItem('yaidb')||'[]');local=local.concat(items);localStorage.setItem('yaidb',JSON.stringify(local));S.dbStats.local=local.length;}hideProg();addMsg('ai',items.length+' items! Total: '+S.kb.length);toast(items.length+' items!','success');this.value='';});
-function parseFile(text,filename){var items=[];var lines=text.split('\n');var cur={title:filename.replace(/\.[^.]+$/,''),content:'',tags:[],type:'lesson',created_at:new Date().toISOString()};for(var i=0;i<lines.length;i++){var line=lines[i].trim();if(!line)continue;if(line.startsWith('===')&&line.endsWith('===')){if(cur.content.trim())items.push({title:cur.title,content:cur.content,tags:cur.tags,type:cur.type,created_at:cur.created_at});cur={title:line.replace(/===/g,'').trim(),content:'',tags:[],type:'lesson',created_at:new Date().toISOString()};}else if(line.startsWith('Judul:')||line.startsWith('Title:')){if(cur.content.trim())items.push({title:cur.title,content:cur.content,tags:cur.tags,type:cur.type,created_at:cur.created_at});cur={title:line.replace(/^(Judul|Title):/i,'').trim(),content:'',tags:[],type:'lesson',created_at:new Date().toISOString()};}else if(line.startsWith('Tags:')){cur.tags=line.replace('Tags:','').split(',').map(function(t){return t.trim();}).filter(function(t){return t;});}else{cur.content+=line+'\n';}}if(cur.content.trim())items.push(cur);if(!items.length&&text.trim())items.push({title:filename,content:text.trim(),tags:['imported'],type:'lesson',created_at:new Date().toISOString()});return items;}
-
-window.addEventListener('resize',function(){document.body.style.height=window.innerHeight+'px';});
-if(window.innerWidth>=768)setTimeout(function(){$('userInput').focus();},500);
-console.log('Yad AI Complete Ready!');
+// ============================================================
+// INIT
+// ============================================================
+console.log('Yad AI Super Intelligent v8.0 Ready!');
 })();
 </script>
 </body>

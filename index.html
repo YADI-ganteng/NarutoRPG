@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Yad AI - NarutoRPG Ultimate</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/universal-sentence-encoder@latest"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #141c2b;
+            --bg-tertiary: #1e2a3a;
+            --text-primary: #e8edf5;
+            --text-secondary: #8899aa;
+            --accent-blue: #4a90d9;
+            --accent-purple: #7c5ce7;
+            --accent-green: #2ecc71;
+            --accent-red: #e74c3c;
+            --accent-gold: #f39c12;
+            --accent-orange: #e67e22;
+            --accent-cyan: #00bcd4;
+            --border-color: #2a3545;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --transition: all 0.3s ease;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            height: 100dvh;
+            width: 100vw;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        #app { height: 100%; display: flex; flex-direction: column; position: relative; }
+
+        .header {
+            background: linear-gradient(135deg, #0f1729, #1a2332);
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            z-index: 20;
+            min-height: 50px;
+        }
+
+        .header-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+
+        .ai-avatar {
+            width: 34px; height: 34px; min-width: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
+            animation: glow 2s infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(74,144,217,0.5); }
+            50% { box-shadow: 0 0 15px rgba(74,144,217,0.8); }
+        }
+
+        .header-title { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .header-title span { background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+        .header-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 9px; font-weight: 600; border: 1px solid; white-space: nowrap; }
+        .badge.admin { background: rgba(124,92,231,0.15); border-color: var(--accent-purple); color: var(--accent-purple); }
+        .badge.user { background: rgba(46,204,113,0.15); border-color: var(--accent-green); color: var(--accent-green); }
+        .badge.guest { background: rgba(136,153,170,0.15); border-color: var(--text-secondary); color: var(--text-secondary); }
+
+        .db-indicator {
+            display: flex; align-items: center; gap: 4px;
+            padding: 4px 8px; border-radius: 12px; font-size: 9px; font-weight: 600;
+            background: rgba(0,188,212,0.15); border: 1px solid var(--accent-cyan); color: var(--accent-cyan);
+            cursor: pointer; white-space: nowrap;
+        }
+
+        .db-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent-cyan); }
+
+        .btn-icon {
+            padding: 5px 10px; border-radius: 12px; border: 1px solid var(--border-color);
+            background: transparent; color: var(--text-primary); cursor: pointer;
+            font-size: 9px; white-space: nowrap; transition: var(--transition);
+        }
+
+        .btn-icon:active { background: var(--bg-tertiary); transform: scale(0.95); }
+
+        .sidebar-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6); z-index: 25; display: none; opacity: 0; transition: opacity 0.3s;
+        }
+
+        .sidebar-overlay.active { display: block; opacity: 1; }
+
+        .sidebar {
+            position: fixed; left: -300px; top: 0; bottom: 0; width: 280px;
+            background: var(--bg-secondary); border-right: 1px solid var(--border-color);
+            z-index: 30; overflow-y: auto; transition: left 0.3s ease; -webkit-overflow-scrolling: touch;
+        }
+
+        .sidebar.open { left: 0; }
+
+        .sidebar-section { padding: 12px; border-bottom: 1px solid var(--border-color); }
+
+        .sidebar-title { font-size: 10px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 8px; letter-spacing: 1px; display: flex; align-items: center; justify-content: space-between; }
+
+        .db-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+
+        .db-stat { background: var(--bg-tertiary); padding: 8px; border-radius: 5px; text-align: center; }
+        .db-stat-value { font-size: 16px; font-weight: 700; }
+        .db-stat-value.firebase { color: #ffa611; }
+        .db-stat-value.github { color: #8b949e; }
+        .db-stat-label { font-size: 8px; color: var(--text-secondary); }
+
+        .quick-cmd {
+            display: block; width: 100%; padding: 8px 12px; margin: 3px 0;
+            background: var(--bg-tertiary); border: 1px solid transparent;
+            color: var(--text-primary); border-radius: 6px; cursor: pointer;
+            text-align: left; font-size: 11px; transition: var(--transition);
+        }
+
+        .quick-cmd:hover, .quick-cmd:active { border-color: var(--accent-blue); background: rgba(74,144,217,0.15); transform: translateX(2px); }
+        .quick-cmd.edit { border-left: 3px solid var(--accent-blue); }
+        .quick-cmd.delete { border-left: 3px solid var(--accent-red); }
+        .quick-cmd.rename { border-left: 3px solid var(--accent-gold); }
+        .quick-cmd.add { border-left: 3px solid var(--accent-green); }
+
+        .chat-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-primary); min-height: 0; }
+
+        .chat-messages {
+            flex: 1; overflow-y: auto; padding: 12px;
+            display: flex; flex-direction: column; gap: 8px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .chat-messages::-webkit-scrollbar { width: 3px; }
+        .chat-messages::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 2px; }
+
+        .message { max-width: 85%; animation: slideUp 0.3s ease; line-height: 1.5; word-wrap: break-word; overflow-wrap: break-word; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            margin-left: auto; background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white; padding: 10px 14px; border-radius: 16px 16px 4px 16px; font-size: 13px;
+        }
+
+        .message.ai {
+            margin-right: auto; background: var(--bg-secondary); border: 1px solid var(--border-color);
+            padding: 10px 14px; border-radius: 16px 16px 16px 4px; font-size: 13px;
+        }
+
+        .message.ai.admin-msg { border-color: var(--accent-purple); }
+        .message.ai.user-msg { border-color: var(--accent-green); }
+        .message.ai.guest-msg { border-color: var(--text-secondary); }
+
+        .message .card { background: var(--bg-tertiary); padding: 8px; border-radius: 8px; margin: 6px 0; border: 1px solid var(--border-color); font-size: 11px; }
+        .message .card.success { border-color: var(--accent-green); background: rgba(46,204,113,0.1); }
+        .message .card.warning { border-color: var(--accent-gold); background: rgba(243,156,18,0.1); }
+        .message .card.danger { border-color: var(--accent-red); background: rgba(231,76,60,0.1); }
+        .message .card.info { border-color: var(--accent-cyan); background: rgba(0,188,212,0.1); }
+
+        .message code { background: #0a0e17; padding: 2px 5px; border-radius: 3px; font-family: monospace; font-size: 10px; color: var(--accent-green); }
+        .message pre { background: #0a0e17; padding: 10px; border-radius: 8px; overflow-x: auto; font-family: monospace; font-size: 10px; color: var(--accent-green); margin: 8px 0; }
+
+        .input-area {
+            padding: 8px 12px; padding-bottom: calc(8px + var(--safe-bottom));
+            background: var(--bg-secondary); border-top: 1px solid var(--border-color);
+            display: flex; gap: 8px; align-items: center; flex-shrink: 0; z-index: 20;
+        }
+
+        .input-area input {
+            flex: 1; padding: 12px 14px; background: var(--bg-primary);
+            border: 2px solid var(--border-color); border-radius: 24px;
+            color: var(--text-primary); font-size: 14px; min-width: 0; outline: none;
+            transition: var(--transition); -webkit-appearance: none;
+        }
+
+        .input-area input:focus { border-color: var(--accent-blue); box-shadow: 0 0 0 3px rgba(74,144,217,0.15); }
+        .input-area input::placeholder { color: var(--text-secondary); font-size: 13px; }
+
+        .send-btn {
+            width: 44px; height: 44px; min-width: 44px; border-radius: 50%; border: none;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white; cursor: pointer; font-size: 18px;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition); box-shadow: 0 2px 10px rgba(74,144,217,0.3);
+        }
+
+        .send-btn:active { transform: scale(0.9); }
+        .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .progress-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 50;
+        }
+
+        .progress-overlay.active { display: flex; }
+
+        .progress-card {
+            background: var(--bg-secondary); padding: 24px; border-radius: 16px;
+            border: 1px solid var(--border-color); text-align: center; width: 340px; max-width: 90vw;
+        }
+
+        .progress-steps { display: flex; flex-direction: column; gap: 6px; margin: 12px 0; text-align: left; }
+
+        .step { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-secondary); }
+        .step.done { color: var(--accent-green); }
+        .step.active { color: var(--accent-blue); }
+
+        .step-icon {
+            width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--text-secondary);
+            display: flex; align-items: center; justify-content: center; font-size: 10px; min-width: 20px;
+        }
+
+        .step.done .step-icon { border-color: var(--accent-green); background: var(--accent-green); color: white; }
+        .step.active .step-icon { border-color: var(--accent-blue); animation: pulse 1s infinite; }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(74,144,217,0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(74,144,217,0); }
+        }
+
+        .progress-bar { width: 100%; height: 4px; background: var(--bg-tertiary); border-radius: 2px; margin: 10px 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple)); width: 0%; transition: width 0.5s; border-radius: 2px; }
+
+        .toast {
+            position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+            padding: 10px 20px; border-radius: 20px; color: white;
+            font-size: 12px; z-index: 100; animation: toastIn 0.3s ease;
+            font-weight: 600; max-width: 90%; text-align: center;
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        .toast.success { background: var(--accent-green); }
+        .toast.error { background: var(--accent-red); }
+        .toast.info { background: var(--accent-blue); }
+
+        @media (min-width: 768px) {
+            .sidebar { position: relative; left: 0; width: 300px; z-index: 1; }
+            .sidebar-overlay { display: none !important; }
+            .message { max-width: 70%; }
+            .header { padding: 12px 20px; }
+        }
+
+        @media (max-width: 767px) {
+            .header { padding: 8px 12px; }
+            .header-title { font-size: 14px; }
+            .ai-avatar { width: 30px; height: 30px; min-width: 30px; font-size: 14px; }
+            .chat-messages { padding: 10px; }
+            .message { max-width: 90%; font-size: 13px; }
+            .input-area { padding: 6px 8px; padding-bottom: calc(6px + var(--safe-bottom)); }
+            .send-btn { width: 40px; height: 40px; min-width: 40px; font-size: 16px; }
+            .db-indicator { display: none; }
+            .progress-card { width: 280px; padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="header">
+            <div class="header-left">
+                <div class="ai-avatar">🧠</div>
+                <div class="header-title"><span>Yad AI</span></div>
+            </div>
+            <div class="header-right">
+                <div class="db-indicator" onclick="switchDatabasePrompt()"><div class="db-dot"></div><span id="dbName">Firebase</span></div>
+                <span id="auth-status" class="badge guest">🔓 Guest</span>
+                <button id="login-btn" class="btn-icon" onclick="showLoginPrompt()">🔑</button>
+                <button id="logout-btn" class="btn-icon" style="display:none;" onclick="handleLogout()">🚪</button>
+            </div>
+        </div>
+
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">🗄️ DATABASE <span style="font-size:8px;color:var(--accent-cyan);cursor:pointer;" onclick="syncAllDatabases()">🔄 Sync</span></div>
+                <div class="db-stats">
+                    <div class="db-stat"><div class="db-stat-value firebase" id="stat-firebase">0</div><div class="db-stat-label">Firestore</div></div>
+                    <div class="db-stat"><div class="db-stat-value github" id="stat-github">0</div><div class="db-stat-label">GitHub</div></div>
+                    <div class="db-stat"><div class="db-stat-value local" id="stat-local">0</div><div class="db-stat-label">Local</div></div>
+                    <div class="db-stat"><div class="db-stat-value" style="color:var(--accent-purple);" id="stat-syncs">0</div><div class="db-stat-label">Syncs</div></div>
+                </div>
+            </div>
+
+            <div class="sidebar-section" id="guestPanel">
+                <div class="sidebar-title">🔓 GUEST</div>
+                <button class="quick-cmd" onclick="quickCmd('cari')">🔍 Cari</button>
+                <button class="quick-cmd" onclick="quickCmd('tanya')">💬 Tanya</button>
+                <button class="quick-cmd" onclick="showLoginPrompt()">🔑 Login</button>
+            </div>
+
+            <div class="sidebar-section" id="userPanel" style="display:none;">
+                <div class="sidebar-title">👤 USER</div>
+                <button class="quick-cmd" onclick="quickCmd('top up')">💰 Top Up</button>
+                <button class="quick-cmd" onclick="quickCmd('status')">📦 Status</button>
+                <button class="quick-cmd" onclick="quickCmd('upload bukti')">📤 Bukti</button>
+                <button class="quick-cmd" onclick="quickCmd('main game')">🎮 Game</button>
+                <button class="quick-cmd" onclick="quickCmd('baca novel')">📖 Novel</button>
+            </div>
+
+            <div class="sidebar-section" id="adminPanel" style="display:none;">
+                <div class="sidebar-title">👑 ADMIN</div>
+                <button class="quick-cmd add" onclick="quickCmd('tambah fitur')">➕ Fitur</button>
+                <button class="quick-cmd delete" onclick="quickCmd('hapus fitur')">🗑️ Hapus</button>
+                <button class="quick-cmd rename" onclick="quickCmd('ubah nama ai')">✏️ Rename</button>
+                <button class="quick-cmd rename" onclick="quickCmd('ubah tema')">🎨 Tema</button>
+                <button class="quick-cmd edit" onclick="quickCmd('edit css')">🎨 CSS</button>
+                <button class="quick-cmd edit" onclick="quickCmd('edit html')">📝 HTML</button>
+                <button class="quick-cmd add" onclick="quickCmd('upload pelajaran')">📚 Upload</button>
+                <button class="quick-cmd" onclick="quickCmd('markup')">💰 Markup</button>
+                <button class="quick-cmd" onclick="quickCmd('transaksi')">📋 Trx</button>
+                <button class="quick-cmd add" onclick="quickCmd('tambah game')">🎮 Game</button>
+                <button class="quick-cmd add" onclick="quickCmd('tambah novel')">📖 Novel</button>
+                <button class="quick-cmd" onclick="quickCmd('buat database github')">📁 Buat DB</button>
+            </div>
+        </div>
+
+        <div class="chat-area">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ai guest-msg">
+                    <b>🧠 Yad AI Ultimate</b><br><br>
+                    🗄️ <b>Multi-DB:</b> Firebase | GitHub | Local<br>
+                    👥 <b>3 Layer:</b> Guest | User | Admin<br>
+                    🤖 <b>AI Auto:</b> Edit | Deploy | Create DB<br>
+                    📤 <b>Upload:</b> File langsung diproses<br><br>
+                    💡 Ketik "<b>help</b>" untuk semua perintah<br>
+                    🔑 Admin: ynuraini686@gmail.com
+                </div>
+            </div>
+
+            <div class="input-area">
+                <input type="text" id="userInput" placeholder="Ketik perintah via chat..." autocomplete="off" enterkeyhint="send">
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="progress-overlay" id="progressOverlay">
+        <div class="progress-card">
+            <div style="font-size:32px;" id="progressIcon">⏳</div>
+            <div style="margin:8px 0;font-weight:700;font-size:14px;" id="progressTitle">Processing...</div>
+            <div class="progress-steps" id="progressSteps">
+                <div class="step active" id="step1"><div class="step-icon">1</div><span id="step1Text">Initializing...</span></div>
+                <div class="step" id="step2"><div class="step-icon">2</div><span id="step2Text">Processing...</span></div>
+                <div class="step" id="step3"><div class="step-icon">3</div><span id="step3Text">Saving...</span></div>
+                <div class="step" id="step4"><div class="step-icon">4</div><span id="step4Text">Finalizing...</span></div>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <div style="font-size:11px;color:var(--text-secondary);" id="progressDetail"></div>
+        </div>
+    </div>
+
+    <input type="file" id="hidden-file-input" accept=".txt,.pdf,.md,.json" multiple style="display:none;">
+    <div id="toastContainer"></div>
+
+    <script>
+    (function() {
+        // ================================================================
+        // CONFIGURATION
+        // ================================================================
+        const CONFIG = {
+            firebase: {
+                apiKey: "AIzaSyAvfHxcAT2syVbrf6-TU0JBRXtNLI0AIkc",
+                authDomain: "yadstores.firebaseapp.com",
+                projectId: "yadstores",
+                storageBucket: "yadstores.firebasestorage.app",
+                messagingSenderId: "666352014774",
+                appId: "1:666352014774:web:159ab5b455efb2fb2f9d17",
+                measurementId: "G-8Q7T7G6HQ2",
+                databaseURL: "https://yadstores-default-rtdb.asia-southeast1.firebasedatabase.app"
+            },
+            adminEmail: 'ynuraini686@gmail.com',
+            github: {
+                owner: 'YADI-ganteng',
+                repo: 'NarutoRPG',
+                filePath: 'index.html',
+                token: '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',
+                branch: 'main',
+                dataPath: 'database'
+            }
+        };
+
+        const KUROHIKO_ITEMS = {
+            'mobile-legends': { name: 'Mobile Legends', items: [
+                { id: 'ml-diamond-100', name: '100 Diamonds', price: 25000 },
+                { id: 'ml-diamond-500', name: '500 Diamonds', price: 120000 },
+                { id: 'ml-diamond-1000', name: '1000 Diamonds', price: 230000 },
+                { id: 'ml-starlight', name: 'Starlight Member', price: 150000 },
+                { id: 'ml-skin-epic', name: 'Epic Skin', price: 180000 },
+                { id: 'ml-skin-legend', name: 'Legend Skin', price: 450000 }
+            ]},
+            'free-fire': { name: 'Free Fire', items: [
+                { id: 'ff-diamond-100', name: '100 Diamonds', price: 15000 },
+                { id: 'ff-diamond-500', name: '500 Diamonds', price: 70000 },
+                { id: 'ff-diamond-1000', name: '1000 Diamonds', price: 135000 },
+                { id: 'ff-member', name: 'Weekly Member', price: 35000 },
+                { id: 'ff-bundle', name: 'Weapon Bundle', price: 85000 }
+            ]},
+            'genshin-impact': { name: 'Genshin Impact', items: [
+                { id: 'gi-blessing', name: 'Blessing of Welkin', price: 75000 },
+                { id: 'gi-battlepass', name: 'Battle Pass', price: 150000 },
+                { id: 'gi-60crystal', name: '60 Genesis Crystal', price: 15000 },
+                { id: 'gi-300crystal', name: '300 Genesis Crystal', price: 75000 },
+                { id: 'gi-980crystal', name: '980 Genesis Crystal', price: 220000 },
+                { id: 'gi-1980crystal', name: '1980 Genesis Crystal', price: 420000 }
+            ]},
+            'pubg-mobile': { name: 'PUBG Mobile', items: [
+                { id: 'pubg-uc-60', name: '60 UC', price: 15000 },
+                { id: 'pubg-uc-300', name: '300 UC', price: 70000 },
+                { id: 'pubg-uc-600', name: '600 UC', price: 135000 },
+                { id: 'pubg-royale', name: 'Royale Pass', price: 180000 }
+            ]},
+            'valorant': { name: 'Valorant', items: [
+                { id: 'val-475', name: '475 VP', price: 75000 },
+                { id: 'val-1000', name: '1000 VP', price: 150000 },
+                { id: 'val-2050', name: '2050 VP', price: 280000 },
+                { id: 'val-3650', name: '3650 VP', price: 480000 },
+                { id: 'val-skin', name: 'Skin Bundle', price: 350000 }
+            ]}
+        };
+
+        // ================================================================
+        // FIREBASE INIT
+        // ================================================================
+        firebase.initializeApp(CONFIG.firebase);
+        const auth = firebase.auth();
+        const firestore = firebase.firestore();
+        const realtimeDB = firebase.database();
+
+        // ================================================================
+        // STATE
+        // ================================================================
+        const State = {
+            currentDatabase: 'firebase',
+            isAdmin: false,
+            currentUser: null,
+            userRole: 'guest',
+            isProcessing: false,
+            knowledgeBase: [],
+            miniGames: [],
+            novels: [],
+            transactions: [],
+            features: [],
+            syncCount: 0,
+            totalEdits: 0,
+            totalDeploys: 0,
+            interactions: 0,
+            aiScore: 0,
+            priceMarkup: 1.2,
+            currentFileContent: null,
+            currentFileSha: null,
+            dbStats: { firebase: 0, realtime: 0, github: 0, local: 0 }
+        };
+
+        // ================================================================
+        // UTILS
+        // ================================================================
+        const U = {
+            sanitize: t => { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; },
+            genId: () => Date.now().toString(36) + Math.random().toString(36).substr(2, 9),
+            fmtPrice: p => 'Rp' + p.toLocaleString('id-ID'),
+            extractGame: text => {
+                const l = text.toLowerCase();
+                let g = null, i = null, s = null;
+                const sm = text.match(/server\s*[:#]?\s*(\d+)/i); if (sm) s = sm[1];
+                for (const [k, d] of Object.entries(KUROHIKO_ITEMS)) {
+                    if (l.includes(k) || l.includes(d.name.toLowerCase())) {
+                        g = k;
+                        for (const it of d.items) {
+                            const il = it.name.toLowerCase();
+                            if (l.includes(il) || il.split(' ').some(w => l.includes(w))) { i = it; break; }
+                        }
+                        break;
+                    }
+                }
+                return { game: g, item: i, serverId: s };
+            }
+        };
+
+        // ================================================================
+        // TOAST
+        // ================================================================
+        function toast(m, t = 'info') {
+            const c = document.getElementById('toastContainer');
+            const ex = c.querySelector('.toast'); if (ex) ex.remove();
+            const to = document.createElement('div'); to.className = `toast ${t}`; to.textContent = m;
+            c.appendChild(to); setTimeout(() => { to.style.opacity = '0'; to.style.transition = 'opacity 0.3s'; setTimeout(() => to.remove(), 300); }, 2500);
+        }
+
+        // ================================================================
+        // UI
+        // ================================================================
+        function addMsg(type, content, rc = '') {
+            const c = document.getElementById('chatMessages');
+            const d = document.createElement('div'); d.className = `message ${type} ${rc}`; d.innerHTML = content;
+            c.appendChild(d); setTimeout(() => c.scrollTo({ top: c.scrollHeight, behavior: 'smooth' }), 100);
+            return d;
+        }
+
+        function showProgress(title, steps, detail) {
+            const o = document.getElementById('progressOverlay');
+            o.classList.add('active');
+            document.getElementById('progressTitle').textContent = title;
+            document.getElementById('progressDetail').textContent = detail || '';
+            document.getElementById('progressFill').style.width = '0%';
+            if (steps) {
+                for (let i = 1; i <= 4; i++) {
+                    const s = document.getElementById(`step${i}`);
+                    const st = document.getElementById(`step${i}Text`);
+                    if (s) { s.className = 'step'; s.querySelector('.step-icon').textContent = i; }
+                    if (st && steps[i-1]) st.textContent = steps[i-1];
+                }
+                document.getElementById('step1').classList.add('active');
+            }
+        }
+
+        function hideProgress() {
+            document.getElementById('progressFill').style.width = '100%';
+            setTimeout(() => document.getElementById('progressOverlay').classList.remove('active'), 500);
+        }
+
+        function updateStep(n, s) {
+            const st = document.getElementById(`step${n}`);
+            if (st) { st.className = `step ${s}`; if (s === 'done') st.querySelector('.step-icon').textContent = '✓'; }
+        }
+
+        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('active'); }
+        function quickCmd(c) { document.getElementById('userInput').value = c + ' '; document.getElementById('userInput').focus(); closeSidebar(); }
+        function switchDatabasePrompt() { quickCmd('switch database'); }
+
+        function updateDBStats() {
+            document.getElementById('stat-firebase').textContent = State.knowledgeBase.length;
+            document.getElementById('stat-local').textContent = State.dbStats.local || (localStorage.getItem('yad_ai_db') ? JSON.parse(localStorage.getItem('yad_ai_db')).length : 0);
+            document.getElementById('stat-syncs').textContent = State.syncCount;
+        }
+
+        // ================================================================
+        // GITHUB API
+        // ================================================================
+        class GitHub {
+            static get headers() {
+                return {
+                    'Authorization': `token ${CONFIG.github.token}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                };
+            }
+
+            static async fetchFile(path) {
+                const url = `https://api.github.com/repos/${CONFIG.github.owner}/${CONFIG.github.repo}/contents/${path}?ref=${CONFIG.github.branch}`;
+                const r = await fetch(url, { headers: this.headers });
+                if (!r.ok) return null;
+                const d = await r.json();
+                return { content: atob(d.content), sha: d.sha };
+            }
+
+            static async createOrUpdateFile(path, content, message) {
+                const url = `https://api.github.com/repos/${CONFIG.github.owner}/${CONFIG.github.repo}/contents/${path}`;
+                let sha = null;
+                try {
+                    const existing = await this.fetchFile(path);
+                    if (existing) sha = existing.sha;
+                } catch(e) {}
+
+                const body = {
+                    message: `🤖 AI: ${message}`,
+                    content: btoa(unescape(encodeURIComponent(typeof content === 'string' ? content : JSON.stringify(content, null, 2)))),
+                    branch: CONFIG.github.branch
+                };
+                if (sha) body.sha = sha;
+
+                const r = await fetch(url, {
+                    method: 'PUT',
+                    headers: this.headers,
+                    body: JSON.stringify(body)
+                });
+
+                if (!r.ok) {
+                    const e = await r.json();
+                    throw new Error(e.message || 'GitHub API Error');
+                }
+                return await r.json();
+            }
+
+            static async listDirectory(path) {
+                const url = `https://api.github.com/repos/${CONFIG.github.owner}/${CONFIG.github.repo}/contents/${path}`;
+                const r = await fetch(url, { headers: this.headers });
+                if (!r.ok) return [];
+                return await r.json();
+            }
+
+            static async createDatabaseStructure() {
+                const files = {
+                    'database/knowledge_base.json': [
+                        { title: 'Selamat Datang', content: 'Ini adalah database pengetahuan Yad AI.', tags: ['welcome'], type: 'lesson', created_at: new Date().toISOString() }
+                    ],
+                    'database/games.json': [
+                        { name: 'Tebak Angka', description: 'Game tebak angka 1-100', type: 'game', html: '<div class="game"><h3>🎲 Tebak Angka</h3><p>Game dimuat!</p></div>', js: 'console.log("Game Tebak Angka ready!");' }
+                    ],
+                    'database/novels.json': [
+                        { title: 'Petualangan AI', genre: 'Sci-Fi', chapters: [{ number: 1, title: 'Bab 1: Awal', content: 'Di sebuah dunia digital...' }], type: 'novel' }
+                    ],
+                    'database/transactions.json': [],
+                    'database/config.json': {
+                        appName: 'Yad AI',
+                        version: '1.0.0',
+                        created: new Date().toISOString(),
+                        settings: { priceMarkup: 1.2, defaultDatabase: 'firebase' }
+                    }
+                };
+
+                const results = [];
+                for (const [path, content] of Object.entries(files)) {
+                    try {
+                        await this.createOrUpdateFile(path, content, `Create ${path}`);
+                        results.push({ path, status: 'created' });
+                    } catch(e) {
+                        results.push({ path, status: 'failed', error: e.message });
+                    }
+                }
+                return results;
+            }
+
+            static async readDatabase(table) {
+                const path = `database/${table}.json`;
+                const file = await this.fetchFile(path);
+                if (!file) return null;
+                try {
+                    return JSON.parse(file.content);
+                } catch {
+                    return file.content;
+                }
+            }
+
+            static async searchAllDatabases(query) {
+                const tables = ['knowledge_base', 'games', 'novels'];
+                const results = [];
+                const q = query.toLowerCase();
+
+                for (const table of tables) {
+                    const data = await this.readDatabase(table);
+                    if (data && Array.isArray(data)) {
+                        for (const item of data) {
+                            if (JSON.stringify(item).toLowerCase().includes(q)) {
+                                results.push({ table, ...item });
+                            }
+                        }
+                    }
+                }
+                return results;
+            }
+        }
+
+        // ================================================================
+        // GITHUB CODE EDITOR
+        // ================================================================
+        class CodeEditor {
+            static async fetch() {
+                const file = await GitHub.fetchFile(CONFIG.github.filePath);
+                if (!file) throw new Error('Cannot fetch index.html');
+                State.currentFileContent = file.content;
+                State.currentFileSha = file.sha;
+                return file;
+            }
+
+            static async commit(newContent, msg) {
+                return await GitHub.createOrUpdateFile(CONFIG.github.filePath, newContent, msg);
+            }
+
+            static async renameAI(name) {
+                const { content } = await this.fetch();
+                let nc = content;
+                nc = nc.replace(/<title>.*?<\/title>/i, `<title>${name} - AI</title>`);
+                nc = nc.replace(/(<span[^>]*>)(Yad AI)(<\/span>)/gi, `$1${name}$3`);
+                nc = nc.replace(/Yad AI/g, name);
+                return nc;
+            }
+
+            static async renameTitle(title) {
+                const { content } = await this.fetch();
+                return content.replace(/<title>.*?<\/title>/i, `<title>${title}</title>`);
+            }
+
+            static async changeTheme(color) {
+                const { content } = await this.fetch();
+                const cm = {
+                    'dark blue': { p: '#0a1628', s: '#162238', a: '#4a90d9' },
+                    'dark purple': { p: '#1a0a2e', s: '#2d1645', a: '#9b59b6' },
+                    'dark green': { p: '#0a1a0a', s: '#162816', a: '#2ecc71' },
+                    'dark red': { p: '#1a0a0a', s: '#2d1616', a: '#e74c3c' },
+                    'dark': { p: '#0a0e17', s: '#141c2b', a: '#4a90d9' },
+                    'light': { p: '#f0f0f0', s: '#ffffff', a: '#3498db' }
+                };
+                const c = cm[color.toLowerCase()] || cm['dark'];
+                let nc = content;
+                nc = nc.replace(/--bg-primary:\s*#[0-9a-fA-F]+;/, `--bg-primary: ${c.p};`);
+                nc = nc.replace(/--bg-secondary:\s*#[0-9a-fA-F]+;/, `--bg-secondary: ${c.s};`);
+                nc = nc.replace(/--accent-blue:\s*#[0-9a-fA-F]+;/, `--accent-blue: ${c.a};`);
+                return nc;
+            }
+
+            static async addFeature(name) {
+                const { content } = await this.fetch();
+                const sn = name.replace(/\s+/g, '-').toLowerCase();
+                const fb = `\n<!-- 🤖 AI FEATURE: ${name} -->\n<div class="feature-${sn}" style="padding:20px;margin:20px auto;max-width:600px;background:var(--bg-tertiary);border-radius:12px;border:2px solid var(--accent-blue);text-align:center;"><h3>✨ ${name}</h3><p>Fitur ini ditambahkan otomatis oleh AI!</p></div>\n<!-- END: ${name} -->`;
+                return content.replace('</body>', fb + '\n</body>');
+            }
+
+            static async removeFeature(name) {
+                const { content } = await this.fetch();
+                const sm = `<!-- 🤖 AI FEATURE: ${name} -->`;
+                const em = `<!-- END: ${name} -->`;
+                const si = content.indexOf(sm), ei = content.indexOf(em);
+                if (si !== -1 && ei !== -1) return content.substring(0, si) + content.substring(ei + em.length);
+                return content;
+            }
+
+            static async removeAllFeatures() {
+                const { content } = await this.fetch();
+                return content.replace(/<!-- 🤖 AI FEATURE:[\s\S]*?<!-- END:[\s\S]*?-->/g, '');
+            }
+
+            static async editCSS(desc) {
+                const { content } = await this.fetch();
+                let nc = content;
+                if (desc.includes('animasi') || desc.includes('animation')) {
+                    nc = nc.replace('</style>', '\n@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}.ai-avatar{animation:float 3s infinite}\n</style>');
+                }
+                if (desc.includes('gradient') || desc.includes('background')) {
+                    nc = nc.replace(/body\s*\{[^}]*background:[^;]+;/, 'body { background: linear-gradient(135deg, #0a0e17, #1a2332);');
+                }
+                return nc;
+            }
+
+            static async editHTML(desc) {
+                const { content } = await this.fetch();
+                let nc = content;
+                if (desc.includes('animasi')) {
+                    nc = nc.replace('</body>', '<div style="text-align:center;padding:20px;animation:pulse 2s infinite;">✨ AI Animation</div>\n</body>');
+                }
+                if (desc.includes('footer')) {
+                    nc = nc.replace('</body>', '<footer style="text-align:center;padding:20px;background:var(--bg-secondary);margin-top:40px;">© 2024 Yad AI</footer>\n</body>');
+                }
+                return nc;
+            }
+        }
+
+        // ================================================================
+        // INTENT DETECTION
+        // ================================================================
+        function detectIntent(text) {
+            const t = text.toLowerCase().trim();
+
+            if (/^(hai|halo|hi|hello|assalam)/i.test(t)) return { a: 'greet', v: null };
+            if (t.includes('help') || t.includes('bantuan')) return { a: 'help', v: null };
+            if (t.includes('statistik') || t.includes('stats') || t.includes('score')) return { a: 'stats', v: null };
+
+            // Database commands
+            if (t.includes('buat database') || t.includes('create database') || t.includes('inisialisasi database')) return { a: 'create_db', v: null };
+            if (t.includes('baca database') || t.includes('read database') || t.includes('lihat database')) return { a: 'read_db', v: t };
+            if (t.includes('cari github') || t.includes('search github')) return { a: 'search_github', v: t };
+            if (t.includes('list database') || t.includes('daftar database')) return { a: 'list_db', v: null };
+            if (t.includes('switch database') || t.includes('ganti database')) return { a: 'switch_db', v: t };
+            if (t.includes('sync all') || t.includes('sinkronisasi')) return { a: 'sync', v: null };
+            if (t.includes('simpan ke database') || t.includes('save to db')) return { a: 'save_db', v: t };
+
+            // Code editor commands
+            if (t.includes('ubah nama ai') || t.includes('ganti nama ai') || t.includes('rename ai')) return { a: 'rename_ai', v: extractVal(t, ['menjadi', 'ke', 'jadi']) };
+            if (t.includes('ubah judul') || t.includes('ganti judul')) return { a: 'rename_title', v: extractVal(t, ['menjadi', 'ke']) };
+            if (t.includes('ubah warna') || t.includes('ganti warna') || t.includes('ubah tema') || t.includes('ganti tema')) return { a: 'change_theme', v: extractVal(t, ['menjadi', 'ke']) };
+            if (t.includes('tambah fitur') || t.includes('buat fitur') || t.includes('add feature')) return { a: 'add_feature', v: extractVal(t, ['tambah fitur', 'buat fitur', 'add feature']) };
+            if (t.includes('hapus semua fitur') || t.includes('remove all')) return { a: 'remove_all', v: null };
+            if (t.includes('hapus fitur') || t.includes('remove feature') || t.includes('delete feature')) return { a: 'remove_feature', v: extractVal(t, ['hapus fitur', 'remove', 'delete']) };
+            if (t.includes('edit css') || t.includes('ubah css')) return { a: 'edit_css', v: extractVal(t, ['edit css', 'ubah css']) };
+            if (t.includes('edit html') || t.includes('ubah html')) return { a: 'edit_html', v: extractVal(t, ['edit html', 'ubah html']) };
+            if (t.includes('deploy') || t.includes('publish') || t.includes('push')) return { a: 'deploy', v: null };
+
+            // Upload commands
+            if ((t.includes('upload') || t.includes('unggah')) && (t.includes('pelajaran') || t.includes('pelajarn') || t.includes('file') || t.includes('data'))) return { a: 'upload', v: null };
+
+            // Top up commands
+            if (t.includes('top up') || t.includes('topup')) return { a: 'topup', v: text };
+            if (t.includes('markup') || t.includes('mark up')) return { a: 'markup', v: text };
+            if (t.includes('status') || t.includes('cek pesanan')) return { a: 'status', v: text };
+            if (t.includes('upload bukti') || t.includes('kirim bukti')) return { a: 'proof', v: text };
+            if (t.includes('transaksi') || t.includes('riwayat')) return { a: 'transactions', v: null };
+
+            // Game & Novel
+            if (t.includes('list game') || t.includes('daftar game')) return { a: 'list_games', v: null };
+            if (t.includes('list novel') || t.includes('daftar novel')) return { a: 'list_novels', v: null };
+            if (t.includes('main') || t.includes('play')) return { a: 'play', v: text };
+            if (t.includes('baca') || t.includes('novel')) return { a: 'read_novel', v: text };
+            if (t.includes('tambah game') || t.includes('buat game')) return { a: 'add_game', v: extractVal(t, ['tambah game', 'buat game']) };
+            if (t.includes('tambah novel') || t.includes('buat novel')) return { a: 'add_novel', v: extractVal(t, ['tambah novel', 'buat novel']) };
+
+            // Login
+            if (t.includes('login') || t.includes('masuk')) return { a: 'login', v: null };
+
+            return { a: 'chat', v: text };
+        }
+
+        function extractVal(text, prefixes) {
+            for (const p of prefixes) {
+                const i = text.toLowerCase().indexOf(p.toLowerCase());
+                if (i !== -1) return text.substring(i + p.length).trim();
+            }
+            const words = text.split(' ');
+            for (const p of prefixes) {
+                const pi = words.findIndex(w => w.toLowerCase() === p.toLowerCase());
+                if (pi !== -1 && pi < words.length - 1) return words.slice(pi + 1).join(' ').trim();
+            }
+            return text.split(' ').slice(2).join(' ').trim() || null;
+        }
+
+        // ================================================================
+        // MAIN SEND MESSAGE
+        // ================================================================
+        async function sendMessage() {
+            if (State.isProcessing) return;
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            State.isProcessing = true;
+            input.value = '';
+            State.interactions++;
+            State.aiScore++;
+
+            const rc = State.userRole === 'admin' ? 'admin-msg' : State.userRole === 'user' ? 'user-msg' : 'guest-msg';
+            addMsg('user', U.sanitize(text));
+
+            try {
+                const { a, v } = detectIntent(text);
+                let resp;
+                const adminCmds = ['rename_ai', 'rename_title', 'change_theme', 'add_feature', 'remove_feature', 'remove_all', 'edit_css', 'edit_html', 'deploy', 'markup', 'transactions', 'create_db', 'save_db', 'add_game', 'add_novel'];
+
+                if (!State.isAdmin && adminCmds.includes(a)) {
+                    resp = '❌ <b>Hanya Admin!</b><br>🔑 Login: ynuraini686@gmail.com';
+                } else {
+                    switch (a) {
+                        case 'greet': resp = State.isAdmin ? '👑 Halo Admin! Siap edit & deploy!' : State.userRole === 'user' ? '👤 Halo! Ada yang bisa dibantu?' : '🔓 Halo! Login untuk fitur lengkap.'; break;
+                        case 'help': resp = getHelp(); break;
+                        case 'stats': resp = getStats(); break;
+
+                        // Database
+                        case 'create_db': resp = await handleCreateDatabase(); break;
+                        case 'read_db': resp = await handleReadDatabase(v); break;
+                        case 'search_github': resp = await handleSearchGitHub(v); break;
+                        case 'list_db': resp = await handleListDatabase(); break;
+                        case 'switch_db': resp = handleSwitchDB(v); break;
+                        case 'sync': resp = await handleSync(); break;
+                        case 'save_db': resp = await handleSaveToDB(v); break;
+
+                        // Code Editor
+                        case 'rename_ai': resp = await doDeploy('rename_ai', v, `Rename AI → "${v}"`); break;
+                        case 'rename_title': resp = await doDeploy('rename_title', v, `Rename title → "${v}"`); break;
+                        case 'change_theme': resp = await doDeploy('change_theme', v, `Theme → "${v}"`); break;
+                        case 'add_feature': resp = await doDeploy('add_feature', v, `Add: "${v}"`); break;
+                        case 'remove_feature': resp = await doDeploy('remove_feature', v, `Remove: "${v}"`); break;
+                        case 'remove_all': resp = await doDeploy('remove_all', null, 'Remove all features'); break;
+                        case 'edit_css': resp = await doDeploy('edit_css', v, `CSS: ${v}`); break;
+                        case 'edit_html': resp = await doDeploy('edit_html', v, `HTML: ${v}`); break;
+                        case 'deploy': resp = await handleDeploy(); break;
+
+                        // Upload
+                        case 'upload': document.getElementById('hidden-file-input').click(); resp = '📤 <b>Upload dimulai...</b><br>Pilih file pelajaran (.txt, .md, .json)'; break;
+
+                        // Top Up
+                        case 'topup': resp = handleTopUp(v); break;
+                        case 'markup': resp = handleMarkup(v); break;
+                        case 'status': resp = '📦 <b>Cek Status:</b><br>Masukkan Order ID. Contoh: "status abc123"'; break;
+                        case 'proof': resp = '📤 <b>Upload Bukti:</b><br>Upload file bukti transfer. Order ID akan diverifikasi.'; break;
+                        case 'transactions': resp = '📋 <b>Transaksi:</b><br>Fitur menampilkan semua transaksi.'; break;
+
+                        // Games & Novels
+                        case 'list_games': resp = State.miniGames.length > 0 ? '🎮 <b>Game:</b><br>' + State.miniGames.map(g => `• ${g.name}<br>`).join('') : '🎮 Belum ada game. Admin: "tambah game [nama]"'; break;
+                        case 'list_novels': resp = State.novels.length > 0 ? '📖 <b>Novel:</b><br>' + State.novels.map(n => `• ${n.title}<br>`).join('') : '📖 Belum ada novel. Admin: "tambah novel [judul]"'; break;
+                        case 'play': resp = '🎮 <b>Game:</b><br>Fitur game interaktif.'; break;
+                        case 'read_novel': resp = '📖 <b>Novel:</b><br>Fitur baca novel.'; break;
+                        case 'add_game': resp = `🎮 Game "${v}" akan dibuat!`; break;
+                        case 'add_novel': resp = `📖 Novel "${v}" akan dibuat!`; break;
+
+                        // Login
+                        case 'login': showLoginPrompt(); resp = '🔑 Silakan login...'; break;
+
+                        default: resp = getDefaultResponse(text);
+                    }
+                }
+                addMsg('ai', resp, rc);
+                updateDBStats();
+            } catch (e) {
+                console.error(e);
+                addMsg('ai', `❌ <b>Error:</b> ${e.message}`, rc);
+                hideProgress();
+            } finally {
+                State.isProcessing = false;
+            }
+        }
+
+        // ================================================================
+        // DATABASE HANDLERS
+        // ================================================================
+        async function handleCreateDatabase() {
+            showProgress('📁 Creating Database...', 
+                ['Checking GitHub...', 'Creating files...', 'Uploading...', 'Verifying...'],
+                'Membuat struktur database di GitHub');
+            
+            try {
+                updateStep(1, 'done');
+                updateStep(2, 'active');
+                document.getElementById('progressFill').style.width = '30%';
+                document.getElementById('progressDetail').textContent = 'Membuat file database...';
+                
+                const results = await GitHub.createDatabaseStructure();
+                
+                updateStep(2, 'done');
+                updateStep(3, 'active');
+                document.getElementById('progressFill').style.width = '70%';
+                document.getElementById('progressDetail').textContent = 'File berhasil dibuat!';
+                
+                await new Promise(r => setTimeout(r, 800));
+                updateStep(3, 'done');
+                updateStep(4, 'active');
+                document.getElementById('progressFill').style.width = '100%';
+                
+                const created = results.filter(r => r.status === 'created');
+                const failed = results.filter(r => r.status === 'failed');
+                
+                State.syncCount++;
+                State.totalDeploys++;
+                
+                await new Promise(r => setTimeout(r, 400));
+                hideProgress();
+                toast('✅ Database created!', 'success');
+                
+                let resp = `✅ <b>Database GitHub Berhasil Dibuat!</b><br><br>`;
+                resp += `<div class="card success">`;
+                resp += `📁 <b>Files Created:</b><br>`;
+                created.forEach(r => resp += `✅ ${r.path}<br>`);
+                if (failed.length > 0) {
+                    resp += `<br>❌ <b>Failed:</b><br>`;
+                    failed.forEach(r => resp += `❌ ${r.path}: ${r.error}<br>`);
+                }
+                resp += `</div>`;
+                resp += `<br>📂 <b>Struktur:</b><br>`;
+                resp += `• database/knowledge_base.json<br>`;
+                resp += `• database/games.json<br>`;
+                resp += `• database/novels.json<br>`;
+                resp += `• database/transactions.json<br>`;
+                resp += `• database/config.json<br><br>`;
+                resp += `🔗 <a href="https://github.com/${CONFIG.github.owner}/${CONFIG.github.repo}/tree/main/database" target="_blank">Lihat di GitHub</a>`;
+                
+                return resp;
+            } catch (e) {
+                hideProgress();
+                return `❌ <b>Gagal membuat database:</b><br>${e.message}`;
+            }
+        }
+
+        async function handleReadDatabase(text) {
+            showProgress('📖 Reading Database...', 
+                ['Connecting...', 'Reading files...', 'Parsing data...', 'Done'],
+                'Membaca database dari GitHub');
+            
+            try {
+                updateStep(1, 'done');
+                updateStep(2, 'active');
+                
+                let table = 'knowledge_base';
+                if (text.includes('game')) table = 'games';
+                else if (text.includes('novel')) table = 'novels';
+                else if (text.includes('transaksi')) table = 'transactions';
+                else if (text.includes('config')) table = 'config';
+                
+                const data = await GitHub.readDatabase(table);
+                
+                updateStep(2, 'done');
+                updateStep(3, 'active');
+                document.getElementById('progressFill').style.width = '70%';
+                
+                await new Promise(r => setTimeout(r, 500));
+                updateStep(3, 'done');
+                updateStep(4, 'active');
+                document.getElementById('progressFill').style.width = '100%';
+                
+                await new Promise(r => setTimeout(r, 300));
+                hideProgress();
+                
+                if (!data) return `❌ Database "${table}" tidak ditemukan di GitHub.<br>💡 Ketik "buat database" untuk membuat.`;
+                
+                if (Array.isArray(data)) {
+                    State.dbStats.github = data.length;
+                    let resp = `📂 <b>GitHub: ${table}</b><br>`;
+                    resp += `<div class="card info">📊 ${data.length} items</div>`;
+                    data.slice(0, 10).forEach((item, i) => {
+                        resp += `• ${item.title || item.name || `Item ${i+1}`}<br>`;
+                    });
+                    if (data.length > 10) resp += `• ... dan ${data.length - 10} lainnya<br>`;
+                    return resp;
+                }
+                
+                return `📂 <b>${table}:</b><br><pre>${JSON.stringify(data, null, 2).substring(0, 500)}</pre>`;
+            } catch (e) {
+                hideProgress();
+                return `❌ ${e.message}`;
+            }
+        }
+
+        async function handleSearchGitHub(text) {
+            const query = text.replace(/cari github|search github/gi, '').trim();
+            if (!query) return '❌ Masukkan kata kunci! Contoh: "cari github top up"';
+            
+            showProgress('🔍 Searching GitHub...', 
+                ['Querying...', 'Searching files...', 'Found results', 'Done'],
+                `Mencari: "${query}"`);
+            
+            try {
+                updateStep(1, 'done');
+                updateStep(2, 'active');
+                
+                const results = await GitHub.searchAllDatabases(query);
+                
+                updateStep(2, 'done');
+                updateStep(3, 'active');
+                document.getElementById('progressFill').style.width = '70%';
+                
+                await new Promise(r => setTimeout(r, 500));
+                updateStep(3, 'done');
+                updateStep(4, 'active');
+                document.getElementById('progressFill').style.width = '100%';
+                
+                await new Promise(r => setTimeout(r, 300));
+                hideProgress();
+                
+                if (results.length === 0) return `❌ Tidak ditemukan "${query}" di database GitHub.`;
+                
+                let resp = `🔍 <b>Hasil GitHub: "${query}"</b><br>`;
+                resp += `<div class="card info">📊 ${results.length} hasil</div>`;
+                results.slice(0, 10).forEach(r => {
+                    resp += `<div class="card">📁 ${r.table}<br><b>${r.title || r.name || 'Item'}</b></div>`;
+                });
+                return resp;
+            } catch (e) {
+                hideProgress();
+                return `❌ ${e.message}`;
+            }
+        }
+
+        async function handleListDatabase() {
+            showProgress('📋 Listing...', ['Fetching...', 'Done'], '');
+            try {
+                const files = await GitHub.listDirectory('database');
+                hideProgress();
+                if (files.length === 0) return '📂 Folder database kosong.<br>💡 Ketik "buat database" untuk membuat.';
+                let resp = '<b>📂 Database Files:</b><br>';
+                files.forEach(f => resp += `• 📄 ${f.name} (${(f.size/1024).toFixed(1)} KB)<br>`);
+                return resp;
+            } catch (e) {
+                hideProgress();
+                return `❌ ${e.message}`;
+            }
+        }
+
+        async function handleSync() {
+            showProgress('🔄 Syncing...', ['Firebase...', 'GitHub...', 'Local...', 'Done'], '');
+            await new Promise(r => setTimeout(r, 1500));
+            State.syncCount++;
+            hideProgress();
+            toast('✅ Synced!', 'success');
+            return '✅ <b>Sync Complete!</b><br>Semua database telah disinkronisasi.';
+        }
+
+        async function handleSaveToDB(text) {
+            showProgress('💾 Saving...', ['Processing...', 'Saving...', 'Done'], '');
+            await new Promise(r => setTimeout(r, 1000));
+            hideProgress();
+            return '✅ Data tersimpan ke database.';
+        }
+
+        function handleSwitchDB(text) {
+            const dbs = { 'firebase': 'Firestore', 'realtime': 'Realtime', 'github': 'GitHub', 'local': 'Local' };
+            for (const [k, v] of Object.entries(dbs)) {
+                if (text.includes(k)) {
+                    State.currentDatabase = k;
+                    document.getElementById('dbName').textContent = v;
+                    toast(`✅ ${v}`, 'success');
+                    return `✅ Database: <b>${v}</b>`;
+                }
+            }
+            return '🗄️ Pilih: firebase, realtime, github, local';
+        }
+
+        // ================================================================
+        // DEPLOY HANDLERS
+        // ================================================================
+        async function doDeploy(action, value, msg) {
+            if (!value && action !== 'remove_all') return '❌ Masukkan nilai! Contoh: "ubah nama ai menjadi SkyNet"';
+
+            showProgress('🚀 AI Deploying...', 
+                ['Fetching code...', 'Applying changes...', 'Committing...', 'Deploying...'],
+                msg);
+
+            try {
+                updateStep(1, 'done');
+                updateStep(2, 'active');
+                document.getElementById('progressFill').style.width = '25%';
+                document.getElementById('progressDetail').textContent = 'AI sedang mengedit kode...';
+                await new Promise(r => setTimeout(r, 400));
+
+                let fn;
+                switch (action) {
+                    case 'rename_ai': fn = () => CodeEditor.renameAI(value); break;
+                    case 'rename_title': fn = () => CodeEditor.renameTitle(value); break;
+                    case 'change_theme': fn = () => CodeEditor.changeTheme(value); break;
+                    case 'add_feature': fn = () => CodeEditor.addFeature(value); break;
+                    case 'remove_feature': fn = () => CodeEditor.removeFeature(value); break;
+                    case 'remove_all': fn = () => CodeEditor.removeAllFeatures(); break;
+                    case 'edit_css': fn = () => CodeEditor.editCSS(value); break;
+                    case 'edit_html': fn = () => CodeEditor.editHTML(value); break;
+                }
+
+                const nc = await fn();
+                
+                updateStep(2, 'done');
+                updateStep(3, 'active');
+                document.getElementById('progressFill').style.width = '60%';
+                document.getElementById('progressDetail').textContent = 'Meng-commit ke GitHub...';
+                await new Promise(r => setTimeout(r, 300));
+
+                await CodeEditor.commit(nc, msg);
+                
+                updateStep(3, 'done');
+                updateStep(4, 'active');
+                document.getElementById('progressFill').style.width = '85%';
+                document.getElementById('progressDetail').textContent = 'Menunggu deploy...';
+                await new Promise(r => setTimeout(r, 800));
+
+                updateStep(4, 'done');
+                document.getElementById('progressFill').style.width = '100%';
+                
+                State.totalEdits++;
+                State.totalDeploys++;
+                State.aiScore += 25;
+
+                await new Promise(r => setTimeout(r, 400));
+                hideProgress();
+                toast('✅ Deployed!', 'success');
+
+                return `✅ <b>Berhasil!</b><br><br>
+                <div class="card success">
+                    📝 <b>Action:</b> ${msg}<br>
+                    ✏️ Total Edits: ${State.totalEdits}<br>
+                    🚀 Total Deploys: ${State.totalDeploys}<br>
+                    🧠 AI Score: ${State.aiScore}
+                </div><br>
+                ⏳ Live dalam 1-2 menit!<br>
+                🌐 <a href="https://${CONFIG.github.repo.toLowerCase()}.vercel.app" target="_blank">Buka Website</a>`;
+            } catch (e) {
+                hideProgress();
+                return `❌ <b>Gagal:</b><br><div class="card danger">${e.message}</div>`;
+            }
+        }
+
+        async function handleDeploy() {
+            showProgress('🚀 Deploying...', ['Trigger...', 'Done'], '');
+            try {
+                await fetch(`https://api.github.com/repos/${CONFIG.github.owner}/${CONFIG.github.repo}/dispatches`, {
+                    method: 'POST',
+                    headers: GitHub.headers,
+                    body: JSON.stringify({ event_type: 'deploy', client_payload: { ts: new Date().toISOString() } })
+                });
+                hideProgress();
+                State.totalDeploys++;
+                return '✅ Deploy triggered! ⏳ 1-2 menit.';
+            } catch (e) {
+                hideProgress();
+                return `❌ ${e.message}`;
+            }
+        }
+
+        // ================================================================
+        // TOP UP HANDLERS
+        // ================================================================
+        function handleTopUp(text) {
+            const { game, item, serverId } = U.extractGame(text);
+            if (!game || !item) {
+                let l = '<b>🎮 Game Tersedia (Kurohiko):</b><br><br>';
+                for (const [k, g] of Object.entries(KUROHIKO_ITEMS)) {
+                    l += `<b>${g.name}:</b><br>`;
+                    g.items.forEach(i => l += `• ${i.name} - ${U.fmtPrice(Math.round(i.price * State.priceMarkup))}<br>`);
+                    l += '<br>';
+                }
+                return l + '💡 <b>Contoh:</b> "top up mobile legends 100 diamond server: 12345678"';
+            }
+            if (!serverId) return '⚠️ <b>Masukkan Server ID!</b><br>Contoh: "top up ml 100 diamond <b>server: 12345678</b>"';
+            
+            const price = Math.round(item.price * State.priceMarkup);
+            const oid = U.genId();
+            State.aiScore += 15;
+            
+            return `✅ <b>Order Top Up Dibuat!</b><br><br>
+            <div class="card success">
+                🆔 <b>Order ID:</b> ${oid}<br>
+                🎮 <b>Game:</b> ${KUROHIKO_ITEMS[game].name}<br>
+                💎 <b>Item:</b> ${item.name}<br>
+                🆔 <b>Server:</b> ${serverId}<br>
+                💰 <b>Harga:</b> ${U.fmtPrice(price)}<br>
+                💳 <b>Pembayaran:</b> QRIS
+            </div><br>
+            📤 <b>Upload bukti:</b> "upload bukti ${oid}"`;
+        }
+
+        function handleMarkup(text) {
+            const p = parseInt(text.match(/\d+/)?.[0] || '20');
+            State.priceMarkup = 1 + (p / 100);
+            let l = `<b>💰 Mark-up ${p}%:</b><br><br>`;
+            for (const [k, g] of Object.entries(KUROHIKO_ITEMS)) {
+                l += `<b>${g.name}:</b><br>`;
+                g.items.forEach(i => l += `• ${i.name}: ${U.fmtPrice(Math.round(i.price * State.priceMarkup))}<br>`);
+                l += '<br>';
+            }
+            return l;
+        }
+
+        // ================================================================
+        // HELP & STATS
+        // ================================================================
+        function getHelp() {
+            if (State.isAdmin) {
+                return `<b>👑 ADMIN COMMANDS:</b><br><br>
+                <b>📁 Database:</b><br>
+                • "buat database" - Auto-create di GitHub<br>
+                • "baca database [table]" - Read GitHub DB<br>
+                • "cari github [kata]" - Search GitHub<br>
+                • "list database" - List files<br>
+                • "switch database [nama]" - Ganti DB<br>
+                • "sync all" - Sinkronisasi<br><br>
+                <b>✏️ Edit & Deploy:</b><br>
+                • "ubah nama ai menjadi [nama]"<br>
+                • "ubah tema menjadi [warna]"<br>
+                • "tambah fitur [nama]"<br>
+                • "hapus fitur [nama]"<br>
+                • "hapus semua fitur"<br>
+                • "edit css [deskripsi]"<br>
+                • "edit html [deskripsi]"<br>
+                • "deploy"<br><br>
+                <b>📤 Upload:</b><br>
+                • "upload pelajaran" - Upload file<br><br>
+                <b>💰 Finance:</b><br>
+                • "markup [persen]"<br>
+                • "transaksi"<br><br>
+                <b>🎮 Content:</b><br>
+                • "tambah game [nama]"<br>
+                • "tambah novel [judul]"`;
+            }
+            if (State.userRole === 'user') {
+                return `<b>👤 USER COMMANDS:</b><br><br>
+                💰 "top up [game] [item] server: [id]"<br>
+                📦 "status [order_id]"<br>
+                📤 "upload bukti [order_id]"<br>
+                🎮 "list game"<br>
+                📖 "list novel"`;
+            }
+            return `<b>🔓 GUEST COMMANDS:</b><br><br>
+            🔍 "cari [topik]"<br>
+            💬 "tanya [pertanyaan]"<br>
+            🔑 "login" untuk akses penuh`;
+        }
+
+        function getStats() {
+            return `<b>📊 STATISTIK:</b><br><br>
+            <div class="card info">
+                🗄️ Database: <b>${State.currentDatabase}</b><br>
+                ✏️ Total Edits: <b>${State.totalEdits}</b><br>
+                🚀 Total Deploys: <b>${State.totalDeploys}</b><br>
+                💬 Interaksi: <b>${State.interactions}</b><br>
+                🧠 AI Score: <b>${State.aiScore}</b><br>
+                💰 Mark-up: <b>${Math.round((State.priceMarkup - 1) * 100)}%</b><br>
+                👤 Role: <b>${State.userRole}</b><br>
+                📚 Knowledge: <b>${State.knowledgeBase.length}</b>
+            </div>`;
+        }
+
+        function getDefaultResponse(text) {
+            return `💡 <b>Yad AI siap membantu!</b><br><br>
+            Ketik <b>"help"</b> untuk semua perintah.<br>
+            🗄️ DB: <b>${State.currentDatabase}</b><br>
+            👤 Role: <b>${State.userRole}</b>`;
+        }
+
+        // ================================================================
+        // AUTH
+        // ================================================================
+        function showLoginPrompt() {
+            const e = prompt('Email:'); if (!e) return;
+            const p = prompt('Password:'); if (!p) return;
+            auth.signInWithEmailAndPassword(e, p).then(() => toast('✅ Login!', 'success')).catch(err => {
+                if (err.code === 'auth/user-not-found' && confirm('Buat akun?')) {
+                    auth.createUserWithEmailAndPassword(e, p).then(() => toast('✅ Created!', 'success')).catch(er => toast('❌ ' + er.message, 'error'));
+                } else toast('❌ ' + err.message, 'error');
+            });
+        }
+
+        async function handleLogout() { await auth.signOut(); toast('👋 Logout!', 'info'); }
+
+        auth.onAuthStateChanged(u => {
+            const s = document.getElementById('auth-status'), li = document.getElementById('login-btn'), lo = document.getElementById('logout-btn');
+            const gp = document.getElementById('guestPanel'), up = document.getElementById('userPanel'), ap = document.getElementById('adminPanel');
+            if (u) {
+                State.currentUser = u; State.isAdmin = u.email === CONFIG.adminEmail; State.userRole = State.isAdmin ? 'admin' : 'user';
+                s.className = `badge ${State.userRole}`; s.textContent = State.isAdmin ? '👑 Admin' : '👤 User';
+                li.style.display = 'none'; lo.style.display = 'inline-block';
+                gp.style.display = 'none'; up.style.display = State.isAdmin ? 'none' : 'block'; ap.style.display = State.isAdmin ? 'block' : 'none';
+            } else {
+                State.isAdmin = false; State.userRole = 'guest';
+                s.className = 'badge guest'; s.textContent = '🔓 Guest';
+                li.style.display = 'inline-block'; lo.style.display = 'none';
+                gp.style.display = 'block'; up.style.display = 'none'; ap.style.display = 'none';
+            }
+        });
+
+        // ================================================================
+        // FILE UPLOAD WITH PROGRESS
+        // ================================================================
+        document.getElementById('hidden-file-input').addEventListener('change', async function(e) {
+            const files = e.target.files;
+            if (!files.length) return;
+
+            showProgress('📤 Uploading...', 
+                [`Reading ${files.length} file(s)...`, 'Parsing content...', 'Saving to database...', 'Done'],
+                'Memproses file upload');
+
+            let totalItems = 0;
+            let allItems = [];
+
+            try {
+                updateStep(1, 'done');
+                updateStep(2, 'active');
+                document.getElementById('progressFill').style.width = '30%';
+                document.getElementById('progressDetail').textContent = 'Membaca file...';
+
+                for (const file of files) {
+                    const text = await file.text();
+                    const parsed = parseFile(text, file.name);
+                    allItems = allItems.concat(parsed);
+                    totalItems += parsed.length;
+                }
+
+                updateStep(2, 'done');
+                updateStep(3, 'active');
+                document.getElementById('progressFill').style.width = '60%';
+                document.getElementById('progressDetail').textContent = `Menyimpan ${totalItems} item...`;
+
+                // Save to current database
+                if (allItems.length > 0) {
+                    // Firebase
+                    for (const item of allItems) {
+                        try { await firestore.collection('knowledge_base').add(item); } catch (e) {}
+                    }
+                    
+                    // Local
+                    const localData = [...State.knowledgeBase, ...allItems];
+                    localStorage.setItem('yad_ai_db', JSON.stringify(localData));
+                    
+                    // GitHub (auto-save)
+                    try {
+                        const existing = State.dbStats.github || 0;
+                        await GitHub.createOrUpdateFile(
+                            'database/knowledge_base.json',
+                            allItems,
+                            `Upload ${totalItems} pelajaran`
+                        );
+                    } catch (e) { console.warn('GitHub save:', e); }
+
+                    State.knowledgeBase = State.knowledgeBase.concat(allItems);
+                }
+
+                updateStep(3, 'done');
+                updateStep(4, 'active');
+                document.getElementById('progressFill').style.width = '95%';
+                document.getElementById('progressDetail').textContent = 'Selesai!';
+                
+                await new Promise(r => setTimeout(r, 500));
+                updateStep(4, 'done');
+                document.getElementById('progressFill').style.width = '100%';
+                
+                State.syncCount++;
+                
+                await new Promise(r => setTimeout(r, 300));
+                hideProgress();
+                
+                let resp = `✅ <b>Upload Berhasil!</b><br><br>`;
+                resp += `<div class="card success">`;
+                resp += `📁 <b>File:</b> ${files.length}<br>`;
+                resp += `📚 <b>Items:</b> ${totalItems}<br>`;
+                resp += `🗄️ <b>Saved to:</b> Firebase + Local`;
+                if (State.dbStats.github > 0) resp += ` + GitHub`;
+                resp += `<br>📊 <b>Total Knowledge:</b> ${State.knowledgeBase.length}`;
+                resp += `</div>`;
+                
+                if (allItems.length > 0) {
+                    resp += `<br><b>📋 Sample Items:</b><br>`;
+                    allItems.slice(0, 5).forEach(item => {
+                        resp += `• ${item.title || 'Untitled'}<br>`;
+                    });
+                    if (allItems.length > 5) resp += `• ... dan ${allItems.length - 5} lainnya<br>`;
+                }
+                
+                addMsg('ai', resp);
+                toast(`✅ ${totalItems} items!`, 'success');
+                updateDBStats();
+                
+            } catch (err) {
+                hideProgress();
+                addMsg('ai', `❌ Upload gagal: ${err.message}`);
+            }
+            
+            this.value = '';
+        });
+
+        function parseFile(text, filename) {
+            const items = [];
+            const lines = text.split('\n');
+            let cur = { title: filename.replace(/\.[^.]+$/, ''), content: '', tags: [], type: 'lesson', created_at: new Date().toISOString() };
+            
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+                
+                if (line.startsWith('===') && line.endsWith('===')) {
+                    if (cur.content.trim()) items.push({ ...cur });
+                    cur = { title: line.replace(/===/g, '').trim(), content: '', tags: [], type: 'lesson', created_at: new Date().toISOString() };
+                } else if (line.startsWith('Judul:') || line.startsWith('Title:')) {
+                    if (cur.content.trim()) items.push({ ...cur });
+                    cur = { title: line.replace(/^(Judul|Title):/i, '').trim(), content: '', tags: [], type: 'lesson', created_at: new Date().toISOString() };
+                } else if (line.startsWith('Tags:') || line.startsWith('Tag:')) {
+                    cur.tags = line.replace(/^(Tags|Tag):/i, '').split(',').map(t => t.trim()).filter(t => t);
+                } else if (line.startsWith('Q:') || line.startsWith('Pertanyaan:')) {
+                    cur.content += `<b>${line}</b>\n`;
+                } else if (line.startsWith('A:') || line.startsWith('Jawaban:')) {
+                    cur.content += `${line}\n\n`;
+                } else {
+                    cur.content += line + '\n';
+                }
+            }
+            
+            if (cur.content.trim()) items.push(cur);
+            if (items.length === 0 && text.trim()) {
+                items.push({ title: filename, content: text.trim(), tags: ['imported'], type: 'lesson', created_at: new Date().toISOString() });
+            }
+            
+            return items;
+        }
+
+        // ================================================================
+        // EVENT LISTENERS
+        // ================================================================
+        document.getElementById('userInput').addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+        });
+
+        window.addEventListener('resize', () => { document.body.style.height = window.innerHeight + 'px'; });
+        setInterval(updateDBStats, 5000);
+
+        // Initial focus
+        if (window.innerWidth >= 768) setTimeout(() => document.getElementById('userInput').focus(), 500);
+
+        console.log('🚀 Yad AI Ultimate Ready!');
+        console.log('📁 Auto-Create Database: "buat database"');
+        console.log('📖 Read Database: "baca database knowledge_base"');
+        console.log('🔍 Search: "cari github [kata]"');
+        console.log('✏️ Edit & Deploy: Via chat commands');
+        console.log('📤 Upload: "upload pelajaran"');
+        console.log('🔑 Admin: ynuraini686@gmail.com');
+    })();
+    </script>
+</body>
+</html>

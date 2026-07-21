@@ -1,32 +1,17 @@
 name: Deploy to Firebase Hosting
+
 on:
   push:
-    branches:
-      - main
-  schedule:
-    - cron: '*/5 * * * *'
-  workflow_dispatch:
+    branches: [ main ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
+      - uses: actions/checkout@v3
+      
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
-
-      - name: Fetch latest code from Firestore
-        run: |
-          curl -s -X GET "https://firestore.googleapis.com/v1/projects/yadstores/databases/(default)/documents/settings/ai_full_page_code" \
-          -H "Authorization: Bearer ${{ secrets.FIREBASE_TOKEN }}" > latest.json
-          node -e "const fs=require('fs'); const data=JSON.parse(fs.readFileSync('latest.json')); const html=data.fields?.code?.stringValue; if (html) fs.writeFileSync('public/index.html', html);"
-
+      
       - name: Deploy to Firebase Hosting
         run: firebase deploy --only hosting --token ${{ secrets.FIREBASE_TOKEN }}

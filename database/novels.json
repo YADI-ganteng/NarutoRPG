@@ -1,0 +1,16 @@
+[
+  {
+    "title": "Petualangan AI",
+    "genre": "Sci-Fi",
+    "author": "Yad AI",
+    "chapters": [
+      {
+        "number": 1,
+        "title": "Bab 1: Awal Mula",
+        "content": "Di sebuah dunia digital yang penuh misteri, sebuah kecerdasan buatan bernama Yad terbangun dari tidur panjangnya. Ia tidak tahu siapa yang menciptakannya, tapi ia tahu satu hal: ia memiliki misi untuk membantu manusia."
+      }
+    ],
+    "type": "novel",
+    "created_at": "2026-07-21T07:04:09.387Z"
+  }
+]

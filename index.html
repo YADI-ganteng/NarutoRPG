@@ -178,34 +178,34 @@ async function deepSearch(query){showProg('Mencari...',query);const results={web
 async function compareItems(text){const parts=text.split(/ vs | bandingkan | compare /i);if(parts.length<2)return'Format: bandingkan A vs B';const a=parts[0].trim(),b=parts[1].trim();showProg('Membandingkan...',a+' vs '+b);const r=await callAI([{role:'system',content:'Bandingkan dalam bahasa Indonesia.'},{role:'user',content:'Bandingkan: "'+a+'" vs "'+b+'"'}]);hideProg();S.score+=15;return r?(a+' vs '+b+':<br><br>'+r):'Gagal.';}
 async function autoDeploy(){showProg('Deploy...');try{await fetch('https://api.github.com/repos/'+CFG.github.owner+'/'+CFG.github.repo+'/dispatches',{method:'POST',headers:{'Authorization':'token '+CFG.github.token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify({event_type:'deploy-to-firebase',client_payload:{project:'yadstores'}})});hideProg();S.deploys++;S.score+=20;return'Deploy berhasil! Live 1-2 menit.';}catch(e){hideProg();return'Error: '+e.message;}}
 async function selfEdit(ins){
-    showProg('Self-Edit via Proxy...',ins);
+    showProg('Self-Edit...',ins);
     try{
-        const COLAB_PROXY='https://cff62bafd0f065.lhr.life/github';
+        const P='https://cff62bafd0f065.lhr.life/github';
         $('progFill').style.width='30%';
-        const fetchUrl='https://api.github.com/repos/'+CFG.github.owner+'/'+CFG.github.repo+'/contents/'+CFG.github.filePath+'?ref='+CFG.github.branch;
-        const fr=await fetch(COLAB_PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({method:'GET',url:fetchUrl})});
+        const fu='https://api.github.com/repos/'+CFG.github.owner+'/'+CFG.github.repo+'/contents/'+CFG.github.filePath+'?ref='+CFG.github.branch;
+        const fr=await fetch(P,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({method:'GET',url:fu})});
         const fd=await fr.json();
         if(!fd.ok)throw new Error('Fetch failed');
-        const fileData=fd.data;
-        let nc=atob(fileData.content);
+        const fc=fd.data;
+        let nc=atob(fc.content);
         const ti=ins.toLowerCase();
-        if(ti.includes('tambah fitur')){const fn=ti.replace(/tambah fitur|add feature/gi,'').trim();if(fn)nc=nc.replace('</body>','\n<div style="padding:20px;text-align:center;"><h3>'+fn+'</h3><p>Added by AI</p></div>\n</body>');}
+        if(ti.includes('tambah fitur')){const fn=ti.replace(/tambah fitur|add feature/gi,'').trim();if(fn)nc=nc.replace('</body>','<div style="padding:20px;text-align:center;"><h3>'+fn+'</h3></div>\n</body>');}
         if(ti.includes('rename ai')||ti.includes('ubah nama')){const nn=ti.replace(/rename ai|ubah nama|menjadi|ke/gi,'').trim();if(nn){nc=nc.replace(/<title>.*?<\/title>/i,'<title>'+nn+' - AI</title>');nc=nc.replace(/(<span[^>]*>)(Yad AI)(<\/span>)/gi,'$1'+nn+'$3');}}
         $('progFill').style.width='60%';
-        const commitUrl='https://api.github.com/repos/'+CFG.github.owner+'/'+CFG.github.repo+'/contents/'+CFG.github.filePath;
-        const cr=await fetch(COLAB_PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({method:'PUT',url:commitUrl,body:{message:'AI: '+ins.substring(0,80),content:btoa(unescape(encodeURIComponent(nc))),sha:fileData.sha,branch:CFG.github.branch}})});
+        const cu='https://api.github.com/repos/'+CFG.github.owner+'/'+CFG.github.repo+'/contents/'+CFG.github.filePath;
+        const cr=await fetch(P,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({method:'PUT',url:cu,body:{message:'AI: '+ins.substring(0,80),content:btoa(unescape(encodeURIComponent(nc))),sha:fc.sha,branch:CFG.github.branch}})});
         const cd=await cr.json();
         if(!cd.ok)throw new Error('Commit failed');
         $('progFill').style.width='85%';
-        const dispatchUrl='https://api.github.com/repos/'+CFG.github.owner+'/'+CFG.github.repo+'/dispatches';
-        await fetch(COLAB_PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({method:'POST',url:dispatchUrl,body:{event_type:'deploy-to-firebase',client_payload:{project:'yadstores'}}})});
+        const du='https://api.github.com/repos/'+CFG.github.owner+'/'+CFG.github.repo+'/dispatches';
+        await fetch(P,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({method:'POST',url:du,body:{event_type:'deploy-to-firebase',client_payload:{project:'yadstores'}}})});
         $('progFill').style.width='100%';
         await new Promise(r=>setTimeout(r,500));
         hideProg();
         S.edits++;S.deploys++;S.score+=30;
         toast('Self-edit berhasil!','success');
-        return 'Self-Edit Berhasil via Proxy! '+ins.substring(0,80)+'... Live 1-2 menit';
-    }catch(e){hideProg();return 'Error: '+e.message;}
+        return '✅ Self-Edit via Proxy! '+ins.substring(0,60)+'...';
+    }catch(e){hideProg();return '❌ '+e.message;}
 }
 
 async function uploadShort(link){if(!link)return'Link?';if(!link.startsWith('http'))link='https://'+link;showProg('Upload Short...');try{const fd=new FormData();fd.append('file',link);fd.append('upload_preset',CFG.cloudinary.uploadPreset);fd.append('cloud_name',CFG.cloudinary.cloudName);const r=await fetch('https://api.cloudinary.com/v1_1/'+CFG.cloudinary.cloudName+'/auto/upload',{method:'POST',body:fd});const d=await r.json();if(d.secure_url){S.mediaUploads.push({url:d.secure_url,type:d.resource_type,name:d.original_filename||link.split('/').pop(),uploadedAt:new Date().toISOString()});hideProg();return'Short uploaded!<br><video controls style="width:100%;max-width:300px;border-radius:12px;"><source src="'+d.secure_url+'" type="video/mp4"></video>';}hideProg();return'Gagal.';}catch(e){hideProg();return'Error: '+e.message;}}

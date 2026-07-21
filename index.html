@@ -217,10 +217,12 @@ function openCloudinaryWidget(){cloudinary.createUploadWidget({cloudName:CFG.clo
 async function autoCheckDB(){try{const s=await fs.collection('knowledge_base').limit(200).get();S.kb=s.docs.map(d=>({id:d.id,...d.data()}));S.dbStats.firebase=S.kb.length;}catch(e){}try{const l=localStorage.getItem('yaidb');if(l)S.dbStats.local=JSON.parse(l).length;}catch(e){}}
 async function checkDeploy(){try{const r=await fetch('https://api.github.com/repos/'+CFG.github.owner+'/'+CFG.github.repo+'/actions/runs?per_page=3',{headers:{'Authorization':'token '+CFG.github.token}});if(!r.ok)return'Gagal.';const d=await r.json();if(!d.workflow_runs?.length)return'Belum ada.';let resp='Deploy:<br>';d.workflow_runs.slice(0,3).forEach(run=>{resp+='<div class="card">'+(run.status==='completed'?(run.conclusion==='success'?'OK':'FAIL'):'...')+' '+run.name+'<br>'+run.status+'</div>';});return resp;}catch(e){return'Error: '+e.message;}}
 
+
 function showLogin(){const e=prompt('Email:');if(!e)return;const p=prompt('Password:');if(!p)return;auth.signInWithEmailAndPassword(e,p).then(()=>toast('Login berhasil!','success')).catch(err=>{if(err.code==='auth/user-not-found'&&confirm('Buat akun?')){auth.createUserWithEmailAndPassword(e,p).then(()=>toast('Akun dibuat!','success')).catch(er=>toast('Error: '+er.message,'error'));}else toast('Error: '+err.message,'error');});}
 async function doLogout(){await auth.signOut();toast('Logout!','info');}
 auth.onAuthStateChanged(u=>{const s=$('auth-status'),li=$('login-btn'),lo=$('logout-btn');if(u){S.user=u;S.isAdmin=u.email===CFG.adminEmail;S.role=S.isAdmin?'admin':'user';s.className='badge '+S.role;s.textContent=S.isAdmin?'Admin':'User';li.style.display='none';lo.style.display='inline-block';}else{S.isAdmin=false;S.role='guest';s.className='badge guest';s.textContent='Guest';li.style.display='inline-block';lo.style.display='none';}});
 
+// EVENT LISTENERS
 $('sendBtn').addEventListener('click',function(e){e.preventDefault();sendMsg();});
 $('sendBtn').addEventListener('touchend',function(e){e.preventDefault();sendMsg();});
 $('userInput').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}});
@@ -229,10 +231,7 @@ function parseFile(text,filename){const items=[];const lines=text.split('\n');le
 
 window.addEventListener('resize',()=>{document.body.style.height=window.innerHeight+'px';});
 if(window.innerWidth>=768)setTimeout(()=>$('userInput').focus(),500);
-console.log('Yad AI Perfect Ready!');
-})();
+console.log('Yad AI Ready!');
 </script>
-
-<div style="padding:20px;"><h3>test dari colab</h3></div>
 </body>
 </html>

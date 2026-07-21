@@ -232,6 +232,24 @@ function parseFile(text,filename){const items=[];const lines=text.split('\n');le
 window.addEventListener('resize',()=>{document.body.style.height=window.innerHeight+'px';});
 if(window.innerWidth>=768)setTimeout(()=>$('userInput').focus(),500);
 console.log('Yad AI Ready!');
+
+
+// ================================================================
+// EVENT LISTENERS - REQUIRED
+// ================================================================
+$('sendBtn').addEventListener('click',function(e){e.preventDefault();sendMsg();});
+$('sendBtn').addEventListener('touchend',function(e){e.preventDefault();sendMsg();});
+$('userInput').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}});
+$('fileInput').addEventListener('change',async function(e){const files=e.target.files;if(!files.length)return;showProg('Upload...');let items=[];for(const file of files){try{const text=await file.text();items=items.concat(parseFile(text,file.name));}catch(err){}}if(items.length){for(const item of items){try{await fs.collection('knowledge_base').add(item);}catch(e){}}S.kb=S.kb.concat(items);const local=[...(JSON.parse(localStorage.getItem('yaidb')||'[]')),...items];localStorage.setItem('yaidb',JSON.stringify(local));S.dbStats.local=local.length;}hideProg();addMsg('ai',items.length+' items! Total: '+S.kb.length);toast(items.length+' items!','success');this.value='';});
+function parseFile(text,filename){const items=[];const lines=text.split('\n');let cur={title:filename.replace(/\.[^.]+$/,''),content:'',tags:[],type:'lesson',created_at:new Date().toISOString()};for(let line of lines){line=line.trim();if(!line)continue;if(line.startsWith('===')&&line.endsWith('===')){if(cur.content.trim())items.push({...cur});cur={title:line.replace(/===/g,'').trim(),content:'',tags:[],type:'lesson',created_at:new Date().toISOString()};}else if(line.startsWith('Judul:')||line.startsWith('Title:')){if(cur.content.trim())items.push({...cur});cur={title:line.replace(/^(Judul|Title):/i,'').trim(),content:'',tags:[],type:'lesson',created_at:new Date().toISOString()};}else if(line.startsWith('Tags:')){cur.tags=line.replace('Tags:','').split(',').map(t=>t.trim()).filter(t=>t);}else{cur.content+=line+'\n';}}if(cur.content.trim())items.push(cur);if(!items.length&&text.trim())items.push({title:filename,content:text.trim(),tags:['imported'],type:'lesson',created_at:new Date().toISOString()});return items;}
+
+function showLogin(){const e=prompt('Email:');if(!e)return;const p=prompt('Password:');if(!p)return;auth.signInWithEmailAndPassword(e,p).then(()=>toast('Login berhasil!','success')).catch(err=>{if(err.code==='auth/user-not-found'&&confirm('Buat akun?')){auth.createUserWithEmailAndPassword(e,p).then(()=>toast('Akun dibuat!','success')).catch(er=>toast('Error: '+er.message,'error'));}else toast('Error: '+err.message,'error');});}
+async function doLogout(){await auth.signOut();toast('Logout!','info');}
+auth.onAuthStateChanged(u=>{const s=$('auth-status'),li=$('login-btn'),lo=$('logout-btn');if(u){S.user=u;S.isAdmin=u.email===CFG.adminEmail;S.role=S.isAdmin?'admin':'user';s.className='badge '+S.role;s.textContent=S.isAdmin?'Admin':'User';li.style.display='none';lo.style.display='inline-block';}else{S.isAdmin=false;S.role='guest';s.className='badge guest';s.textContent='Guest';li.style.display='inline-block';lo.style.display='none';}});
+
+window.addEventListener('resize',()=>{document.body.style.height=window.innerHeight+'px';});
+if(window.innerWidth>=768)setTimeout(()=>$('userInput').focus(),500);
+
 </script>
 </body>
 </html>

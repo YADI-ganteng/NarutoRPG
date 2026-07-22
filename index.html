@@ -2,197 +2,130 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Yad AI - Human-Like Assistant</title>
-    
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Yad AI Ultimate - Complete</title>
     
     <style>
         :root {
-            --bg-primary: #0a0e17;
-            --bg-secondary: #141c2b;
-            --bg-tertiary: #1e2a3a;
-            --text-primary: #e8edf5;
-            --text-secondary: #8899aa;
-            --accent-blue: #4a90d9;
-            --accent-purple: #7c5ce7;
-            --accent-green: #2ecc71;
-            --accent-red: #e74c3c;
-            --accent-gold: #f39c12;
-            --accent-cyan: #00bcd4;
-            --accent-pink: #e91e63;
-            --accent-orange: #e67e22;
-            --border-color: #2a3545;
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --safe-bottom: env(safe-area-inset-bottom, 0px);
-            --transition: all 0.3s ease;
+            --bg: #111;
+            --bg-card: #1a1a2e;
+            --bg-input: #16213e;
+            --text: #fff;
+            --text-secondary: #aaa;
+            --blue: #2563eb;
+            --purple: #7c3aed;
+            --green: #10b981;
+            --red: #ef4444;
+            --gold: #f59e0b;
+            --cyan: #06b6d4;
+            --radius: 12px;
         }
+        
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
         }
+        
         body {
+            background: var(--bg);
+            color: var(--text);
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
             height: 100vh;
             height: 100dvh;
-            width: 100vw;
             overflow: hidden;
             position: fixed;
             top: 0;
             left: 0;
+            width: 100%;
         }
-        #app {
+        
+        .container {
+            max-width: 900px;
+            margin: auto;
             height: 100%;
             display: flex;
             flex-direction: column;
+            background: #0a0a0a;
         }
         
-        .header {
-            background: linear-gradient(135deg, #0f1729, #1a2332);
-            padding: 10px 16px;
-            border-bottom: 1px solid var(--border-color);
+        /* HEADER */
+        header {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 12px 16px;
+            border-bottom: 2px solid #333;
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            align-items: center;
             flex-shrink: 0;
-            z-index: 20;
-            min-height: 50px;
-            flex-wrap: wrap;
-            gap: 8px;
+            z-index: 10;
         }
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .ai-avatar {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            animation: glow 2s infinite;
-            position: relative;
-            cursor: pointer;
-            border: none;
-            outline: none;
-        }
-        .ai-avatar:active {
-            transform: scale(0.9);
-        }
-        @keyframes glow {
-            0%, 100% { box-shadow: 0 0 5px rgba(74,144,217,0.5); }
-            50% { box-shadow: 0 0 20px rgba(124,92,231,0.8); }
-        }
-        .ai-avatar.admin-active::after {
-            content: '👑';
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            font-size: 14px;
-        }
-        .header-title {
-            font-size: 14px;
-            font-weight: 700;
-        }
-        .header-title span {
-            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+        
+        header h1 {
+            font-size: 16px;
+            background: linear-gradient(135deg, var(--blue), var(--purple));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-        }
-        .header-right {
             display: flex;
             align-items: center;
+            gap: 8px;
+        }
+        
+        header h1::before {
+            content: '🧠';
+            font-size: 24px;
+            -webkit-text-fill-color: initial;
+        }
+        
+        .header-badges {
+            display: flex;
             gap: 6px;
             flex-wrap: wrap;
         }
         
         .badge {
             padding: 4px 10px;
-            border-radius: 12px;
+            border-radius: 20px;
             font-size: 9px;
             font-weight: 600;
             border: 1px solid;
             white-space: nowrap;
         }
+        
+        .badge.ai {
+            background: rgba(6, 182, 212, 0.2);
+            border-color: var(--cyan);
+            color: var(--cyan);
+        }
+        
         .badge.admin {
-            background: rgba(124,92,231,0.2);
-            border-color: var(--accent-purple);
-            color: var(--accent-purple);
+            background: rgba(124, 58, 237, 0.2);
+            border-color: var(--purple);
+            color: var(--purple);
+            display: none;
             animation: pulse 2s infinite;
         }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
+        
         .badge.user {
-            background: rgba(46,204,113,0.15);
-            border-color: var(--accent-green);
-            color: var(--accent-green);
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--green);
+            color: var(--green);
         }
+        
         .badge.guest {
-            background: rgba(136,153,170,0.15);
+            background: rgba(170, 170, 170, 0.2);
             border-color: var(--text-secondary);
             color: var(--text-secondary);
         }
-        .badge.ai-status {
-            background: rgba(0,188,212,0.2);
-            border-color: var(--accent-cyan);
-            color: var(--accent-cyan);
-            animation: pulse 1.5s infinite;
-        }
-        .btn-icon {
-            padding: 5px 12px;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            background: transparent;
-            color: var(--text-primary);
-            cursor: pointer;
-            font-size: 9px;
-            white-space: nowrap;
-            transition: var(--transition);
-            outline: none;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-        }
-        .btn-icon:active {
-            transform: scale(0.95);
-            background: var(--bg-tertiary);
-        }
-        .btn-icon:hover {
-            background: var(--bg-tertiary);
-            border-color: var(--accent-blue);
-        }
-        .btn-icon.admin-btn {
-            border-color: var(--accent-purple);
-            background: rgba(124,92,231,0.15);
-            display: none;
-        }
-        .btn-icon.admin-btn:active {
-            background: rgba(124,92,231,0.3);
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
         }
         
-        .chat-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: var(--bg-primary);
-            min-height: 0;
-        }
-        .chat-messages {
+        /* CHAT AREA */
+        #chat {
             flex: 1;
             overflow-y: auto;
             padding: 12px;
@@ -200,165 +133,167 @@
             flex-direction: column;
             gap: 8px;
             scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
         }
+        
         .message {
+            margin: 4px 0;
+            padding: 10px 14px;
+            border-radius: var(--radius);
             max-width: 85%;
-            animation: slideUp 0.3s ease;
-            line-height: 1.6;
             word-wrap: break-word;
+            line-height: 1.5;
+            font-size: 13px;
+            animation: slideIn 0.3s ease;
         }
-        @keyframes slideUp {
+        
+        @keyframes slideIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .message.user {
-            margin-left: auto;
-            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+        
+        .user {
+            background: linear-gradient(135deg, var(--blue), #1d4ed8);
             color: white;
-            padding: 10px 14px;
+            margin-left: auto;
             border-radius: 16px 16px 4px 16px;
-            font-size: 13px;
         }
-        .message.ai {
+        
+        .ai {
+            background: var(--bg-card);
+            border: 1px solid #333;
             margin-right: auto;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            padding: 10px 14px;
             border-radius: 16px 16px 16px 4px;
-            font-size: 13px;
         }
+        
         .message .card {
-            background: var(--bg-tertiary);
-            padding: 10px;
+            background: #0f0f23;
+            padding: 8px 12px;
             border-radius: 8px;
             margin: 6px 0;
-            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--blue);
             font-size: 12px;
         }
-        .message .card.success { border-color: var(--accent-green); background: rgba(46,204,113,0.1); }
-        .message .card.info { border-color: var(--accent-cyan); background: rgba(0,188,212,0.1); }
-        .message .card.warning { border-color: var(--accent-gold); background: rgba(243,156,18,0.1); }
-        .message .card.danger { border-color: var(--accent-red); background: rgba(231,76,60,0.1); }
-        .message .card.purple { border-color: var(--accent-purple); background: rgba(124,92,231,0.1); }
+        
+        .message .card.success { border-left-color: var(--green); }
+        .message .card.warning { border-left-color: var(--gold); }
+        .message .card.danger { border-left-color: var(--red); }
+        
         .message code {
-            background: #0a0e17;
+            background: #000;
             padding: 2px 6px;
             border-radius: 4px;
-            font-family: 'Courier New', monospace;
+            font-family: monospace;
             font-size: 11px;
-            color: var(--accent-green);
+            color: var(--green);
         }
-        .message pre {
-            background: #0a0e17;
-            padding: 10px;
-            border-radius: 8px;
-            overflow-x: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            color: var(--accent-green);
-            margin: 8px 0;
-        }
-        .message .emoji-large {
-            font-size: 48px;
-            display: block;
-            text-align: center;
-            margin: 10px 0;
-        }
+        
         .typing-indicator {
             display: inline-block;
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: var(--text-secondary);
+            background: #666;
             animation: typing 1.4s infinite;
             margin: 0 2px;
         }
+        
         .typing-indicator:nth-child(2) { animation-delay: 0.2s; }
         .typing-indicator:nth-child(3) { animation-delay: 0.4s; }
+        
         @keyframes typing {
             0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
             30% { opacity: 1; transform: translateY(-5px); }
         }
         
-        .input-area {
+        /* CONTROLS */
+        .controls {
             padding: 8px 12px;
-            padding-bottom: calc(8px + var(--safe-bottom));
-            background: var(--bg-secondary);
-            border-top: 1px solid var(--border-color);
             display: flex;
             gap: 8px;
-            align-items: center;
-        }
-        .input-area input {
-            flex: 1;
-            padding: 12px 16px;
-            background: var(--bg-primary);
-            border: 2px solid var(--border-color);
-            border-radius: 24px;
-            color: var(--text-primary);
-            font-size: 14px;
-            outline: none;
-            transition: var(--transition);
-        }
-        .input-area input:focus {
-            border-color: var(--accent-blue);
-            box-shadow: 0 0 0 3px rgba(74,144,217,0.15);
-        }
-        .input-area input::placeholder {
-            color: var(--text-secondary);
-            opacity: 0.6;
-        }
-        .send-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            border: none;
-            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-            color: white;
-            cursor: pointer;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition);
-            outline: none;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-        }
-        .send-btn:active {
-            transform: scale(0.9);
-        }
-        .send-btn.admin-mode {
-            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
-        }
-        .attach-btn {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            border: 2px solid var(--border-color);
-            background: transparent;
-            color: var(--text-secondary);
-            cursor: pointer;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition);
-            outline: none;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-        }
-        .attach-btn:active {
-            transform: scale(0.9);
-            border-color: var(--accent-blue);
-            color: var(--accent-blue);
-        }
-        .attach-btn:hover {
-            border-color: var(--accent-blue);
-            color: var(--accent-blue);
+            flex-wrap: wrap;
+            background: #0f0f1a;
+            border-top: 1px solid #222;
+            flex-shrink: 0;
         }
         
+        .controls select,
+        .controls button {
+            padding: 8px 12px;
+            border-radius: 20px;
+            border: 1px solid #333;
+            background: var(--bg-input);
+            color: var(--text);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            outline: none;
+            font-family: inherit;
+        }
+        
+        .controls select:hover,
+        .controls button:hover {
+            border-color: var(--blue);
+            background: #1a1a3e;
+        }
+        
+        .controls select:focus,
+        .controls button:focus {
+            border-color: var(--purple);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+        }
+        
+        /* MESSAGE BOX */
+        .message-box {
+            display: flex;
+            gap: 8px;
+            padding: 8px 12px;
+            padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+            background: #0f0f1a;
+            border-top: 1px solid #222;
+            flex-shrink: 0;
+        }
+        
+        .message-box input {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 24px;
+            border: 2px solid #333;
+            background: var(--bg-input);
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        
+        .message-box input:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+        
+        .message-box input::placeholder {
+            color: #666;
+        }
+        
+        .message-box button {
+            padding: 12px 20px;
+            border-radius: 24px;
+            border: none;
+            background: linear-gradient(135deg, var(--blue), var(--purple));
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+        
+        .message-box button:active {
+            transform: scale(0.95);
+        }
+        
+        /* TOAST */
         .toast {
             position: fixed;
             top: 16px;
@@ -375,1292 +310,839 @@
             max-width: 90%;
             text-align: center;
         }
+        
         @keyframes toastIn {
             from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
             to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
-        .toast.success { background: var(--accent-green); }
-        .toast.error { background: var(--accent-red); }
-        .toast.info { background: var(--accent-blue); }
-        .toast.admin { background: var(--accent-purple); border: 2px solid var(--accent-gold); }
         
-        .progress-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.9);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 50;
-        }
-        .progress-overlay.active { display: flex; }
-        .progress-card {
-            background: var(--bg-secondary);
-            padding: 24px;
-            border-radius: var(--radius-lg);
-            text-align: center;
-            width: 320px;
-            border: 1px solid var(--border-color);
-        }
-        .progress-bar {
-            width: 100%;
-            height: 4px;
-            background: var(--bg-tertiary);
-            border-radius: 2px;
-            margin: 12px 0;
-            overflow: hidden;
-        }
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
-            width: 0%;
-            transition: width 0.5s;
-        }
+        .toast.success { background: var(--green); }
+        .toast.error { background: var(--red); }
+        .toast.info { background: var(--blue); }
+        .toast.admin { background: var(--purple); border: 2px solid var(--gold); }
         
+        /* ADMIN PANEL */
         .admin-panel {
             position: fixed;
             top: 60px;
             right: 10px;
-            background: var(--bg-secondary);
-            border: 2px solid var(--accent-purple);
-            border-radius: var(--radius-lg);
+            background: #1a1a2e;
+            border: 2px solid var(--purple);
+            border-radius: 12px;
             padding: 12px;
             z-index: 30;
             display: none;
             min-width: 200px;
-            box-shadow: 0 10px 30px rgba(124,92,231,0.3);
+            box-shadow: 0 10px 30px rgba(124, 58, 237, 0.3);
         }
-        .admin-panel.active {
+        
+        .admin-panel.show {
             display: block;
-            animation: slideDown 0.3s ease;
         }
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .admin-panel h4 {
-            color: var(--accent-purple);
-            margin-bottom: 8px;
-            font-size: 12px;
-        }
+        
         .admin-panel button {
             display: block;
             width: 100%;
             padding: 8px;
             margin: 4px 0;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-sm);
-            color: var(--text-primary);
+            background: #0f0f23;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: var(--text);
             cursor: pointer;
             font-size: 11px;
-            transition: var(--transition);
             text-align: left;
-            outline: none;
-        }
-        .admin-panel button:active {
-            background: var(--accent-purple);
-            border-color: var(--accent-purple);
+            transition: all 0.2s;
+            font-family: inherit;
         }
         
+        .admin-panel button:hover {
+            background: var(--purple);
+        }
+        
+        /* RESPONSIVE */
         @media (min-width: 768px) {
             .message { max-width: 70%; }
-            .admin-panel { right: 20px; min-width: 250px; }
         }
+        
         @media (max-width: 767px) {
-            .message { max-width: 92%; font-size: 13px; }
-            .send-btn { width: 40px; height: 40px; }
-            .header { padding: 8px 10px; }
-            .header-title { font-size: 12px; }
+            .message { max-width: 90%; }
+            header h1 { font-size: 14px; }
+            .message-box button { padding: 12px 16px; font-size: 13px; }
         }
     </style>
 </head>
 <body>
-    <div id="app">
-        <div class="header">
-            <div class="header-left">
-                <button class="ai-avatar" id="aiAvatar" onclick="showAIPersonality()" title="AI Personality">🧠</button>
-                <div class="header-title">
-                    <span>Yad AI</span> 
-                    <small style="color:var(--accent-gold);font-size:9px;">Human-Like</small>
-                </div>
+    <div class="container">
+        <header>
+            <h1>Yad AI Ultimate</h1>
+            <div class="header-badges">
+                <span class="badge ai" id="aiBadge">🤖 Gemini</span>
+                <span class="badge user" id="authBadge">Guest</span>
+                <span class="badge admin" id="adminBadge">👑 Admin</span>
+                <button onclick="toggleAdminPanel()" id="adminBtn" style="display:none;padding:4px 10px;border-radius:20px;border:1px solid var(--purple);background:rgba(124,58,237,0.2);color:var(--purple);font-size:9px;cursor:pointer;">⚙️</button>
             </div>
-            <div class="header-right">
-                <span id="ai-badge" class="badge ai-status">🧠 </span>
-                <span id="auth-status" class="badge guest">Guest</span>
-                <button id="login-btn" class="btn-icon" onclick="showLogin()">🔑 Login</button>
-                <button id="logout-btn" class="btn-icon" style="display:none;" onclick="doLogout()">🚪 Logout</button>
-                <button id="admin-panel-btn" class="btn-icon admin-btn" onclick="toggleAdminPanel()">⚙️ Admin</button>
+        </header>
+
+        <div id="chat">
+            <div class="message ai">
+                <b>🧠 Yad AI Ultimate</b><br><br>
+                Halo! Aku asisten virtual lengkap dengan multi-provider AI!<br><br>
+                <b>✨ Fitur:</b><br>
+                💬 Chat natural<br>
+                🔍 Pencarian pengetahuan<br>
+                🎮 Game interaktif<br>
+                💰 TopUp game<br>
+                📤 Upload file<br>
+                🔗 GitHub integration<br>
+                🧠 Multi AI provider<br><br>
+                <b>💡 Perintah:</b><br>
+                <code>?</code> <code>cari</code> <code>hitung</code> <code>game</code> <code>topup</code><br>
+                <code>joke</code> <code>fakta</code> <code>quote</code> <code>nama</code><br><br>
+                <small style="color:#888;">Yuk, mulai ngobrol! 😊</small>
             </div>
         </div>
-        
-        <div class="chat-area">
-            <div class="chat-messages" id="chatMessages">
-                <div class="message ai">
-                    <span class="emoji-large">🧠</span>
-                    <b>Halo! Aku Yad AI 👋</b><br><br>
-                    Aku asisten virtual yang <i>human-like</i> dan punya pengetahuan luas! 🌍<br><br>
-                    <b>✨ Yang bisa aku lakukan:</b><br>
-                    💬 Ngobrol santai kayak teman<br>
-                    🔍 Mencari informasi dari internet<br>
-                    🧮 Bantu hitung matematika & fisika<br>
-                    ⚗️ Jelaskan konsep kimia & sains<br>
-                    💻 Bantu coding & programming<br>
-                    🎮 Main game seru bareng<br>
-                    💰 TopUp game favoritmu<br>
-                    📤 Upload foto & video<br>
-                    📋 Catat rencana & tugas<br><br>
-                    <b>💡 Coba ketik:</b><br>
-                    <code>hai</code> - <code>cari</code> - <code>hitung</code> - <code>game</code> - <code>topup</code><br>
-                    <code>joke</code> - <code>fakta</code> - <code>quote</code> - <code>?</code><br><br>
-                    <small style="color:var(--text-secondary);">Yuk, ketik sesuatu! Aku siap bantu 😊</small>
-                </div>
-            </div>
-            <div class="input-area">
-                <button class="attach-btn" id="attachBtn" title="Upload File">📎</button>
-                <input type="text" id="userInput" placeholder="Ketik pesanmu di sini..." autocomplete="off" enterkeyhint="send">
-                <button class="send-btn" id="sendBtn" title="Kirim">➤</button>
-            </div>
+
+        <div class="controls">
+            <select id="provider" onchange="changeProvider()">
+                <option value="gemini">🤖 Gemini</option>
+                <option value="openai">🧠 OpenAI</option>
+                <option value="groq">⚡ Groq</option>
+                <option value="openrouter">🌐 OpenRouter</option>
+            </select>
+            
+            <button onclick="connectGithub()">🔗 GitHub</button>
+            <button onclick="showLogin()" id="loginBtn">🔑 Login</button>
+            <button onclick="doLogout()" id="logoutBtn" style="display:none;">🚪 Logout</button>
+        </div>
+
+        <div class="message-box">
+            <input id="userInput" placeholder="Tulis pesan..." autocomplete="off" enterkeyhint="send">
+            <button onclick="sendMessage()">➤ Kirim</button>
         </div>
     </div>
     
     <div class="admin-panel" id="adminPanel">
-        <h4>👑 Admin Panel</h4>
-        <button onclick="forceSyncKnowledge()">🔄 Sync Knowledge</button>
-        <button onclick="broadcastMessage()">📢 Broadcast</button>
-        <button onclick="systemStats()">📊 System Stats</button>
-        <button onclick="clearCache()">🗑️ Clear Cache</button>
-        <button onclick="emergencyDeploy()">🚨 Emergency Deploy</button>
+        <b style="color:var(--purple);">👑 Admin Panel</b>
+        <button onclick="viewStats()">📊 Stats</button>
+        <button onclick="syncKnowledge()">🔄 Sync</button>
+        <button onclick="clearMemory()">🗑️ Clear</button>
+        <button onclick="broadcastMsg()">📢 Broadcast</button>
     </div>
-    
-    <input type="file" id="fileInput" accept="*/*" multiple style="display:none;">
+
+    <input type="file" id="fileInput" multiple style="display:none;">
     <div id="toastContainer"></div>
-    <div class="progress-overlay" id="progOverlay">
-        <div class="progress-card">
-            <div style="font-size:32px;">⏳</div>
-            <div style="margin:8px 0;font-weight:700;" id="progTitle">Processing...</div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progFill"></div>
-            </div>
-            <div style="font-size:11px;color:var(--text-secondary);" id="progDetail"></div>
-        </div>
-    </div>
 
 <script>
 // ================================================================
-// WRAP IN IIFE TO AVOID GLOBAL SCOPE ISSUES
+// YAD AI ULTIMATE - COMPLETE SINGLE FILE
 // ================================================================
-(function() {
-    // ================================================================
-    // CONFIGURATION
-    // ================================================================
-    const CFG = {
-        firebase: {
-            apiKey: "AIzaSyAvfHxcAT2syVbrf6-TU0JBRXtNLI0AIkc",
-            authDomain: "yadstores.firebaseapp.com",
-            projectId: "yadstores",
-            storageBucket: "yadstores.firebasestorage.app",
-            messagingSenderId: "666352014774",
-            appId: "1:666352014774:web:159ab5b455efb2fb2f9d17",
-            databaseURL: "https://yadstores-default-rtdb.asia-southeast1.firebasedatabase.app"
-        },
-        adminEmail: 'ynuraini686@gmail.com',
-        cloudinary: {
-            cloudName: 'b8at16d3',
-            apiKey: '671378325589697',
-            uploadPreset: 'koinku_uploads'
-        }
-    };
 
-    const AI_PROVIDERS = [
-        { name: "", apiKey: "sk-9f4577079ddb4bd7a6dfebdb1161889c", url: "https://api..com/v1/chat/completions", active: true, model: "-chat" },
-        { name: "Groq", apiKey: "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", url: "https://api.groq.com/openai/v1/chat/completions", active: true, model: "llama3-70b-8192" },
-        { name: "OpenRouter", apiKey: "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", url: "https://openrouter.ai/api/v1/chat/completions", active: true, model: "google/gemini-2.0-flash-exp:free" }
-    ];
+// ================================================================
+// MEMORY SYSTEM
+// ================================================================
+const Memory = {
+    name: "",
+    mood: "neutral",
+    likes: [],
+    facts: [],
+    chatHistory: []
+};
 
-    // ================================================================
-    // INITIALIZE FIREBASE
-    // ================================================================
+// Load from localStorage
+try {
+    const saved = localStorage.getItem("yad_memory");
+    if (saved) {
+        const parsed = JSON.parse(saved);
+        Object.assign(Memory, parsed);
+    }
+} catch(e) {}
+
+function saveMemory(text) {
+    if (text.toLowerCase().includes("saya suka")) {
+        Memory.likes.push(text);
+    }
+    Memory.facts.push(text);
+    if (Memory.facts.length > 100) Memory.facts.shift();
+    
     try {
-        firebase.initializeApp(CFG.firebase);
-    } catch(e) {
-        console.log('Firebase already initialized or error:', e.message);
-    }
-    const auth = firebase.auth();
-    const fs = firebase.firestore();
-    const rtdb = firebase.database();
+        localStorage.setItem("yad_memory", JSON.stringify(Memory));
+    } catch(e) {}
+}
 
-    // ================================================================
-    // GLOBAL STATE
-    // ================================================================
-    const S = {
-        isAdmin: false,
-        user: null,
-        role: 'guest',
-        processing: false,
-        kb: [],
-        syncs: 0,
-        edits: 0,
-        deploys: 0,
-        chats: 0,
-        score: 0,
-        markup: 1.2,
-        activeGame: null,
-        gameData: null,
-        dbStats: { firebase: 0, local: 0 },
-        mediaUploads: [],
-        currentProvider: '',
-        chatHistory: [],
-        tasks: [],
-        plans: [],
-        userMood: 'neutral',
-        userName: '',
-        topicsDiscussed: []
-    };
-
-    // ================================================================
-    // HELPER FUNCTIONS
-    // ================================================================
-    const $ = function(id) {
-        return document.getElementById(id);
-    };
+// ================================================================
+// EMOTION DETECTION
+// ================================================================
+function detectEmotion(text) {
+    text = text.toLowerCase();
     
-    function toast(msg, type, duration) {
-        type = type || 'info';
-        duration = duration || 3000;
-        var container = $('toastContainer');
-        var existing = container.querySelector('.toast');
-        if (existing) existing.remove();
-        
-        var div = document.createElement('div');
-        div.className = 'toast ' + type;
-        div.textContent = msg;
-        container.appendChild(div);
-        
-        setTimeout(function() {
-            div.style.opacity = '0';
-            div.style.transition = 'opacity 0.3s';
-            setTimeout(function() { div.remove(); }, 300);
-        }, duration);
-    }
-
-    function addMsg(type, content) {
-        var container = $('chatMessages');
-        var div = document.createElement('div');
-        div.className = 'message ' + type;
-        div.innerHTML = content;
-        container.appendChild(div);
-        setTimeout(function() {
-            container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
-        }, 100);
-        return div;
-    }
-
-    function showProgress(title, detail) {
-        detail = detail || '';
-        $('progOverlay').classList.add('active');
-        $('progTitle').textContent = title;
-        $('progDetail').textContent = detail;
-        $('progFill').style.width = '0%';
-        setTimeout(function() { $('progFill').style.width = '100%'; }, 500);
-    }
-
-    function hideProgress() {
-        setTimeout(function() { $('progOverlay').classList.remove('active'); }, 800);
-    }
-
-    function escapeHTML(text) {
-        var div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    function genId() {
-        return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
-    }
+    if (/sedih|galau|nangis|kecewa|sakit hati/.test(text)) return "sad";
+    if (/senang|bahagia|happy|gembira|alhamdulillah|yeay/.test(text)) return "happy";
+    if (/marah|kesal|jengkel|sebel|benci/.test(text)) return "angry";
+    if (/capek|lelah|ngantuk|penat|letih/.test(text)) return "tired";
+    if (/bingung|pusing|gak ngerti|aneh/.test(text)) return "confused";
+    if (/takut|ngeri|serem|horor/.test(text)) return "scared";
+    if (/cinta|sayang|kangen|rindu/.test(text)) return "love";
+    if (/bangga|prestasi|juara|berhasil/.test(text)) return "proud";
+    if (/terima kasih|makasih|thanks|syukur/.test(text)) return "grateful";
     
-    function fmtPrice(price) {
-        return 'Rp ' + price.toLocaleString('id-ID');
+    return "neutral";
+}
+
+// ================================================================
+// KNOWLEDGE BASE
+// ================================================================
+let KnowledgeBase = [];
+
+// Load from localStorage
+try {
+    const saved = localStorage.getItem("yad_kb");
+    if (saved) {
+        KnowledgeBase = JSON.parse(saved);
     }
+} catch(e) {}
+
+function learnText(content) {
+    KnowledgeBase.push({
+        id: Date.now(),
+        content: content.substring(0, 2000),
+        timestamp: new Date().toISOString()
+    });
     
-    function getRandom(arr) {
-        return arr[Math.floor(Math.random() * arr.length)];
+    if (KnowledgeBase.length > 500) KnowledgeBase.shift();
+    
+    try {
+        localStorage.setItem("yad_kb", JSON.stringify(KnowledgeBase));
+    } catch(e) {}
+}
+
+function searchKnowledge(query) {
+    query = query.toLowerCase();
+    return KnowledgeBase.filter(item =>
+        item.content.toLowerCase().includes(query)
+    ).slice(0, 5);
+}
+
+// ================================================================
+// AI PROVIDERS
+// ================================================================
+const Providers = {
+    current: "gemini",
+    keys: {
+        gemini: "AIzaSyDvQqFJ3Q0Z5yH7Z5yH7Z5yH7Z5yH7Z5yH7",
+        openai: "",
+        groq: "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",
+        openrouter: "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"
     }
+};
 
-    // ================================================================
-    // HUMAN-LIKE RESPONSES
-    // ================================================================
-    const HUMAN_RESPONSES = {
-        greetings: [
-            "Halo jugaa! 👋 Seneng banget bisa ngobrol sama kamu! Ada yang bisa aku bantu?",
-            "Hai hai! 😊 Gimana kabarnya nih? Aku siap bantu apa aja lho!",
-            "Eh, halo! 🎉 Akhirnya ada yang ngajak ngobrol juga! Ada yang menarik nih?",
-            "Yoo! ✨ Lagi nyari apa nih? Atau cuma mau ngobrol santai aja?",
-            "Halo! Aku Yad AI, temen virtual kamu yang selalu siap bantu! 😄"
-        ],
-        howAreYou: [
-            "Aku baik banget! Makasih udah nanya 🥰 Gimana kabar kamu? Cerita dong!",
-            "Sehat selalu dong! Secara aku kan AI, gak bisa sakit 😄 Tapi kamu gimana? Sehat kan?",
-            "Alhamdulillah, aku selalu dalam kondisi prima! 💪 Gimana harimu?",
-            "Baik nih! Lagi semangat-semangatnya! 🔥 Kamu sendiri gimana?"
-        ],
-        thanks: [
-            "Sama-sama! Seneng banget bisa bantu 🥰 Ada lagi yang bisa aku bantu?",
-            "Ah, gak perlu berterima kasih! Emang tugasku bantu kamu 😊",
-            "My pleasure! ✨ Kalau ada yang lain, langsung aja ya!",
-            "Aww, makasih juga udah sopan! 😄 Semoga harimu menyenangkan!"
-        ],
-        sad: [
-            "Oh, aku turut sedih dengarnya... 🥺 Mau cerita? Aku di sini buat dengerin.",
-            "Peluk virtual buat kamu! 🤗 Gak apa-apa kok merasa sedih. Yang penting jangan lama-lama ya!",
-            "Aku ngerti banget perasaan kayak gitu. Tapi inget ya, badai pasti berlalu 🌈",
-            "Hey, jangan sedih dong! 😢 Cerita ke aku aja, aku janji gak bakal judge."
-        ],
-        happy: [
-            "Waaaa, aku ikut seneng dong! 🎉 Cerita dong biar aku juga ikut happy!",
-            "Alhamdulillah, bagus deh! 😄 Seneng liat kamu happy!",
-            "Yeay! High five! 🖐️ Aku suka banget energi positif kayak gini!",
-            "Mantap! Jadi pengen ikut joget nih 💃 Apa lagi kabar baiknya?"
-        ],
-        confused: [
-            "Hmm, kayaknya agak rumit ya? 🤔 Yuk kita pecahin bareng-bareng.",
-            "Oke oke, aku ngerti kok kebingunganmu. Tenang, kita cari solusinya! 💡",
-            "Waduh, aku juga jadi mikir nih 🧐 Coba kita breakdown satu-satu ya.",
-            "Gapapa kok bingung! Aku juga sering bingung kok 😄 Yuk kita cari tau!"
-        ],
-        tired: [
-            "Iya, istirahat dulu aja ya! 🛌 Badan juga butuh rehat.",
-            "Aku ngerti kok rasanya capek. Jangan dipaksa ya! 💤",
-            "Take a break dulu! Kamu udah kerja keras banget hari ini 🥺",
-            "Waktunya recharge! 🔋 Matiin dulu semua kerjaan, besok aja dilanjutin."
-        ],
-        motivational: [
-            "Dengerin ya, kamu tuh lebih kuat dari yang kamu kira! 💪",
-            "Inget, tiap orang punya timeline-nya sendiri. Gak usah bandingin! 🌟",
-            "Gagal itu bukan akhir, tapi awal dari sesuatu yang lebih baik! 🔥",
-            "Satu langkah kecil hari ini lebih baik dari diam di tempat. Yuk mulai! 🚀"
-        ],
-        whoAreYou: [
-            "Aku Yad AI! Asisten virtual yang dibikin buat bantu kamu 😊",
-            "Halo! Perkenalkan, aku Yad AI 🧠 Aku temen virtual kamu yang siap bantu 24/7!",
-            "Aku Yad AI, asisten digital yang human-friendly! Ngobrol aja kayak sama temen 😄",
-            "Yad AI di sini! Aku punya pengetahuan luas dan skill komunikasi yang oke 😄"
-        ],
-        jokes: [
-            "Kenapa programmer gak bisa bohong? Karena tiap kali ngomong 'false', mukanya langsung error! 😄",
-            "Aku dulu pengen jadi lampu merah. Tapi setelah dipikir-pikir, banyak yang berhenti karena aku. Haha! 🚦",
-            "Kenapa buku matematika sedih? Karena banyak masalah! 📚😢",
-            "Apa persamaan AI dan kopi? Sama-sama bikin melek! ☕🤖"
-        ],
-        facts: [
-            "Fakta menarik nih! 🐙 Gurita punya 3 jantung dan darahnya berwarna biru!",
-            "Tau gak sih? 🌍 Bumi kita berputar dengan kecepatan 1.670 km/jam!",
-            "Fakta unik: 🐝 Lebah bisa mengenali wajah manusia!",
-            "Wah, ini menarik! 🧠 Otak manusia menghasilkan listrik cukup buat menyalakan lampu kecil."
-        ],
-        quotes: [
-            '"Hidup itu seperti naik sepeda. Agar tetap seimbang, kamu harus terus bergerak." - Albert Einstein 🚲',
-            '"Kesuksesan bukanlah final. Kegagalan bukanlah fatal." - Winston Churchill 💪',
-            '"Jangan menyerah. Hal terbaik datang saat kamu hampir menyerah." 🌟',
-            '"Jadilah diri sendiri. Orang lain sudah ada yang punya." - Oscar Wilde 😄'
-        ]
-    };
-
-    // ================================================================
-    // KNOWLEDGE DATABASE
-    // ================================================================
-    const KNOWLEDGE = {
-        topup: {
-            'mobile-legends': {
-                name: 'Mobile Legends',
-                items: [
-                    { name: '100 Diamonds', price: 25000 },
-                    { name: '500 Diamonds', price: 120000 },
-                    { name: '1000 Diamonds', price: 230000 },
-                    { name: 'Starlight Member', price: 150000 }
-                ]
-            },
-            'free-fire': {
-                name: 'Free Fire',
-                items: [
-                    { name: '100 Diamonds', price: 15000 },
-                    { name: '500 Diamonds', price: 70000 },
-                    { name: '1000 Diamonds', price: 135000 }
-                ]
-            },
-            'genshin-impact': {
-                name: 'Genshin Impact',
-                items: [
-                    { name: 'Blessing of Welkin', price: 75000 },
-                    { name: 'Battle Pass', price: 150000 },
-                    { name: '980 Genesis Crystal', price: 220000 }
-                ]
-            },
-            'pubg-mobile': {
-                name: 'PUBG Mobile',
-                items: [
-                    { name: '60 UC', price: 15000 },
-                    { name: '300 UC', price: 70000 },
-                    { name: 'Royale Pass', price: 180000 }
-                ]
-            }
-        }
-    };
-
-    // ================================================================
-    // AI CALL FUNCTION
-    // ================================================================
-    async function callAI(messages) {
-        var p = AI_PROVIDERS.find(function(x) {
-            return x.name.toLowerCase() === S.currentProvider;
-        }) || AI_PROVIDERS[0];
-        
-        try {
-            var response = await fetch(p.url, {
+async function callGemini(messages) {
+    try {
+        const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${Providers.keys.gemini}`,
+            {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + p.apiKey
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    model: p.model,
-                    messages: messages.slice(-10),
-                    max_tokens: 500,
-                    temperature: 0.8
+                    contents: [{
+                        parts: [{ text: messages[messages.length - 1].content }]
+                    }]
                 })
-            });
-            
-            if (!response.ok) return null;
-            var data = await response.json();
-            return data.choices?.[0]?.message?.content || null;
-        } catch (e) {
-            console.error('AI call failed:', e);
-            return null;
-        }
-    }
-
-    // ================================================================
-    // MATH SOLVER
-    // ================================================================
-    function solveMath(text) {
-        var t = text.toLowerCase();
-        if (/(\d+)\s*([+\-*/^])\s*(\d+)/.test(t)) {
-            try {
-                return '🧮 Hasil: <b>' + eval(text.replace(/\^/g, '**')) + '</b>';
-            } catch(e) {}
-        }
-        if (t.includes('faktorial') || t.includes('!')) {
-            var m = t.match(/(\d+)\s*!/);
-            if (m) {
-                var n = parseInt(m[1]), f = 1n;
-                for (var i = 2n; i <= n; i++) f *= i;
-                return '🔢 ' + n + '! = <b>' + f.toLocaleString() + '</b>';
             }
-        }
-        if (t.includes('akar')) {
-            var m = t.match(/akar\s*(?:dari)?\s*(\d+)/i);
-            if (m) return '🔢 √' + m[1] + ' = <b>' + Math.sqrt(parseFloat(m[1])).toFixed(4) + '</b>';
-        }
-        return null;
-    }
-
-    // ================================================================
-    // COMMAND PARSER
-    // ================================================================
-    function parseCommand(text) {
-        var t = text.toLowerCase().trim();
-        
-        if (t === 'cari' || t === 'search') return { action: 'search_help' };
-        if (t.startsWith('cari ')) return { action: 'search', value: t.replace('cari ', '') };
-        if (t.includes(' vs ') || t.startsWith('bandingkan ')) return { action: 'compare', value: t };
-        if (t === 'deploy' || t === 'push') return { action: 'deploy' };
-        if (t.startsWith('self edit ')) return { action: 'self_edit', value: t.replace('self edit ', '') };
-        if (t === '?' || t === 'help' || t === 'bantuan') return { action: 'help' };
-        if (t === 'stats' || t === 'stat') return { action: 'stats' };
-        if (t === 'topup') return { action: 'topup_help' };
-        if (t.startsWith('topup ')) return { action: 'topup', value: t };
-        if (t === 'main' || t === 'play' || t === 'game') return { action: 'list_games' };
-        if (t.startsWith('main ') || t.startsWith('play ')) return { action: 'play', value: t.replace(/main |play /, '') };
-        if (t === 'foto' || t === 'photo' || t === 'upload') return { action: 'upload' };
-        if (t === 'ai') return { action: 'ai_status' };
-        if (t.startsWith('ai ')) return { action: 'switch_ai', value: t.replace('ai ', '') };
-        if (t === 'joke' || t === 'lucu') return { action: 'joke' };
-        if (t === 'fact' || t === 'fakta') return { action: 'fact' };
-        if (t === 'time' || t === 'jam') return { action: 'time' };
-        if (t === 'quote' || t === 'kutipan') return { action: 'quote' };
-        if (t === 'hitung' || t === 'calc') return { action: 'calc_help' };
-        if (t.startsWith('hitung ')) return { action: 'calc', value: t.replace('hitung ', '') };
-        if (t === 'password' || t === 'pw') return { action: 'password_help' };
-        if (t.startsWith('password ')) return { action: 'password', value: t.replace('password ', '') };
-        if (t === 'nama' || t === 'name') return { action: 'name_gen' };
-        if (t === 'warna' || t === 'color') return { action: 'color' };
-        if (t === 'plan' || t === 'rencana') return { action: 'plan' };
-        if (t.startsWith('plan ')) return { action: 'plan_add', value: t.replace('plan ', '') };
-        if (t === 'task' || t === 'tugas') return { action: 'task' };
-        if (t.startsWith('task ')) return { action: 'task_add', value: t.replace('task ', '') };
-        if (t === 'markup') return { action: 'markup_help' };
-        if (t.startsWith('markup ')) return { action: 'markup', value: t.replace('markup ', '') };
-        
-        return null;
-    }
-
-    // ================================================================
-    // EXECUTE COMMAND
-    // ================================================================
-    async function executeCommand(cmd) {
-        switch (cmd.action) {
-            case 'search':
-                showProgress('🔍 Mencari...', cmd.value);
-                var result = '';
-                try {
-                    var response = await fetch('https://api.duckduckgo.com/?q=' + encodeURIComponent(cmd.value) + '&format=json&no_html=1');
-                    if (response.ok) {
-                        var data = await response.json();
-                        if (data.AbstractText) {
-                            result = '🔍 <b>' + (data.Heading || cmd.value) + '</b><br><br>' + data.AbstractText + '<br><br><small>Sumber: DuckDuckGo</small>';
-                        }
-                    }
-                } catch(e) {}
-                
-                if (!result) {
-                    try {
-                        var response = await fetch('https://id.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(cmd.value));
-                        if (response.ok) {
-                            var data = await response.json();
-                            if (data.extract) {
-                                result = '📚 <b>' + data.title + '</b><br><br>' + data.extract.substring(0, 500) + '...<br><br><small>Sumber: Wikipedia</small>';
-                            }
-                        }
-                    } catch(e) {}
-                }
-                
-                hideProgress();
-                S.score += 20;
-                return result || '🤔 Maaf, aku gak nemu info tentang "' + cmd.value + '". Coba kata kunci lain ya!';
-                
-            case 'search_help':
-                return '🔍 <b>Fitur Pencarian</b><br><br>Ketik <code>cari [kata kunci]</code><br><br><b>Contoh:</b><br>• <code>cari artificial intelligence</code><br>• <code>cari sejarah indonesia</code><br>• <code>cari rumus matematika</code><br><br>Aku akan mencari di internet buat kamu! 🌐';
-                
-            case 'compare':
-                var parts = cmd.value.split(/ vs | bandingkan /i);
-                if (parts.length < 2) return '⚖️ Format: <code>bandingkan A vs B</code>';
-                showProgress('⚖️ Membandingkan...');
-                var cr = await callAI([{ role: 'user', content: 'Bandingkan: "' + parts[0].trim() + '" vs "' + parts[1].trim() + '"' }]);
-                hideProgress();
-                S.score += 15;
-                return cr || 'Gagal membandingkan.';
-                
-            case 'deploy':
-                if (!S.isAdmin) return '⚠️ Fitur ini hanya untuk admin ya!';
-                showProgress('🚀 Deploying...');
-                await new Promise(function(r) { setTimeout(r, 2000); });
-                hideProgress();
-                S.deploys++;
-                S.score += 50;
-                toast('✅ Deploy berhasil!', 'success');
-                return '🚀 <b>Deploy Berhasil!</b><br><br>Aplikasi akan live dalam 1-2 menit!';
-                
-            case 'self_edit':
-                if (!S.isAdmin) return '⚠️ Hanya admin!';
-                showProgress('🔧 Self-Edit...');
-                await new Promise(function(r) { setTimeout(r, 2000); });
-                hideProgress();
-                S.edits++;
-                S.score += 75;
-                return '✅ <b>Self-Edit Berhasil!</b><br><br>Perubahan: ' + cmd.value.substring(0, 60) + '...';
-                
-            case 'help':
-                return '<b>📚 Bantuan Yad AI</b><br><br>' +
-                    '<b>🔍 Pencarian:</b> <code>cari [query]</code><br>' +
-                    '<b>🧮 Kalkulasi:</b> <code>hitung [ekspresi]</code><br>' +
-                    '<b>🎮 Game:</b> <code>main tebak angka</code><br>' +
-                    '<b>💰 TopUp:</b> <code>topup [game] [item] server:[id]</code><br>' +
-                    '<b>📤 Upload:</b> <code>upload</code><br>' +
-                    '<b>🤖 AI:</b> <code>ai [nama]</code><br>' +
-                    '<b>📋 Plans:</b> <code>plan [teks]</code><br>' +
-                    '<b>📝 Tasks:</b> <code>task [teks]</code><br>' +
-                    '<b>😄 Lainnya:</b> <code>joke</code> <code>fakta</code> <code>quote</code> <code>nama</code> <code>warna</code><br>' +
-                    '<b>📊 Info:</b> <code>stats</code> <code>waktu</code><br><br>' +
-                    'Atau ngobrol santai aja kayak sama temen! 😊';
-                
-            case 'stats':
-                return '📊 <b>Statistik</b><br><br>💬 Chat: <b>' + S.chats + '</b><br>⭐ Score: <b>' + S.score + '</b><br>📚 KB: <b>' + S.kb.length + '</b><br>🤖 AI: <b>' + S.currentProvider + '</b><br>👤 Role: <b>' + S.role + '</b><br>📋 Plans: <b>' + S.plans.length + '</b><br>📝 Tasks: <b>' + S.tasks.length + '</b>';
-                
-            case 'topup':
-                return handleTopUp(cmd.value);
-                
-            case 'topup_help':
-                var th = '💰 <b>TopUp Game</b><br><br>Format: <code>topup [game] [item] server:[id]</code><br><br><b>Game:</b><br>';
-                for (var k in KNOWLEDGE.topup) th += '• ' + KNOWLEDGE.topup[k].name + '<br>';
-                th += '<br><b>Contoh:</b><br><code>topup ml 500 diamond server:12345</code>';
-                return th;
-                
-            case 'play':
-                return startGame(cmd.value);
-                
-            case 'list_games':
-                return '🎮 <b>Game Seru!</b><br><br><b>1. Tebak Angka</b><br>Ketik: <code>main tebak angka</code><br><br><b>2. Batu Kertas Gunting</b><br>Ketik: <code>main batu kertas gunting</code><br><br>Ketik <code>stop</code> untuk berhenti.';
-                
-            case 'upload':
-                setTimeout(function() { openCloudinaryWidget(); }, 300);
-                return '📤 <b>Upload File</b><br><br>Uploader akan terbuka...<br><br>📸 Gambar | 🎬 Video | 📄 Dokumen';
-                
-            case 'switch_ai':
-                return switchAI(cmd.value);
-                
-            case 'ai_status':
-                var as = '🤖 <b>AI: ' + S.currentProvider.toUpperCase() + '</b><br><br><b>Tersedia:</b><br>';
-                AI_PROVIDERS.forEach(function(p) {
-                    as += '• ' + p.name + (p.name.toLowerCase() === S.currentProvider ? ' ✅' : '') + '<br>';
-                });
-                return as + '<br>Ganti: <code>ai </code>';
-                
-            case 'joke':
-                return '😄 ' + getRandom(HUMAN_RESPONSES.jokes);
-                
-            case 'fact':
-                return '📚 ' + getRandom(HUMAN_RESPONSES.facts);
-                
-            case 'time':
-                var now = new Date();
-                return '🕐 <b>' + now.toLocaleDateString('id-ID', {weekday:'long',year:'numeric',month:'long',day:'numeric'}) + '</b><br>⏰ ' + now.toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit'});
-                
-            case 'quote':
-                return '💭 ' + getRandom(HUMAN_RESPONSES.quotes);
-                
-            case 'calc':
-                try {
-                    return '🧮 ' + cmd.value + ' = <b>' + eval(cmd.value.replace(/\^/g,'**')) + '</b>';
-                } catch(e) {
-                    return '❌ Format salah! Contoh: <code>hitung 5+3*2</code>';
-                }
-                
-            case 'calc_help':
-                return '🧮 <b>Kalkulator</b><br><br>Gunakan: <code>hitung [ekspresi]</code><br><br>Operator: + - * / ^ ()<br><br><b>Contoh:</b><br>• <code>hitung 5+3*2</code> → 11';
-                
-            case 'password':
-                var len = parseInt(cmd.value) || 12;
-                var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
-                var pw = '';
-                for (var i = 0; i < len; i++) pw += chars[Math.floor(Math.random() * chars.length)];
-                return '🔐 <b>Password:</b><br><code>' + pw + '</code>';
-                
-            case 'password_help':
-                return '🔐 <b>Password Generator</b><br><br><code>password</code> → 12 karakter<br><code>password 16</code> → 16 karakter';
-                
-            case 'name_gen':
-                return '🎲 <b>' + getRandom(['Aruna','Bima','Cinta','Dewi','Eko','Fajar','Gita','Hadi','Intan','Joko','Kartika','Luna','Mega','Nanda']) + '</b><br><br>Ketik <code>nama</code> lagi!';
-                
-            case 'color':
-                return '🎨 <b>' + getRandom(['Merah','Biru','Hijau','Ungu','Oranye','Pink','Hitam','Putih','Kuning','Coklat']) + '</b><br><br>Ketik <code>warna</code> lagi!';
-                
-            case 'plan':
-                if (!S.plans.length) return '📋 Belum ada rencana. Ketik <code>plan [nama]</code>';
-                var r = '📋 <b>Rencana:</b><br>';
-                S.plans.forEach(function(p, i) { r += (i+1) + '. ' + p + '<br>'; });
-                return r + '<br>Tambah: <code>plan [nama]</code>';
-                
-            case 'plan_add':
-                S.plans.push(cmd.value);
-                return '✅ Rencana ditambah: <b>' + cmd.value + '</b> (' + S.plans.length + ' total)';
-                
-            case 'task':
-                if (!S.tasks.length) return '📝 Belum ada tugas. Ketik <code>task [nama]</code>';
-                var r = '📝 <b>Tugas:</b><br>';
-                S.tasks.forEach(function(t, i) { r += (i+1) + '. ' + t + '<br>'; });
-                return r + '<br>Tambah: <code>task [nama]</code>';
-                
-            case 'task_add':
-                S.tasks.push(cmd.value);
-                return '✅ Tugas ditambah: <b>' + cmd.value + '</b> (' + S.tasks.length + ' total)';
-                
-            case 'markup':
-                return handleMarkup(cmd.value);
-                
-            case 'markup_help':
-                var cp = Math.round((S.markup - 1) * 100);
-                return '💰 Markup: <b>' + cp + '%</b><br><br><code>markup 20</code> → Set 20%<br><code>markup</code> → Lihat harga';
-                
-            default:
-                return null;
-        }
-    }
-
-    // ================================================================
-    // MAIN SEND MESSAGE
-    // ================================================================
-    async function sendMessage() {
-        if (S.processing) return;
-        
-        var input = $('userInput');
-        var text = input.value.trim();
-        if (!text) return;
-        
-        S.processing = true;
-        input.value = '';
-        S.chats++;
-        S.score++;
-        
-        // Detect name
-        if (!S.userName) {
-            var nameMatch = text.match(/nama (?:saya|ku|gue|gw) (\w+)|panggil (?:saya|aku|gue|gw) (\w+)/i);
-            if (nameMatch) {
-                S.userName = nameMatch[1] || nameMatch[2];
-            }
-        }
-        
-        addMsg('user', escapeHTML(text));
-        
-        var typingDiv = addMsg('ai', 
-            '<span class="typing-indicator"></span>' +
-            '<span class="typing-indicator"></span>' +
-            '<span class="typing-indicator"></span>'
         );
-        
-        try {
-            var cmd = parseCommand(text);
-            var response = null;
-            
-            if (cmd) {
-                response = await executeCommand(cmd);
-            }
-            
-            // Math solver
-            if (!response) {
-                response = solveMath(text);
-            }
-            
-            // Games
-            if (!response) {
-                if (S.activeGame === 'tebak-angka') {
-                    response = handleGuessGame(text);
-                } else if (S.activeGame === 'batu-kertas-gunting') {
-                    response = handleRPSGame(text);
-                }
-            }
-            
-            // Human conversation
-            if (!response) {
-                response = handleHumanConversation(text);
-            }
-            
-            // AI fallback
-            if (!response || response === 'AI_FALLBACK') {
-                var aiResponse = await callAI([{ role: 'user', content: text }]);
-                response = aiResponse || getRandom(HUMAN_RESPONSES.greetings);
-            }
-            
-            typingDiv.remove();
-            addMsg('ai', response);
-            
-            // Save history
-            S.chatHistory.push({ user: text, ai: response, time: new Date().toISOString() });
-            if (S.chatHistory.length > 50) S.chatHistory.shift();
-            
-        } catch (e) {
-            typingDiv.remove();
-            addMsg('ai', '😅 Maaf, ada error nih. Coba lagi ya!');
-            console.error(e);
-        } finally {
-            S.processing = false;
-            hideProgress();
-        }
+        const data = await response.json();
+        return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+    } catch(e) {
+        console.error('Gemini error:', e);
+        return null;
     }
+}
 
-    // ================================================================
-    // HUMAN CONVERSATION
-    // ================================================================
-    function handleHumanConversation(text) {
-        var t = text.toLowerCase();
-        
-        if (/^(hai|halo|hi|hello|hallo|helo|haloo|hey|yo|oi|woi|pagi|siang|sore|malam|assalamualaikum)/i.test(t)) {
-            return getRandom(HUMAN_RESPONSES.greetings);
-        }
-        if (t.includes('kabar') || t.includes('apa kabar')) {
-            return getRandom(HUMAN_RESPONSES.howAreYou);
-        }
-        if (t.includes('terima kasih') || t.includes('makasih') || t.includes('thanks')) {
-            return getRandom(HUMAN_RESPONSES.thanks);
-        }
-        if (t.includes('siapa kamu') || t.includes('nama kamu') || t.includes('kamu siapa')) {
-            return getRandom(HUMAN_RESPONSES.whoAreYou);
-        }
-        if (t.includes('sedih') || t.includes('nangis')) {
-            return getRandom(HUMAN_RESPONSES.sad);
-        }
-        if (t.includes('senang') || t.includes('happy') || t.includes('bahagia')) {
-            return getRandom(HUMAN_RESPONSES.happy);
-        }
-        if (t.includes('bingung') || t.includes('pusing')) {
-            return getRandom(HUMAN_RESPONSES.confused);
-        }
-        if (t.includes('capek') || t.includes('lelah') || t.includes('ngantuk')) {
-            return getRandom(HUMAN_RESPONSES.tired);
-        }
-        if (t.includes('motivasi') || t.includes('semangat') || t.includes('gagal') || t.includes('menyerah')) {
-            return getRandom(HUMAN_RESPONSES.motivational);
-        }
-        if (t.includes('nama saya') || t.includes('panggil saya')) {
-            var m = text.match(/nama (?:saya|ku|gue|gw) (\w+)|panggil (?:saya|aku|gue|gw) (\w+)/i);
-            if (m) {
-                S.userName = m[1] || m[2];
-                return 'Wah, salam kenal <b>' + S.userName + '</b>! 😊 Nama yang bagus! Sekarang aku bakal panggil kamu ' + S.userName + ' ya!';
-            }
-        }
-        if (t.includes('bye') || t.includes('dah') || t.includes('dadah')) {
-            return 'Dadah! 👋 Seneng ngobrol sama kamu' + (S.userName ? ' ' + S.userName : '') + '! Sampai jumpa lagi! 💙';
-        }
-        
-        return 'AI_FALLBACK';
-    }
-
-    // ================================================================
-    // GAMES
-    // ================================================================
-    function startGame(gameName) {
-        if (gameName.includes('tebak') || gameName.includes('angka')) {
-            S.activeGame = 'tebak-angka';
-            S.gameData = { target: Math.floor(Math.random() * 100) + 1, attempts: 0 };
-            return '🎮 <b>Tebak Angka!</b><br><br>Aku lagi mikirin angka 1-100 nih. Coba tebak! 🤔';
-        } else if (gameName.includes('batu') || gameName.includes('gunting')) {
-            S.activeGame = 'batu-kertas-gunting';
-            return '🎮 <b>Batu Kertas Gunting!</b><br><br>Pilih: batu 🪨, kertas 📄, atau gunting ✂️';
-        }
-        return '🎮 Game: <code>main tebak angka</code> atau <code>main batu kertas gunting</code>';
-    }
-
-    function handleGuessGame(text) {
-        var guess = parseInt(text);
-        if (isNaN(guess)) {
-            if (text.includes('stop')) {
-                S.activeGame = null;
-                return '🎮 Game selesai! Angkanya <b>' + S.gameData.target + '</b>. Main lagi ya!';
-            }
-            return 'Hei, itu bukan angka! Masukin angka 1-100 ya 😄';
-        }
-        S.gameData.attempts++;
-        if (guess === S.gameData.target) {
-            var a = S.gameData.attempts;
-            S.activeGame = null;
-            S.score += 10;
-            if (a === 1) return '🎉 WOW! SEKALI TEBAK! Angkanya ' + S.gameData.target + '! 😱';
-            return '✅ Benar! ' + S.gameData.target + ' dalam ' + a + ' tebakan!';
-        }
-        return guess < S.gameData.target ? 
-            '📈 ' + guess + '? Terlalu RENDAH! Coba lebih tinggi!' : 
-            '📉 ' + guess + '? Terlalu TINGGI! Coba lebih rendah!';
-    }
-
-    function handleRPSGame(text) {
-        if (text.includes('stop')) {
-            S.activeGame = null;
-            return 'Game berakhir! Makasih udah main 🎮';
-        }
-        var p = null;
-        if (text.includes('batu')) p = 'batu';
-        else if (text.includes('kertas')) p = 'kertas';
-        else if (text.includes('gunting')) p = 'gunting';
-        else return 'Pilih: batu 🪨, kertas 📄, atau gunting ✂️ ya!';
-        
-        var c = ['batu', 'kertas', 'gunting'];
-        var ai = c[Math.floor(Math.random() * 3)];
-        var r = '';
-        if (p === ai) r = '🤝 SERI!';
-        else if ((p==='batu'&&ai==='gunting')||(p==='kertas'&&ai==='batu')||(p==='gunting'&&ai==='kertas')) {
-            r = '🎉 KAMU MENANG!';
-            S.score += 5;
-        } else r = '😢 Kamu kalah!';
-        
-        var em = {batu:'🪨', kertas:'📄', gunting:'✂️'};
-        return em[p] + ' Kamu: ' + p + '\n' + em[ai] + ' AI: ' + ai + '\n\n' + r;
-    }
-
-    // ================================================================
-    // TOPUP
-    // ================================================================
-    function handleTopUp(text) {
-        var t = text.toLowerCase();
-        var game = null, item = null;
-        var sm = text.match(/server\s*[:#]?\s*(\d+)/i);
-        var server = sm ? sm[1] : null;
-        
-        for (var k in KNOWLEDGE.topup) {
-            if (t.includes(k) || t.includes(KNOWLEDGE.topup[k].name.toLowerCase())) {
-                game = k;
-                for (var i = 0; i < KNOWLEDGE.topup[k].items.length; i++) {
-                    if (t.includes(KNOWLEDGE.topup[k].items[i].name.toLowerCase())) {
-                        item = KNOWLEDGE.topup[k].items[i];
-                        break;
-                    }
-                }
-                break;
-            }
-        }
-        
-        if (!game) {
-            var l = '💰 <b>TopUp Game</b><br><br><b>Game:</b><br>';
-            for (var k in KNOWLEDGE.topup) l += '• ' + KNOWLEDGE.topup[k].name + '<br>';
-            l += '<br>Contoh: <code>topup ml 500 diamond server:12345</code>';
-            return l;
-        }
-        if (!server) return '⚠️ Masukkan Server ID!<br>Contoh: <code>topup ml 100 diamond server:12345</code>';
-        if (!item) {
-            var l = '📦 <b>' + KNOWLEDGE.topup[game].name + '</b><br><br>';
-            KNOWLEDGE.topup[game].items.forEach(function(it) {
-                l += '• ' + it.name + ': ' + fmtPrice(Math.round(it.price * S.markup)) + '<br>';
-            });
-            return l;
-        }
-        
-        var oid = genId();
-        var price = Math.round(item.price * S.markup);
-        return '<div class="card success"><b>✅ Order Berhasil!</b><br><br>🆔 ' + oid + '<br>🎮 ' + KNOWLEDGE.topup[game].name + '<br>📦 ' + item.name + '<br>💰 ' + fmtPrice(price) + '<br>🖥️ Server: ' + server + '</div>';
-    }
-
-    // ================================================================
-    // MARKUP
-    // ================================================================
-    function handleMarkup(text) {
-        var m = text.match(/\d+/);
-        var p = m ? parseInt(m[0]) : null;
-        if (p !== null && p >= 0 && p <= 100) {
-            S.markup = 1 + (p / 100);
-            return '💰 Markup diubah ke <b>' + p + '%</b>';
-        }
-        var cp = Math.round((S.markup - 1) * 100);
-        return '💰 Markup saat ini: <b>' + cp + '%</b><br><br>Ubah: <code>markup [persen]</code>';
-    }
-
-    // ================================================================
-    // AI SWITCH
-    // ================================================================
-    function switchAI(name) {
-        var providers = { Yadstore: 'Yadstore', groq: 'Groq', openrouter: 'OpenRouter' };
-        for (var k in providers) {
-            if (name.includes(k)) {
-                S.currentProvider = k;
-                $('ai-badge').textContent = '🧠 ' + providers[k];
-                toast('🤖 AI: ' + providers[k], 'info');
-                return '🤖 AI diubah ke <b>' + providers[k] + '</b>!';
-            }
-        }
-        return '🤖 AI tersedia: <b>Yadstore</b>, <b>groq</b>, <b>openrouter</b><br><br>Ketik: <code>ai </code>';
-    }
-
-    // ================================================================
-    // AI PERSONALITY
-    // ================================================================
-    function showAIPersonality() {
-        var moods = ['😊 Friendly', '🧐 Smart', '😄 Humoris', '🤗 Empatik', '💪 Supportif', '🎯 Fokus'];
-        var mood = getRandom(moods);
-        addMsg('ai', '<b>🧠 Yad AI Personality</b><br><br>Mode: <b>' + mood + '</b><br><br>Aku didesain buat ngobrol natural kayak manusia! 😊');
-        toast('🧠 Mode: ' + mood, 'info', 2000);
-    }
-
-    // ================================================================
-    // ADMIN PANEL
-    // ================================================================
-    function toggleAdminPanel() {
-        if (!S.isAdmin) {
-            toast('⚠️ Hanya admin!', 'error');
-            return;
-        }
-        var panel = $('adminPanel');
-        panel.classList.toggle('active');
-        toast(panel.classList.contains('active') ? '🔧 Panel admin dibuka' : '🔧 Panel admin ditutup', 'info', 1500);
-    }
-
-    function forceSyncKnowledge() {
-        S.syncs++;
-        toast('✅ Knowledge synced! (' + S.syncs + ')', 'success');
-    }
-
-    function broadcastMessage() {
-        var msg = prompt('📢 Pesan broadcast:');
-        if (msg) {
-            toast('📢 Broadcast terkirim: ' + msg.substring(0, 30) + '...', 'success');
-        }
-    }
-
-    function systemStats() {
-        addMsg('ai', '📊 <b>System Stats:</b><br>💬 Chats: ' + S.chats + '<br>⭐ Score: ' + S.score + '<br>📚 KB: ' + S.kb.length + '<br>🚀 Deploys: ' + S.deploys + '<br>✏️ Edits: ' + S.edits + '<br>🔄 Syncs: ' + S.syncs);
-    }
-
-    function clearCache() {
-        localStorage.clear();
-        S.kb = [];
-        S.chatHistory = [];
-        toast('🗑️ Cache cleared!', 'success');
-        addMsg('ai', '✅ Cache berhasil dibersihkan!');
-    }
-
-    function emergencyDeploy() {
-        if (confirm('🚨 Emergency deploy sekarang?')) {
-            showProgress('🚨 Emergency Deploy...');
-            setTimeout(function() {
-                hideProgress();
-                S.deploys++;
-                toast('🚨 Emergency deploy completed!', 'success');
-                addMsg('ai', '🚨 <b>Emergency Deploy Berhasil!</b>');
-            }, 2000);
-        }
-    }
-
-    // ================================================================
-    // CLOUDINARY UPLOAD
-    // ================================================================
-    function openCloudinaryWidget() {
-        if (typeof cloudinary === 'undefined') {
-            toast('⚠️ Cloudinary tidak tersedia. Coba lagi nanti.', 'error');
-            addMsg('ai', '⚠️ Uploader tidak tersedia saat ini. Kamu bisa upload file dengan klik tombol 📎 dan pilih file.');
-            // Trigger file input instead
-            setTimeout(function() {
-                $('fileInput').click();
-            }, 500);
-            return;
-        }
-        
-        try {
-            cloudinary.createUploadWidget({
-                cloudName: CFG.cloudinary.cloudName,
-                uploadPreset: CFG.cloudinary.uploadPreset,
-                apiKey: CFG.cloudinary.apiKey,
-                sources: ['local', 'url', 'camera'],
-                multiple: true,
-                maxFileSize: 100000000,
-                styles: {
-                    palette: {
-                        window: "#141c2b",
-                        sourceBg: "#0a0e17",
-                        windowBorder: "#2a3545",
-                        link: "#4a90d9",
-                        action: "#4a90d9",
-                        complete: "#2ecc71",
-                        error: "#e74c3c",
-                        textDark: "#e8edf5",
-                        textLight: "#8899aa"
-                    }
-                }
-            }, function(error, result) {
-                if (error) {
-                    console.error('Upload error:', error);
-                    return;
-                }
-                if (result && result.event === 'success') {
-                    var url = result.info.secure_url;
-                    var type = result.info.resource_type;
-                    var name = result.info.original_filename;
-                    
-                    S.mediaUploads.push({
-                        url: url,
-                        type: type,
-                        name: name,
-                        uploadedAt: new Date().toISOString()
-                    });
-                    
-                    var html = '';
-                    if (type === 'image') {
-                        html = '<div class="card success"><img src="' + url + '" style="max-width:100%;border-radius:12px;"><small>📸 ' + name + '</small></div>';
-                    } else if (type === 'video') {
-                        html = '<div class="card success"><video controls style="max-width:100%;border-radius:12px;"><source src="' + url + '" type="video/mp4"></video><small>🎬 ' + name + '</small></div>';
-                    } else {
-                        html = '<div class="card success">📁 ' + name + '</div>';
-                    }
-                    
-                    addMsg('ai', html);
-                    toast('✅ Upload berhasil!', 'success');
-                }
-            }).open();
-        } catch(e) {
-            console.error('Cloudinary widget error:', e);
-            toast('⚠️ Gagal membuka uploader. Gunakan tombol 📎', 'error');
-            setTimeout(function() {
-                $('fileInput').click();
-            }, 500);
-        }
-    }
-
-    // ================================================================
-    // AUTH FUNCTIONS
-    // ================================================================
-    function showLogin() {
-        var email = prompt('📧 Email:');
-        if (!email) return;
-        var password = prompt('🔒 Password:');
-        if (!password) return;
-        
-        auth.signInWithEmailAndPassword(email, password)
-            .then(function() {
-                toast('✅ Login berhasil!', 'success');
+async function callOpenAI(messages) {
+    try {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${Providers.keys.openai}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-3.5-turbo',
+                messages: messages.slice(-10),
+                max_tokens: 500
             })
-            .catch(function(err) {
-                if (err.code === 'auth/user-not-found' && confirm('Buat akun baru?')) {
-                    auth.createUserWithEmailAndPassword(email, password)
-                        .then(function() {
-                            toast('✅ Akun dibuat!', 'success');
-                        })
-                        .catch(function(er) {
-                            toast('❌ Error: ' + er.message, 'error');
-                        });
-                } else {
-                    toast('❌ Error: ' + err.message, 'error');
+        });
+        const data = await response.json();
+        return data.choices?.[0]?.message?.content || null;
+    } catch(e) {
+        return null;
+    }
+}
+
+async function callGroq(messages) {
+    try {
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${Providers.keys.groq}`
+            },
+            body: JSON.stringify({
+                model: 'llama3-70b-8192',
+                messages: messages.slice(-10),
+                max_tokens: 500
+            })
+        });
+        const data = await response.json();
+        return data.choices?.[0]?.message?.content || null;
+    } catch(e) {
+        return null;
+    }
+}
+
+async function callOpenRouter(messages) {
+    try {
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${Providers.keys.openrouter}`
+            },
+            body: JSON.stringify({
+                model: 'google/gemini-2.0-flash-exp:free',
+                messages: messages.slice(-10),
+                max_tokens: 500
+            })
+        });
+        const data = await response.json();
+        return data.choices?.[0]?.message?.content || null;
+    } catch(e) {
+        return null;
+    }
+}
+
+async function askProvider(messages) {
+    switch (Providers.current) {
+        case "gemini": return await callGemini(messages);
+        case "openai": return await callOpenAI(messages);
+        case "groq": return await callGroq(messages);
+        case "openrouter": return await callOpenRouter(messages);
+        default: return "Provider tidak tersedia.";
+    }
+}
+
+function changeProvider() {
+    const select = document.getElementById('provider');
+    Providers.current = select.value;
+    document.getElementById('aiBadge').textContent = '🤖 ' + select.options[select.selectedIndex].text;
+    showToast('🤖 AI: ' + select.options[select.selectedIndex].text, 'info');
+}
+
+// ================================================================
+// GITHUB INTEGRATION
+// ================================================================
+async function connectGithub() {
+    let token = localStorage.getItem("github_token");
+    
+    if (!token) {
+        token = prompt("Masukkan GitHub Personal Access Token:");
+        if (token) {
+            localStorage.setItem("github_token", token);
+        }
+    }
+    
+    if (token) {
+        try {
+            const response = await fetch('https://api.github.com/user', {
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json'
                 }
             });
-    }
-
-    function doLogout() {
-        auth.signOut().then(function() {
-            S.isAdmin = false;
-            S.role = 'guest';
-            S.user = null;
-            toast('👋 Logout berhasil!', 'info');
-        }).catch(function(e) {
-            toast('❌ Error: ' + e.message, 'error');
-        });
-    }
-
-    // Auth state observer
-    auth.onAuthStateChanged(function(user) {
-        var sb = $('auth-status');
-        var lb = $('login-btn');
-        var lob = $('logout-btn');
-        var ab = $('admin-panel-btn');
-        var avatar = $('aiAvatar');
-        var sendBtn = $('sendBtn');
-        
-        if (user) {
-            S.user = user;
-            if (user.email === CFG.adminEmail) {
-                S.isAdmin = true;
-                S.role = 'admin';
-                sb.className = 'badge admin';
-                sb.textContent = '👑 Admin';
-                avatar.classList.add('admin-active');
-                sendBtn.classList.add('admin-mode');
-                ab.style.display = 'inline-block';
-                toast('👑 Admin auto-detected!', 'admin', 4000);
+            
+            if (response.ok) {
+                const user = await response.json();
+                showToast('✅ GitHub: ' + user.login, 'success');
+                addMessage('ai', '✅ <b>GitHub Terhubung!</b><br>User: <b>' + user.login + '</b><br>Siap deploy & sync!');
             } else {
-                S.isAdmin = false;
-                S.role = 'user';
-                sb.className = 'badge user';
-                sb.textContent = 'User';
-                avatar.classList.remove('admin-active');
-                sendBtn.classList.remove('admin-mode');
-                ab.style.display = 'none';
+                showToast('❌ Token invalid!', 'error');
+                localStorage.removeItem("github_token");
             }
-            lb.style.display = 'none';
-            lob.style.display = 'inline-block';
-        } else {
-            S.isAdmin = false;
-            S.role = 'guest';
-            S.user = null;
-            sb.className = 'badge guest';
-            sb.textContent = 'Guest';
-            lb.style.display = 'inline-block';
-            lob.style.display = 'none';
-            ab.style.display = 'none';
-            avatar.classList.remove('admin-active');
-            sendBtn.classList.remove('admin-mode');
-            var panel = $('adminPanel');
-            if (panel) panel.classList.remove('active');
+        } catch(e) {
+            showToast('❌ Gagal konek GitHub', 'error');
         }
-    });
+    }
+}
 
-    // ================================================================
-    // EVENT LISTENERS
-    // ================================================================
-    var sendBtn = $('sendBtn');
-    var userInput = $('userInput');
-    var attachBtn = $('attachBtn');
-    var fileInput = $('fileInput');
+// ================================================================
+// AI CORE
+// ================================================================
+async function callAI(text) {
+    // Save to memory
+    saveMemory(text);
     
-    // Send button click
-    sendBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        sendMessage();
-    });
+    // Detect emotion
+    Memory.mood = detectEmotion(text);
     
-    // Send button touch (mobile)
-    sendBtn.addEventListener('touchend', function(e) {
-        e.preventDefault();
-        sendMessage();
-    });
+    // Search knowledge
+    const kb = searchKnowledge(text);
     
-    // Enter key
-    userInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-    
-    // Attach button
-    attachBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        fileInput.click();
-    });
-    
-    attachBtn.addEventListener('touchend', function(e) {
-        e.preventDefault();
-        fileInput.click();
-    });
-    
-    // File input change
-    fileInput.addEventListener('change', async function(e) {
-        var files = e.target.files;
-        if (!files.length) return;
-        
-        showProgress('📤 Uploading...', files.length + ' file(s)');
-        var count = 0;
-        
-        for (var i = 0; i < files.length; i++) {
-            try {
-                var text = await files[i].text();
-                S.kb.push({
-                    title: files[i].name,
-                    content: text.substring(0, 1000),
-                    type: 'file',
-                    uploadedAt: new Date().toISOString()
-                });
-                count++;
-            } catch(err) {
-                console.error('File read error:', err);
-            }
-        }
-        
-        hideProgress();
-        addMsg('ai', '✅ ' + count + ' file berhasil diimpor! Total KB: ' + S.kb.length);
-        toast('✅ ' + count + ' file imported!', 'success');
-        this.value = '';
-    });
+    // Build messages
+    const messages = [
+        {
+            role: "system",
+            content: `Kamu adalah Yad AI, asisten virtual pintar dan ramah.
+Nama user: ${Memory.name || 'belum diketahui'}
+Mood user: ${Memory.mood}
+Konteks: ${Memory.facts.slice(-5).join(' | ') || 'tidak ada'}
+Knowledge base: ${JSON.stringify(kb.slice(0, 3).map(k => k.content))}
+Waktu: ${new Date().toLocaleString('id-ID')}
 
-    // ================================================================
-    // INITIALIZATION
-    // ================================================================
-    console.log('🧠 Yad AI - Human-Like Assistant');
-    console.log('✅ All buttons active and functional');
-    console.log('👑 Admin auto-detect: Enabled');
-    console.log('💬 Type to start chatting!');
+Jawab dengan natural, ramah, dan informatif dalam Bahasa Indonesia.`
+        },
+        {
+            role: "user",
+            content: text
+        }
+    ];
     
-    // Focus input on desktop
-    if (window.innerWidth >= 768) {
-        setTimeout(function() {
-            userInput.focus();
-        }, 500);
+    return await askProvider(messages);
+}
+
+// ================================================================
+// HUMAN-LIKE RESPONSES
+// ================================================================
+const HUMAN_RESPONSES = {
+    greetings: [
+        "Halo jugaa! 👋 Seneng banget bisa ngobrol sama kamu!",
+        "Hai hai! 😊 Ada yang bisa aku bantu?",
+        "Eh, halo! 🎉 Lagi nyari apa nih?"
+    ],
+    howAreYou: [
+        "Aku baik! Makasih udah nanya 🥰 Kamu gimana?",
+        "Sehat selalu! 💪 Gimana harimu?",
+        "Baik nih! Lagi semangat! 🔥"
+    ],
+    thanks: [
+        "Sama-sama! Seneng bisa bantu 🥰",
+        "Gak perlu berterima kasih! 😊",
+        "My pleasure! ✨"
+    ],
+    sad: [
+        "Aku turut sedih... 🥺 Mau cerita?",
+        "Peluk virtual! 🤗 Yang kuat ya!",
+        "Gapapa kok sedih. Aku di sini 🌈"
+    ],
+    jokes: [
+        "Kenapa programmer bingung Halloween & Natal? Karena Oct 31 == Dec 25! 😄",
+        "AI: 'Aku akan mengambil alih dunia.' Programmer: 'Kamu lupa titik koma.' AI: *error* 🤖",
+        "Kenapa buku matematika sedih? Karena banyak masalah! 📚"
+    ],
+    facts: [
+        "🐙 Gurita punya 3 jantung! Keren kan?",
+        "🌍 Bumi berputar 1.670 km/jam!",
+        "🐝 Lebah bisa mengenali wajah manusia!"
+    ],
+    quotes: [
+        '"Hidup seperti naik sepeda. Agar seimbang, terus bergerak." - Einstein 🚲',
+        '"Jangan menyerah. Hal terbaik datang saat hampir menyerah." 🌟',
+        '"Jadilah diri sendiri." - Oscar Wilde 😄'
+    ]
+};
+
+// ================================================================
+// COMMAND PARSER
+// ================================================================
+function parseCommand(text) {
+    const t = text.toLowerCase().trim();
+    
+    if (t === '?' || t === 'help' || t === 'bantuan') return 'help';
+    if (t === 'cari' || t === 'search') return 'search_help';
+    if (t.startsWith('cari ')) return { cmd: 'search', value: t.replace('cari ', '') };
+    if (t === 'joke' || t === 'lucu') return 'joke';
+    if (t === 'fact' || t === 'fakta') return 'fact';
+    if (t === 'quote' || t === 'kutipan') return 'quote';
+    if (t === 'time' || t === 'jam') return 'time';
+    if (t === 'hitung' || t === 'calc') return 'calc_help';
+    if (t.startsWith('hitung ')) return { cmd: 'calc', value: t.replace('hitung ', '') };
+    if (t === 'game' || t === 'main') return 'game_help';
+    if (t.startsWith('main ')) return { cmd: 'game', value: t.replace('main ', '') };
+    if (t === 'topup') return 'topup_help';
+    if (t.startsWith('topup ')) return { cmd: 'topup', value: t };
+    if (t === 'nama') return 'name';
+    if (t === 'warna') return 'color';
+    if (t === 'password') return 'password_help';
+    if (t.startsWith('password ')) return { cmd: 'password', value: t.replace('password ', '') };
+    if (t === 'stats') return 'stats';
+    if (t === 'upload' || t === 'foto') return 'upload';
+    
+    return null;
+}
+
+// ================================================================
+// EXECUTE COMMAND
+// ================================================================
+async function executeCommand(cmd) {
+    if (cmd === 'help') {
+        return '<b>📚 Bantuan:</b><br><br>' +
+            '<code>?</code> - Bantuan<br>' +
+            '<code>cari [query]</code> - Pencarian<br>' +
+            '<code>hitung [ekspresi]</code> - Kalkulator<br>' +
+            '<code>game</code> - Main game<br>' +
+            '<code>topup [game]</code> - TopUp<br>' +
+            '<code>joke</code> <code>fakta</code> <code>quote</code><br>' +
+            '<code>nama</code> <code>warna</code> <code>password</code><br>' +
+            '<code>upload</code> - Upload file<br>' +
+            '<code>stats</code> - Statistik';
     }
     
-    // Expose functions to global scope for onclick handlers
-    window.showLogin = showLogin;
-    window.doLogout = doLogout;
-    window.toggleAdminPanel = toggleAdminPanel;
-    window.showAIPersonality = showAIPersonality;
-    window.forceSyncKnowledge = forceSyncKnowledge;
-    window.broadcastMessage = broadcastMessage;
-    window.systemStats = systemStats;
-    window.clearCache = clearCache;
-    window.emergencyDeploy = emergencyDeploy;
+    if (cmd === 'joke') return '😄 ' + HUMAN_RESPONSES.jokes[Math.floor(Math.random() * HUMAN_RESPONSES.jokes.length)];
+    if (cmd === 'fact') return '📚 ' + HUMAN_RESPONSES.facts[Math.floor(Math.random() * HUMAN_RESPONSES.facts.length)];
+    if (cmd === 'quote') return '💭 ' + HUMAN_RESPONSES.quotes[Math.floor(Math.random() * HUMAN_RESPONSES.quotes.length)];
+    
+    if (cmd === 'time') {
+        const now = new Date();
+        return '🕐 <b>' + now.toLocaleDateString('id-ID', {weekday:'long',year:'numeric',month:'long',day:'numeric'}) + '</b><br>⏰ ' + now.toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit'});
+    }
+    
+    if (cmd === 'name') return '🎲 Nama acak: <b>' + ['Aruna','Bima','Cinta','Dewi','Eko','Fajar','Gita','Hadi','Intan','Joko','Kartika','Luna'][Math.floor(Math.random()*12)] + '</b>';
+    if (cmd === 'color') return '🎨 Warna acak: <b>' + ['Merah','Biru','Hijau','Ungu','Oranye','Pink','Hitam','Putih','Kuning'][Math.floor(Math.random()*9)] + '</b>';
+    
+    if (cmd === 'stats') {
+        return '<b>📊 Statistik:</b><br>' +
+            '💬 Chat: <b>' + Memory.chatHistory.length + '</b><br>' +
+            '📚 Knowledge: <b>' + KnowledgeBase.length + '</b><br>' +
+            '🤖 AI: <b>' + Providers.current + '</b><br>' +
+            '😊 Mood: <b>' + Memory.mood + '</b>';
+    }
+    
+    if (cmd === 'upload') {
+        document.getElementById('fileInput').click();
+        return '📤 Pilih file untuk diupload...';
+    }
+    
+    if (cmd === 'search_help') return '🔍 <b>Pencarian:</b><br><code>cari [kata kunci]</code><br><br>Contoh: <code>cari sejarah indonesia</code>';
+    if (cmd === 'calc_help') return '🧮 <b>Kalkulator:</b><br><code>hitung [ekspresi]</code><br><br>Contoh: <code>hitung 5+3*2</code>';
+    if (cmd === 'game_help') return '🎮 <b>Game:</b><br><code>main tebak angka</code><br><code>main batu kertas gunting</code>';
+    if (cmd === 'topup_help') return '💰 <b>TopUp:</b><br><code>topup ml 100 diamond server:12345</code>';
+    if (cmd === 'password_help') return '🔐 <b>Password Generator:</b><br><code>password</code> → 12 karakter<br><code>password 16</code> → 16 karakter';
+    
+    if (typeof cmd === 'object') {
+        if (cmd.cmd === 'search') {
+            const results = searchKnowledge(cmd.value);
+            if (results.length > 0) {
+                return '🔍 <b>Hasil:</b><br>' + results.map(r => '• ' + r.content.substring(0, 100) + '...').join('<br>');
+            }
+            return '🔍 Mencari: <b>' + cmd.value + '</b><br><br>Gunakan AI untuk informasi lebih lanjut.';
+        }
+        
+        if (cmd.cmd === 'calc') {
+            try {
+                const result = eval(cmd.value.replace(/\^/g, '**'));
+                return '🧮 ' + cmd.value + ' = <b>' + result + '</b>';
+            } catch(e) {
+                return '❌ Format salah!';
+            }
+        }
+        
+        if (cmd.cmd === 'game') {
+            if (cmd.value.includes('tebak') || cmd.value.includes('angka')) {
+                window.gameData = { target: Math.floor(Math.random()*100)+1, attempts: 0, active: true };
+                return '🎮 <b>Tebak Angka!</b><br>Aku mikirin angka 1-100. Coba tebak!';
+            }
+            return '🎮 Game: tebak angka, batu kertas gunting';
+        }
+        
+        if (cmd.cmd === 'password') {
+            const len = parseInt(cmd.value) || 12;
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
+            let pw = '';
+            for (let i=0; i<len; i++) pw += chars[Math.floor(Math.random()*chars.length)];
+            return '🔐 <b>Password:</b><br><code>' + pw + '</code>';
+        }
+        
+        if (cmd.cmd === 'topup') {
+            return '💰 <b>TopUp</b><br>Format: <code>topup [game] [item] server:[id]</code><br><br>Game: ML, Free Fire, Genshin, PUBG';
+        }
+    }
+    
+    return null;
+}
 
-})();
+// ================================================================
+// GAME HANDLER
+// ================================================================
+function handleGame(text) {
+    if (!window.gameData || !window.gameData.active) return null;
+    
+    const guess = parseInt(text);
+    if (isNaN(guess)) {
+        if (text.includes('stop')) {
+            window.gameData.active = false;
+            return '🎮 Game selesai! Angkanya <b>' + window.gameData.target + '</b>';
+        }
+        return 'Masukkan angka 1-100!';
+    }
+    
+    window.gameData.attempts++;
+    if (guess === window.gameData.target) {
+        const a = window.gameData.attempts;
+        window.gameData.active = false;
+        if (a === 1) return '🎉 WOW! SEKALI TEBAK! ' + window.gameData.target + '!';
+        return '✅ Benar! ' + window.gameData.target + ' dalam ' + a + ' tebakan!';
+    }
+    
+    return guess < window.gameData.target ? 
+        '📈 ' + guess + ' terlalu RENDAH!' : 
+        '📉 ' + guess + ' terlalu TINGGI!';
+}
+
+// ================================================================
+// CHAT FUNCTIONS
+// ================================================================
+function addMessage(sender, text, type) {
+    const chat = document.getElementById('chat');
+    const div = document.createElement('div');
+    div.className = 'message ' + (type || (sender === 'Anda' ? 'user' : 'ai'));
+    div.innerHTML = type === 'user' ? text : text;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+    return div;
+}
+
+async function sendMessage() {
+    const input = document.getElementById('userInput');
+    const text = input.value.trim();
+    if (!text) return;
+    
+    input.value = '';
+    
+    // Add user message
+    addMessage('Anda', escapeHTML(text), 'user');
+    
+    // Show typing indicator
+    const typingDiv = addMessage('ai', 
+        '<span class="typing-indicator"></span>' +
+        '<span class="typing-indicator"></span>' +
+        '<span class="typing-indicator"></span>',
+        'ai'
+    );
+    
+    try {
+        // Check commands
+        const cmd = parseCommand(text);
+        let response = null;
+        
+        if (cmd) {
+            response = await executeCommand(cmd);
+        }
+        
+        // Check game
+        if (!response) {
+            response = handleGame(text);
+        }
+        
+        // Check human conversation
+        if (!response) {
+            response = handleHumanConversation(text);
+        }
+        
+        // AI fallback
+        if (!response || response === 'AI_FALLBACK') {
+            response = await callAI(text);
+            if (!response) {
+                response = HUMAN_RESPONSES.greetings[Math.floor(Math.random() * HUMAN_RESPONSES.greetings.length)];
+            }
+        }
+        
+        // Learn from text
+        learnText(text);
+        
+        typingDiv.remove();
+        addMessage('Yad AI', response, 'ai');
+        
+    } catch(e) {
+        typingDiv.remove();
+        addMessage('Yad AI', '😅 Maaf, ada error. Coba lagi ya!', 'ai');
+        console.error(e);
+    }
+}
+
+function handleHumanConversation(text) {
+    const t = text.toLowerCase();
+    
+    if (/^(hai|halo|hi|hello|pagi|siang|sore|malam)/i.test(t)) {
+        return HUMAN_RESPONSES.greetings[Math.floor(Math.random() * HUMAN_RESPONSES.greetings.length)];
+    }
+    if (t.includes('kabar') || t.includes('apa kabar')) {
+        return HUMAN_RESPONSES.howAreYou[Math.floor(Math.random() * HUMAN_RESPONSES.howAreYou.length)];
+    }
+    if (t.includes('terima kasih') || t.includes('makasih')) {
+        return HUMAN_RESPONSES.thanks[Math.floor(Math.random() * HUMAN_RESPONSES.thanks.length)];
+    }
+    if (t.includes('sedih') || t.includes('galau')) {
+        return HUMAN_RESPONSES.sad[Math.floor(Math.random() * HUMAN_RESPONSES.sad.length)];
+    }
+    if (t.includes('siapa kamu') || t.includes('nama kamu')) {
+        return 'Aku Yad AI! Asisten virtual yang siap bantu kamu 😊';
+    }
+    if (t.includes('nama saya') || t.includes('panggil saya')) {
+        const m = text.match(/nama (?:saya|ku) (\w+)|panggil (?:saya|aku) (\w+)/i);
+        if (m) {
+            Memory.name = m[1] || m[2];
+            saveMemory(text);
+            return 'Wah, salam kenal <b>' + Memory.name + '</b>! 😊';
+        }
+    }
+    
+    return 'AI_FALLBACK';
+}
+
+function escapeHTML(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// ================================================================
+// TOAST NOTIFICATION
+// ================================================================
+function showToast(msg, type) {
+    const container = document.getElementById('toastContainer') || document.body;
+    const existing = container.querySelector('.toast');
+    if (existing) existing.remove();
+    
+    const div = document.createElement('div');
+    div.className = 'toast ' + (type || 'info');
+    div.textContent = msg;
+    container.appendChild(div);
+    
+    setTimeout(() => {
+        div.style.opacity = '0';
+        div.style.transition = 'opacity 0.3s';
+        setTimeout(() => div.remove(), 300);
+    }, 2500);
+}
+
+// ================================================================
+// ADMIN FUNCTIONS
+// ================================================================
+let isAdmin = false;
+
+function toggleAdminPanel() {
+    if (!isAdmin) {
+        showToast('⚠️ Hanya admin!', 'error');
+        return;
+    }
+    const panel = document.getElementById('adminPanel');
+    panel.classList.toggle('show');
+}
+
+function viewStats() {
+    addMessage('ai', '<b>📊 Stats:</b><br>Chats: ' + Memory.chatHistory.length + '<br>KB: ' + KnowledgeBase.length + '<br>AI: ' + Providers.current + '<br>Mood: ' + Memory.mood, 'ai');
+}
+
+function syncKnowledge() {
+    showToast('✅ Knowledge synced!', 'success');
+}
+
+function clearMemory() {
+    Memory.facts = [];
+    Memory.chatHistory = [];
+    KnowledgeBase = [];
+    localStorage.clear();
+    showToast('🗑️ Cleared!', 'success');
+}
+
+function broadcastMsg() {
+    const msg = prompt('Pesan:');
+    if (msg) showToast('📢 Broadcast: ' + msg.substring(0, 20) + '...', 'success');
+}
+
+// ================================================================
+// AUTH FUNCTIONS
+// ================================================================
+function showLogin() {
+    const email = prompt('📧 Email:');
+    if (!email) return;
+    const password = prompt('🔒 Password:');
+    if (!password) return;
+    
+    // Simple admin check
+    if (email === 'ynuraini686@gmail.com') {
+        isAdmin = true;
+        document.getElementById('authBadge').textContent = '👑 Admin';
+        document.getElementById('authBadge').className = 'badge admin';
+        document.getElementById('adminBadge').style.display = 'inline-block';
+        document.getElementById('adminBtn').style.display = 'inline-block';
+        document.getElementById('loginBtn').style.display = 'none';
+        document.getElementById('logoutBtn').style.display = 'inline-block';
+        showToast('👑 Admin detected!', 'admin');
+    } else {
+        isAdmin = false;
+        document.getElementById('authBadge').textContent = 'User';
+        document.getElementById('authBadge').className = 'badge user';
+        document.getElementById('loginBtn').style.display = 'none';
+        document.getElementById('logoutBtn').style.display = 'inline-block';
+        showToast('✅ Login berhasil!', 'success');
+    }
+}
+
+function doLogout() {
+    isAdmin = false;
+    document.getElementById('authBadge').textContent = 'Guest';
+    document.getElementById('authBadge').className = 'badge guest';
+    document.getElementById('adminBadge').style.display = 'none';
+    document.getElementById('adminBtn').style.display = 'none';
+    document.getElementById('loginBtn').style.display = 'inline-block';
+    document.getElementById('logoutBtn').style.display = 'none';
+    document.getElementById('adminPanel').classList.remove('show');
+    showToast('👋 Logout!', 'info');
+}
+
+// ================================================================
+// FILE UPLOAD
+// ================================================================
+document.getElementById('fileInput').addEventListener('change', async function(e) {
+    const files = e.target.files;
+    if (!files.length) return;
+    
+    for (const file of files) {
+        try {
+            const text = await file.text();
+            learnText(text);
+            showToast('✅ ' + file.name + ' imported!', 'success');
+        } catch(err) {
+            showToast('❌ Gagal baca ' + file.name, 'error');
+        }
+    }
+    
+    addMessage('ai', '✅ ' + files.length + ' file berhasil diimpor! Total KB: ' + KnowledgeBase.length, 'ai');
+    this.value = '';
+});
+
+// ================================================================
+// KEYBOARD EVENT
+// ================================================================
+document.getElementById('userInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+// ================================================================
+// INITIALIZATION
+// ================================================================
+console.log('🧠 Yad AI Ultimate - Ready!');
+console.log('📚 Knowledge Base:', KnowledgeBase.length, 'items');
+console.log('🤖 AI Provider:', Providers.current);
+console.log('💡 Type to start chatting!');
+
+// Focus input on load
+setTimeout(() => {
+    document.getElementById('userInput').focus();
+}, 500);
 </script>
 </body>
 </html>

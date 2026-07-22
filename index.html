@@ -486,7 +486,7 @@
                 </div>
             </div>
             <div class="header-right">
-                <span id="ai-badge" class="badge ai-status">🧠 DeepSeek</span>
+                <span id="ai-badge" class="badge ai-status">🧠 </span>
                 <span id="auth-status" class="badge guest">Guest</span>
                 <button id="login-btn" class="btn-icon" onclick="showLogin()">🔑 Login</button>
                 <button id="logout-btn" class="btn-icon" style="display:none;" onclick="doLogout()">🚪 Logout</button>
@@ -573,7 +573,7 @@
     };
 
     const AI_PROVIDERS = [
-        { name: "DeepSeek", apiKey: "sk-9f4577079ddb4bd7a6dfebdb1161889c", url: "https://api.deepseek.com/v1/chat/completions", active: true, model: "deepseek-chat" },
+        { name: "", apiKey: "sk-9f4577079ddb4bd7a6dfebdb1161889c", url: "https://api..com/v1/chat/completions", active: true, model: "-chat" },
         { name: "Groq", apiKey: "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", url: "https://api.groq.com/openai/v1/chat/completions", active: true, model: "llama3-70b-8192" },
         { name: "OpenRouter", apiKey: "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", url: "https://openrouter.ai/api/v1/chat/completions", active: true, model: "google/gemini-2.0-flash-exp:free" }
     ];
@@ -609,7 +609,7 @@
         gameData: null,
         dbStats: { firebase: 0, local: 0 },
         mediaUploads: [],
-        currentProvider: 'deepseek',
+        currentProvider: '',
         chatHistory: [],
         tasks: [],
         plans: [],
@@ -1013,7 +1013,7 @@
                 AI_PROVIDERS.forEach(function(p) {
                     as += '• ' + p.name + (p.name.toLowerCase() === S.currentProvider ? ' ✅' : '') + '<br>';
                 });
-                return as + '<br>Ganti: <code>ai deepseek</code>';
+                return as + '<br>Ganti: <code>ai </code>';
                 
             case 'joke':
                 return '😄 ' + getRandom(HUMAN_RESPONSES.jokes);
@@ -1344,7 +1344,7 @@
                 return '🤖 AI diubah ke <b>' + providers[k] + '</b>!';
             }
         }
-        return '🤖 AI tersedia: <b>Yadstore</b>, <b>groq</b>, <b>openrouter</b><br><br>Ketik: <code>ai deepseek</code>';
+        return '🤖 AI tersedia: <b>Yadstore</b>, <b>groq</b>, <b>openrouter</b><br><br>Ketik: <code>ai </code>';
     }
 
     // ================================================================

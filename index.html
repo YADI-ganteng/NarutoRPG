@@ -1335,7 +1335,7 @@
     // AI SWITCH
     // ================================================================
     function switchAI(name) {
-        var providers = { deepseek: 'DeepSeek', groq: 'Groq', openrouter: 'OpenRouter' };
+        var providers = { Yadstore: 'Yadstore', groq: 'Groq', openrouter: 'OpenRouter' };
         for (var k in providers) {
             if (name.includes(k)) {
                 S.currentProvider = k;
@@ -1344,7 +1344,7 @@
                 return '🤖 AI diubah ke <b>' + providers[k] + '</b>!';
             }
         }
-        return '🤖 AI tersedia: <b>deepseek</b>, <b>groq</b>, <b>openrouter</b><br><br>Ketik: <code>ai deepseek</code>';
+        return '🤖 AI tersedia: <b>Yadstore</b>, <b>groq</b>, <b>openrouter</b><br><br>Ketik: <code>ai deepseek</code>';
     }
 
     // ================================================================

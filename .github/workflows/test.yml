@@ -1,0 +1,57 @@
+name: Test & Validate
+
+on:
+  push:
+    branches: [ main, development ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Check File Structure
+      run: |
+        echo "📁 Memeriksa struktur file..."
+        
+        required_files=(
+          "index.html"
+          "admin.html"
+          "config.js"
+          "database.js"
+          "auth.js"
+          "github.js"
+          "features.js"
+          "admin.css"
+          "styles.css"
+          "firebase.json"
+        )
+        
+        for file in "${required_files[@]}"; do
+          if [ -f "$file" ]; then
+            echo "✅ $file ada"
+          else
+            echo "❌ $file TIDAK ADA!"
+            exit 1
+          fi
+        done
+    
+    - name: Check HTML Files
+      run: |
+        echo "🔍 Memeriksa file HTML..."
+        
+        if grep -q "<!DOCTYPE html>" index.html; then
+          echo "✅ index.html valid"
+        else
+          echo "❌ index.html tidak valid!"
+          exit 1
+        fi
+    
+    - name: Check File Sizes
+      run: |
+        echo "📏 Ukuran file:"
+        du -sh *.html *.js *.css 2>/dev/null | sort -rh

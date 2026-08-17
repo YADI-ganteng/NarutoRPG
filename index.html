@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YAD Store</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="logo">🎮 YAD Store</div>
+        <div class="nav-links">
+            <button class="btn btn-primary" onclick="showSection('home')">🏠 Home</button>
+            <button class="btn" onclick="showSection('order')">🛒 Order</button>
+            <button class="btn" onclick="showSection('status')">📋 Status</button>
+            <button class="btn" id="adminPanelLink" onclick="goToAdmin()" style="display:none;">👑 Admin</button>
+            <button class="btn" onclick="handleLogin()" id="loginBtn">🔑 Login</button>
+        </div>
+    </header>
+    <div class="container">
+        <div class="category-tabs" id="categoryTabs"></div>
+        <div id="homeSection"><div class="game-grid" id="gameGrid"></div></div>
+        <div id="orderSection" class="hidden"></div>
+        <div id="statusSection" class="hidden"></div>
+    </div>
+    <script src="config.js"></script>
+    <script src="database.js"></script>
+    <script src="auth.js"></script>
+    <script src="features.js"></script>
+</body>
+</html>

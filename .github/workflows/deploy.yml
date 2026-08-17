@@ -1,0 +1,45 @@
+name: Deploy to Firebase Hosting
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: "firebase-deploy"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy to Firebase
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install Firebase CLI
+      run: |
+        npm install -g firebase-tools
+        firebase --version
+    
+    - name: Deploy to Firebase Hosting
+      env:
+        FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+      run: |
+        firebase deploy --only hosting --token "$FIREBASE_TOKEN" --non-interactive
+      timeout-minutes: 10
+    
+    - name: Verify Deployment
+      run: |
+        echo "✅ Deployment berhasil!"
+        echo "📋 URL: https://yadstores.web.app"
+        echo "🔗 Admin: https://yadstores.web.app/admin.html"

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YAD Admin Panel</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-body">
+    <header class="admin-header">
+        <div class="logo">👑 YAD Admin</div>
+        <div class="nav-links">
+            <a href="index.html" class="btn">🏠 Home</a>
+            <button class="btn btn-danger" onclick="Auth.logout()">🚪 Logout</button>
+        </div>
+    </header>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <button class="sidebar-btn active" onclick="showSection('dashboard', this)">📊 Dashboard</button>
+            <button class="sidebar-btn" onclick="showSection('orders', this)">🛒 Orders</button>
+            <button class="sidebar-btn" onclick="showSection('products', this)">📦 Produk</button>
+            <button class="sidebar-btn" onclick="showSection('bulk', this)">📋 Massal</button>
+            <button class="sidebar-btn" onclick="showSection('coupons', this)">🎟️ Kupon</button>
+            <button class="sidebar-btn" onclick="showSection('features', this)">✨ Fitur</button>
+            <button class="sidebar-btn" onclick="showSection('github', this)">🚀 GitHub</button>
+            <button class="sidebar-btn" onclick="showSection('settings', this)">⚙️ Settings</button>
+        </aside>
+        <main class="admin-content">
+            <div id="section-dashboard" class="admin-section">
+                <h2>📊 Dashboard</h2>
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-value" id="statPending">0</div><div class="stat-label">Pending</div></div>
+                    <div class="stat-card"><div class="stat-value" id="statDone">0</div><div class="stat-label">Done</div></div>
+                    <div class="stat-card"><div class="stat-value" id="statRevenue">Rp 0</div><div class="stat-label">Revenue</div></div>
+                </div>
+            </div>
+            <div id="section-orders" class="admin-section hidden"><h2>🛒 Orders</h2><div id="ordersList"></div></div>
+            <div id="section-products" class="admin-section hidden"><h2>📦 Produk</h2><div id="productsManagement"></div></div>
+            <div id="section-bulk" class="admin-section hidden"><h2>📋 Massal</h2></div>
+            <div id="section-coupons" class="admin-section hidden"><h2>🎟️ Kupon</h2></div>
+            <div id="section-features" class="admin-section hidden"><h2>✨ Fitur</h2></div>
+            <div id="section-github" class="admin-section hidden"><h2>🚀 GitHub</h2></div>
+            <div id="section-settings" class="admin-section hidden"><h2>⚙️ Settings</h2></div>
+        </main>
+    </div>
+    <script src="config.js"></script>
+    <script src="database.js"></script>
+    <script src="auth.js"></script>
+    <script src="github.js"></script>
+    <script src="features.js"></script>
+</body>
+</html>

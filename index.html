@@ -2,31 +2,1905 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YAD Store</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>YAD Store - Top Up Game & Pulsa Termurah</title>
+    <meta name="description" content="YAD Store - Top up game, pulsa, paket data, token listrik, voucher, dan e-wallet termurah.">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        :root{--bg:#0a0a14;--bg-card:#12122a;--bg-hover:#1a1a35;--bg-input:#0d0d20;--text:#e8e8f0;--text-dim:#9090a8;--accent:#8b5cf6;--accent2:#06b6d4;--gold:#f59e0b;--green:#10b981;--red:#ef4444;--pink:#ec4899;--border:#252540;--radius:14px}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;transition:background 0.3s}
+        body.light{--bg:#f5f5f5;--bg-card:#ffffff;--bg-hover:#e8e8f0;--bg-input:#f0f0f5;--text:#1a1a2e;--text-dim:#6a6a80;--border:#d0d0e0}
+        .header{background:rgba(10,10,20,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:12px;flex-wrap:wrap}
+        .logo{font-size:20px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .nav-links{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+        .btn{padding:7px 14px;border-radius:18px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;font-size:11px;font-weight:600;transition:all 0.2s;font-family:inherit}
+        .btn:hover{background:var(--bg-hover);border-color:var(--accent)}
+        .btn-primary{background:var(--accent);color:white;border:none}
+        .btn-danger{background:var(--red);color:white;border:none}
+        .btn-success{background:var(--green);color:white;border:none}
+        .btn-warning{background:var(--gold);color:#000;border:none}
+        .btn-sm{padding:4px 8px;font-size:10px;border-radius:6px}
+        .activity-bar{background:#0d0d15;border-bottom:1px solid var(--border);padding:6px 16px;font-size:10px;color:var(--text-dim);display:flex;gap:20px;overflow:hidden;white-space:nowrap;flex-wrap:wrap}
+        .dot-live{width:6px;height:6px;background:var(--green);border-radius:50%;display:inline-block;animation:blink 2s infinite}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+        .container{max-width:1200px;margin:0 auto;padding:20px}
+        .search-bar{display:flex;gap:10px;margin:16px 0;flex-wrap:wrap}
+        .search-bar input{flex:1;min-width:200px;padding:10px 16px;background:var(--bg-input);border:1px solid var(--border);border-radius:20px;color:var(--text);font-size:13px;outline:none;font-family:inherit}
+        .search-bar input:focus{border-color:var(--accent)}
+        .floating-ai{position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--pink));color:white;border:none;cursor:pointer;font-size:24px;z-index:400;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(139,92,246,0.4);animation:float 3s ease-in-out infinite}
+        @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+        .whatsapp-float{position:fixed;bottom:24px;left:24px;width:56px;height:56px;background:#25D366;color:white;border-radius:50%;text-align:center;font-size:28px;box-shadow:0 8px 32px rgba(37,211,102,0.4);z-index:400;display:flex;align-items:center;justify-content:center;text-decoration:none}
+        .ai-chat-widget{position:fixed;bottom:90px;right:20px;width:420px;max-width:92vw;z-index:450;background:var(--bg-card);border-radius:var(--radius);border:2px solid var(--accent);overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.6);display:none;flex-direction:column;max-height:80vh}
+        .ai-chat-widget.show{display:flex}
+        .ai-chat-header{padding:10px 14px;background:var(--bg-hover);cursor:pointer;display:flex;justify-content:space-between;font-weight:700;font-size:13px}
+        .ai-chat-body{display:flex;flex-direction:column;overflow:hidden}
+        .ai-chat-body.hidden{display:none}
+        .ai-chat-messages{height:300px;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px}
+        .ai-msg{padding:7px 10px;border-radius:12px;font-size:12px;line-height:1.4;background:var(--bg-input);max-width:90%;word-break:break-word}
+        .ai-msg.user{background:var(--accent);color:white;margin-left:auto}
+        .ai-msg.system{background:var(--bg-hover);color:var(--accent2);text-align:center;font-size:10px;max-width:100%}
+        .ai-msg.error{background:#3d1f1f;color:var(--red)}
+        .ai-msg.success{background:#1f3d2f;color:var(--green)}
+        .ai-msg.progress{background:#1f2f3d;color:#06b6d4;border-left:3px solid #06b6d4}
+        .ai-chat-input-area{padding:8px;border-top:1px solid var(--border);display:flex;gap:6px}
+        .ai-chat-input-area input{flex:1;padding:8px 12px;background:var(--bg-input);border:1px solid var(--border);border-radius:16px;color:var(--text);font-size:12px;outline:none;font-family:inherit}
+        .ai-chat-input-area button{background:var(--accent);color:white;border:none;padding:8px 14px;border-radius:16px;cursor:pointer;font-size:14px}
+        .quick-edit-bar{padding:8px;background:var(--bg-input);border-top:1px solid var(--border)}
+        .quick-edit-bar .edit-title{font-size:10px;color:var(--text-dim);margin-bottom:4px}
+        .quick-edit-btn{padding:4px 8px;margin:2px;font-size:10px;border-radius:4px;border:1px solid var(--border);background:var(--bg-hover);color:var(--text);cursor:pointer;font-family:inherit}
+        .quick-edit-btn:hover{background:var(--accent);color:white}
+        .voice-btn{background:#ef4444;color:#fff;border:none;padding:8px 14px;border-radius:20px;cursor:pointer;font-size:16px;margin-right:6px}
+        .voice-btn.listening{background:#10b981;animation:pulse-voice 1.2s infinite}
+        @keyframes pulse-voice{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.5)}50%{box-shadow:0 0 0 12px rgba(16,185,129,0)}}
+        .console-panel{position:fixed;bottom:90px;left:20px;width:500px;max-width:95vw;z-index:450;background:#0a0a0a;border-radius:14px;border:2px solid #06b6d4;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.8);display:none;flex-direction:column;height:400px}
+        .console-panel.show{display:flex}
+        .console-header{background:#0d3d3d;display:flex;border-bottom:1px solid #1a1a1a;overflow-x:auto}
+        .console-tab{padding:8px 12px;cursor:pointer;font-size:10px;font-weight:700;color:#9090a8;border:none;background:transparent;font-family:inherit;white-space:nowrap}
+        .console-tab:hover{color:#fff}
+        .console-tab.active{color:#06b6d4;border-bottom:2px solid #06b6d4;background:rgba(6,182,212,0.1)}
+        .console-content{flex:1;overflow-y:auto;padding:10px;font-family:monospace;font-size:11px;color:#00ff00}
+        .console-line{margin:2px 0;word-break:break-word}
+        .console-line.error{color:#ff4444}.console-line.success{color:#44ff44}.console-line.info{color:#44aaff}.console-line.warn{color:#ffaa44}.console-line.cmd{color:#fff}
+        .console-input-area{display:flex;align-items:center;padding:8px;background:#111;border-top:1px solid #333}
+        .console-prompt{color:#00ff00;font-weight:bold;margin-right:6px;font-size:12px}
+        .console-input{flex:1;background:transparent;border:none;color:#fff;font-family:monospace;font-size:12px;outline:none}
+        .novel-reader-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:90vw;max-width:800px;max-height:90vh;background:var(--bg-card);border-radius:var(--radius);border:2px solid var(--accent);z-index:500;display:none;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.8)}
+        .novel-reader-panel.show{display:flex}
+        .novel-header{padding:12px 16px;background:var(--bg-hover);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:8px}
+        .novel-content{flex:1;overflow-y:auto;padding:20px;font-size:14px;line-height:1.8;color:var(--text);max-height:60vh}
+        .novel-controls{padding:12px;background:var(--bg-input);border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+        .novel-controls button{padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg-hover);color:var(--text);cursor:pointer;font-size:11px;font-family:inherit}
+        .novel-library{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;padding:16px}
+        .novel-card{background:var(--bg-input);border-radius:8px;padding:12px;cursor:pointer;border:1px solid var(--border);transition:all 0.3s}
+        .novel-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+        .novel-progress{width:100%;height:4px;background:var(--border);border-radius:2px;margin-top:8px}
+        .novel-progress-bar{height:100%;background:var(--accent);border-radius:2px}
+        .write-novel-btn{background:linear-gradient(135deg,#10b981,#059669)!important;color:#fff!important;border:none!important;font-weight:700!important}
+        .novel-editor-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:95vw;max-width:700px;max-height:90vh;background:#1a1a2e;border-radius:16px;border:2px solid #10b981;z-index:9999;display:none;flex-direction:column;overflow:hidden}
+        .novel-editor-panel.show{display:flex}
+        .novel-editor-header{padding:14px 20px;background:linear-gradient(135deg,#1a1a2e,#0d3d2e);border-bottom:1px solid #10b981;display:flex;justify-content:space-between;align-items:center}
+        .novel-editor-body{padding:20px;overflow-y:auto}
+        .novel-editor-body input,.novel-editor-body textarea{width:100%;padding:10px;background:#0d0d20;border:1px solid #252540;border-radius:8px;color:#e8e8f0;font-size:13px;outline:none;font-family:inherit;margin-bottom:12px;resize:vertical}
+        .novel-editor-body textarea{min-height:250px;font-size:14px;line-height:1.8;font-family:Georgia,serif}
+        .profile-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:95vw;max-width:450px;max-height:85vh;background:var(--bg-card);border-radius:var(--radius);border:2px solid var(--accent);z-index:500;display:none;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.8);overflow:hidden}
+        .profile-panel.show{display:flex}
+        .profile-header{padding:20px;text-align:center;background:linear-gradient(135deg,#1a1a2e,#16213e);border-bottom:2px solid var(--accent)}
+        .profile-avatar{width:65px;height:65px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#ec4899);display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;margin:0 auto 10px;border:3px solid var(--accent)}
+        .profile-body{padding:16px;overflow-y:auto;max-height:45vh}
+        .profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+        .profile-stat{background:var(--bg-input);border-radius:8px;padding:12px;text-align:center;border:1px solid var(--border)}
+        .profile-stat-value{font-size:20px;font-weight:700;color:var(--accent)}
+        .profile-stat-label{font-size:10px;color:var(--text-dim)}
+        .profile-footer{padding:12px;background:var(--bg-input);border-top:1px solid var(--border);text-align:center;display:flex;gap:8px;justify-content:center}
+        .profile-edit-btn{padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;width:100%;margin-top:8px}
+        .profile-edit-form{display:none;margin-top:8px}
+        .profile-edit-form.show{display:block}
+        .profile-edit-form input{width:100%;padding:8px;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;outline:none}
+        .profile-order-item{background:var(--bg-input);padding:8px;border-radius:6px;margin:4px 0;font-size:10px;border:1px solid var(--border)}
+        .analysis-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:95vw;max-width:800px;max-height:90vh;background:var(--bg-card);border-radius:var(--radius);border:2px solid var(--accent);z-index:500;display:none;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.8);overflow:hidden}
+        .analysis-panel.show{display:flex}
+        .analysis-header{padding:12px 16px;background:var(--bg-hover);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+        .analysis-body{padding:20px;overflow-y:auto;max-height:70vh}
+        .analysis-body table{width:100%;border-collapse:collapse;margin:10px 0}
+        .analysis-body th,.analysis-body td{padding:8px 12px;border:1px solid var(--border);text-align:left;font-size:12px}
+        .analysis-body th{background:var(--bg-hover);color:var(--accent)}
+        .analysis-section{margin:16px 0;padding:12px;background:var(--bg-input);border-radius:8px;border:1px solid var(--border)}
+        .analysis-section h3{color:var(--accent);margin-bottom:8px;font-size:14px}
+        .payment-form-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1a2e;border-radius:16px;border:2px solid #f59e0b;z-index:9999;display:none;flex-direction:column;overflow:hidden;width:400px;max-width:95vw}
+        .payment-form-panel.show{display:flex}
+        .payment-form-header{padding:14px 20px;background:linear-gradient(135deg,#1a1a2e,#2d1a0e);border-bottom:1px solid #f59e0b;display:flex;justify-content:space-between;align-items:center}
+        .payment-form-body{padding:20px}
+        .payment-form-body input{width:100%;padding:10px;background:#0d0d20;border:1px solid #252540;border-radius:8px;color:#e8e8f0;font-size:13px;margin-bottom:10px;outline:none}
+        .fit-btn{background:linear-gradient(135deg,#8b5cf6,#ec4899)!important;color:#fff!important;border:none!important;font-weight:700!important}
+        .fit-dropdown{position:fixed;top:55px;right:20px;z-index:9999;background:#1a1a2e;border-radius:12px;border:2px solid #8b5cf6;box-shadow:0 20px 60px rgba(139,92,246,0.5);display:none;min-width:280px;overflow:hidden}
+        .fit-dropdown.show{display:block}
+        .fit-dropdown-header{padding:12px 16px;background:linear-gradient(135deg,#1a1a2e,#16213e);border-bottom:1px solid #252540;font-weight:700;font-size:14px;color:#fff;display:flex;justify-content:space-between;align-items:center}
+        .fit-dropdown-body{padding:8px;max-height:400px;overflow-y:auto}
+        .fit-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;font-size:12px;color:#e8e8f0;border:none;background:transparent;width:100%;text-align:left;font-family:inherit}
+        .fit-dropdown-item:hover{background:#252540}
+        .fit-panel{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.85);z-index:99999;display:none;align-items:center;justify-content:center}
+        .fit-panel.show{display:flex}
+        .fit-panel-dialog{background:#1a1a2e;border-radius:16px;border:2px solid #8b5cf6;width:95vw;max-width:600px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden}
+        .fit-panel-header{padding:14px 20px;background:linear-gradient(135deg,#1a1a2e,#16213e);border-bottom:1px solid #252540;display:flex;justify-content:space-between;align-items:center}
+        .fit-panel-body{padding:20px;overflow-y:auto}
+        .fit-panel-body label{display:block;color:#9090a8;font-size:11px;font-weight:600;margin-bottom:4px;text-transform:uppercase}
+        .fit-panel-body input,.fit-panel-body textarea,.fit-panel-body select{width:100%;padding:10px;background:#0d0d20;border:1px solid #252540;border-radius:8px;color:#e8e8f0;font-size:13px;margin-bottom:12px;outline:none;font-family:inherit;resize:vertical}
+        .fit-list-item{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#0d0d20;border-radius:6px;margin-bottom:4px;font-size:11px}
+        .category-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:16px 0}
+        .cat-tab{padding:8px 16px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-family:inherit}
+        .cat-tab:hover,.cat-tab.active{background:var(--accent);color:white;border-color:var(--accent)}
+        .game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+        .game-card{background:var(--bg-card);border-radius:var(--radius);padding:20px;border:1px solid var(--border);cursor:pointer;transition:all 0.3s;position:relative}
+        .game-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 24px rgba(139,92,246,0.2)}
+        .favorite-btn{position:absolute;top:10px;right:10px;background:transparent;border:none;font-size:20px;cursor:pointer;z-index:10}
+        .game-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+        .game-icon{font-size:40px}.game-name{font-size:16px;font-weight:700}.game-developer{font-size:10px;color:var(--text-dim)}
+        .item-list{display:flex;flex-direction:column;gap:6px}
+        .item-row{display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg-input);border-radius:8px;font-size:12px;cursor:pointer;transition:all 0.2s}
+        .item-row:hover{background:var(--bg-hover);transform:translateX(4px)}
+        .item-price{font-weight:700;color:var(--gold)}
+        .order-section{background:var(--bg-card);border-radius:var(--radius);padding:24px;margin:20px 0;border:1px solid var(--border)}
+        .form-group{margin:10px 0}.form-group label{display:block;font-size:11px;font-weight:600;color:var(--text-dim);margin-bottom:3px;text-transform:uppercase}
+        .form-group input,.form-group select{width:100%;padding:10px;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:border-color 0.3s}
+        .form-group input:focus,.form-group select:focus{border-color:var(--accent)}
+        .form-group input.error{border-color:var(--red)}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+        @media(max-width:500px){.form-row{grid-template-columns:1fr}}
+        .payment-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin:10px 0}
+        .payment-card{background:var(--bg-input);border:2px solid var(--border);border-radius:10px;padding:14px;text-align:center;cursor:pointer;font-size:12px;transition:all 0.3s}
+        .payment-card:hover,.payment-card.selected{border-color:var(--accent);background:var(--bg-hover);transform:scale(1.05)}
+        .live-feed{background:var(--bg-card);border-radius:var(--radius);padding:16px;margin:20px 0;border:1px solid var(--border);max-height:200px;overflow-y:auto}
+        .live-item{padding:6px 0;border-bottom:1px solid var(--border);font-size:11px;color:var(--text-dim);animation:fadeIn 0.5s}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+        .toast-container{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:600}
+        .toast{padding:8px 16px;border-radius:16px;color:white;font-size:10px;font-weight:600;animation:toastIn 0.3s ease}
+        @keyframes toastIn{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+        .toast.success{background:var(--green)}.toast.error{background:var(--red)}.toast.info{background:var(--accent2)}.toast.warning{background:var(--gold)}
+        .hidden{display:none!important}
+        .order-status-badge{display:inline-block;padding:3px 10px;border-radius:10px;font-size:10px;font-weight:700}
+        .order-status-badge.pending{background:#f59e0b;color:#000}
+        .order-status-badge.done{background:#10b981;color:#fff}
+        .order-status-badge.cancelled{background:#ef4444;color:#fff}
+        .order-status-badge.refund_pending{background:#06b6d4;color:#fff}
+        .loading-spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .empty-state{text-align:center;padding:40px;color:var(--text-dim)}
+        .empty-state .icon{font-size:48px;margin-bottom:10px}
+        .modal{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);z-index:99999;display:none;align-items:center;justify-content:center}
+        .modal.show{display:flex}
+        .modal-dialog{background:var(--bg-card);border-radius:var(--radius);border:2px solid var(--accent);width:95vw;max-width:500px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden}
+        .modal-header{padding:14px 20px;background:var(--bg-hover);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+        .modal-body{padding:20px;overflow-y:auto}
+        .modal-footer{padding:12px 20px;background:var(--bg-input);border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+        .bulk-edit-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1a2e;border-radius:16px;border:2px solid #f59e0b;z-index:99999;display:none;flex-direction:column;overflow:hidden;width:700px;max-width:95vw;max-height:85vh}
+        .bulk-edit-panel.show{display:flex}
+        .checkbox-group{display:flex;align-items:center;gap:8px;padding:6px 0}
+        .checkbox-group input[type="checkbox"]{width:18px;height:18px;cursor:pointer}
+    </style>
 </head>
 <body>
-    <header class="header">
-        <div class="logo">🎮 YAD Store</div>
-        <div class="nav-links">
-            <button class="btn btn-primary" onclick="showSection('home')">🏠 Home</button>
-            <button class="btn" onclick="showSection('order')">🛒 Order</button>
-            <button class="btn" onclick="showSection('status')">📋 Status</button>
-            <button class="btn" id="adminPanelLink" onclick="goToAdmin()" style="display:none;">👑 Admin</button>
-            <button class="btn" onclick="handleLogin()" id="loginBtn">🔑 Login</button>
-        </div>
-    </header>
-    <div class="container">
-        <div class="category-tabs" id="categoryTabs"></div>
-        <div id="homeSection"><div class="game-grid" id="gameGrid"></div></div>
-        <div id="orderSection" class="hidden"></div>
-        <div id="statusSection" class="hidden"></div>
+
+<!-- HEADER -->
+<header class="header">
+    <div class="logo">🎮 YAD Store <span style="font-size:10px;background:#10b981;color:#fff;padding:2px 8px;border-radius:8px;">🔒 v2.0</span></div>
+    <div class="nav-links">
+        <button class="btn btn-primary" onclick="showSection('home')">🏠 Home</button>
+        <button class="btn" onclick="showSection('order')">🛒 Order</button>
+        <button class="btn" onclick="showSection('status')">📋 Cek Pesanan</button>
+        <button class="btn" onclick="openNovelReader()">📚 Novel</button>
+        <button class="btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+        <button class="btn fit-btn" id="fitMenuBtn" onclick="toggleFitMenu()" style="display:none">✨ Fitur ▾</button>
+        <button class="btn" id="consoleBtn" onclick="openConsole()" style="display:none;background:#000;color:#00ff00;border:1px solid #00ff00;">🖥️ Console</button>
+        <button class="btn" onclick="openProfile()" id="profileNavBtn">👤 Profil</button>
+        <button class="btn" onclick="handleLogin()" id="loginBtn">🔑 Login</button>
     </div>
-    <script src="config.js"></script>
-    <script src="database.js"></script>
-    <script src="auth.js"></script>
-    <script src="features.js"></script>
+</header>
+
+<!-- ACTIVITY BAR -->
+<div class="activity-bar">
+    <span><span class="dot-live"></span> <b id="onlineCount">87</b> online</span>
+    <span>🎮 <b id="todayOrders">11</b> pesanan</span>
+    <span>💰 <b id="todayRevenue">Rp 150.000</b></span>
+    <span>⭐ 4.9 rating</span>
+    <span id="githubStatus" style="color:var(--accent2)">📤 Ready ✅</span>
+    <span id="securityStatus" style="color:var(--green)">🔒 Protected</span>
+</div>
+
+<!-- FLOATING BUTTONS -->
+<a href="https://wa.me/6283170617054" target="_blank" class="whatsapp-float">💬</a>
+<button class="floating-ai" id="floatingAI" onclick="openAIChat()">🧠</button>
+
+<!-- MAIN CONTENT -->
+<div class="container">
+    <!-- SEARCH BAR -->
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="🔍 Cari produk..." oninput="searchProducts()">
+        <select id="searchCategory" onchange="searchProducts()" style="padding:10px;background:var(--bg-input);border:1px solid var(--border);border-radius:20px;color:var(--text);font-size:12px;font-family:inherit;outline:none;">
+            <option value="all">Semua Kategori</option>
+            <option value="game">Game</option>
+            <option value="pulsa">Pulsa</option>
+            <option value="data">Data</option>
+            <option value="token">Token</option>
+            <option value="voucher">Voucher</option>
+            <option value="ewallet">E-Wallet</option>
+        </select>
+    </div>
+    
+    <!-- CATEGORY TABS -->
+    <div class="category-tabs" id="categoryTabs">
+        <button class="cat-tab active" onclick="filterCategory('all',event)">🎮 Semua</button>
+        <button class="cat-tab" onclick="filterCategory('pulsa',event)">📱 Pulsa</button>
+        <button class="cat-tab" onclick="filterCategory('data',event)">📶 Data</button>
+        <button class="cat-tab" onclick="filterCategory('token',event)">⚡ Token</button>
+        <button class="cat-tab" onclick="filterCategory('voucher',event)">🎬 Voucher</button>
+        <button class="cat-tab" onclick="filterCategory('ewallet',event)">💳 E-Wallet</button>
+    </div>
+    
+    <!-- HOME SECTION -->
+    <div id="homeSection">
+        <div class="game-grid" id="gameGrid"></div>
+        <div class="live-feed"><b>🔴 Live Activity</b><div id="liveFeed"></div></div>
+    </div>
+    
+    <!-- ORDER SECTION -->
+    <div id="orderSection" class="hidden">
+        <div class="order-section">
+            <h3>🛒 Order</h3>
+            <div class="form-group"><label>Kategori</label><select id="orderCategory" onchange="updateOrderGame()"></select></div>
+            <div class="form-group"><label>Produk</label><select id="orderGame"><option value="">Pilih Produk</option></select></div>
+            <div class="form-group"><label>Item</label><select id="orderItem" onchange="updateTotalPrice()"></select></div>
+            <div class="form-row">
+                <div class="form-group"><label>ID/No HP *</label><input type="text" id="orderUID" placeholder="Masukkan ID/No HP"></div>
+                <div class="form-group"><label>Server (Opsional)</label><input type="text" id="orderServer" placeholder="Server (jika ada)"></div>
+            </div>
+            <div class="form-group"><label>Email</label><input type="email" id="orderEmail" placeholder="Email untuk konfirmasi"></div>
+            <div class="form-group"><label>🎟️ Kode Kupon (Opsional)</label><div style="display:flex;gap:8px"><input type="text" id="couponCode" placeholder="Masukkan kode kupon"><button class="btn btn-warning" onclick="applyCoupon()">🎟️ Pakai</button></div></div>
+            <h4 style="color:var(--gold)">💳 Pembayaran</h4>
+            <div class="payment-grid" id="paymentGrid"></div>
+            <div class="form-group"><label>Bukti Transfer</label><input type="file" id="paymentProof" onchange="previewProof()" accept="image/*"></div>
+            <div id="proofPreview"></div>
+            <div style="background:var(--bg-input);padding:12px;border-radius:8px;margin:12px 0"><b>Total:</b> <span style="color:var(--gold);font-size:18px" id="totalPrice">Rp 0</span></div>
+            <button class="btn btn-primary" onclick="submitOrder()" style="width:100%;padding:12px">🛒 Pesan Sekarang</button>
+        </div>
+    </div>
+    
+    <!-- STATUS SECTION -->
+    <div id="statusSection" class="hidden">
+        <div class="order-section">
+            <h3>📋 Cek Pesanan</h3>
+            <div class="form-group"><label>Order ID</label><input type="text" id="checkOrderID" placeholder="Masukkan Order ID"></div>
+            <button class="btn btn-primary" onclick="checkOrder()">🔍 Cek</button>
+            <div id="orderResult"></div>
+            <h3 style="margin-top:20px">📋 Riwayat</h3>
+            <div class="form-group"><label>Email</label><input type="email" id="historyEmail" onchange="loadUserHistory()" placeholder="Email untuk melihat riwayat"></div>
+            <div id="userOrderHistory"></div>
+        </div>
+    </div>
+</div>
+
+<!-- AI CHAT WIDGET -->
+<div class="ai-chat-widget" id="aiChatWidget">
+    <div class="ai-chat-header" onclick="toggleAIChat()"><span>🧠 YAD AI</span><span id="aiChatToggle">▼</span></div>
+    <div class="ai-chat-body" id="aiChatBody">
+        <div class="ai-chat-messages" id="aiChatMsgs"><div class="ai-msg system">🤖 Ketik "help" untuk bantuan.</div></div>
+        <div class="quick-edit-bar" id="quickEditBar" style="display:none">
+            <div class="edit-title">🎨 Quick Admin Tools</div>
+            <button class="quick-edit-btn" onclick="quickEdit('judul')">📝 Judul</button>
+            <button class="quick-edit-btn" onclick="quickEdit('warna')">🎨 Warna</button>
+            <button class="quick-edit-btn" onclick="quickEdit('bg')">🌑 BG</button>
+            <button class="quick-edit-btn" onclick="quickEdit('wa')">📱 WA</button>
+            <button class="quick-edit-btn" onclick="quickEdit('toko')">🏪 Toko</button>
+            <button class="quick-edit-btn" onclick="quickEdit('bulk')">📦 Massal</button>
+            <button class="quick-edit-btn" onclick="quickEdit('backup')">💾 Backup</button>
+            <button class="quick-edit-btn" onclick="quickEdit('analisis')">🔍 Analisis</button>
+            <button class="quick-edit-btn" onclick="runAutoFix()" style="background:#10b981;color:#fff;">🔧 AutoFix</button>
+            <button class="quick-edit-btn" onclick="runOptimize()" style="background:#06b6d4;color:#fff;">🔧 Optimize</button>
+        </div>
+        <div class="ai-chat-input-area">
+            <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🎤</button>
+            <input type="text" id="aiChatInput" placeholder="Ketik perintah..." onkeydown="if(event.key==='Enter')sendAIMsg()">
+            <button onclick="sendAIMsg()">➤</button>
+        </div>
+    </div>
+</div>
+
+<!-- FITUR DROPDOWN -->
+<div class="fit-dropdown" id="fitDropdown">
+    <div class="fit-dropdown-header"><span>✨ Menu Fitur</span><span onclick="toggleFitMenu()" style="cursor:pointer">✕</span></div>
+    <div class="fit-dropdown-body">
+        <button class="fit-dropdown-item" onclick="openFitPanel('add')">➕ Tambah Fitur</button>
+        <button class="fit-dropdown-item" onclick="openFitPanel('list')">📦 Daftar Fitur</button>
+        <button class="fit-dropdown-item" onclick="openFitPanel('delete')">🗑️ Hapus Fitur</button>
+        <button class="fit-dropdown-item" onclick="openFitPanel('backup')">💾 Backup & Restore</button>
+        <button class="fit-dropdown-item" onclick="openBulkManagement()">📦 Manajemen Massal</button>
+        <button class="fit-dropdown-item" onclick="openCouponManagement()">🎟️ Manajemen Kupon</button>
+        <button class="fit-dropdown-item" onclick="openFitPanel('security')">🔒 Keamanan</button>
+        <button class="fit-dropdown-item" onclick="openFitPanel('logs')">📋 Audit Log</button>
+    </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ================================================================
+// KONFIGURASI
+// ================================================================
+const APP_VERSION = "2.1.0";
+const ADMIN_EMAIL = 'ynuraini686@gmail.com';
+const SECRET_KEY = 'YAD_STORE_SECRET_2024';
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAvfHxcAT2syVbrf6-TU0JBRXtNLI0AIkc",
+    authDomain: "yadstores.firebaseapp.com",
+    projectId: "yadstores",
+    storageBucket: "yadstores.firebasestorage.app",
+    messagingSenderId: "666352014774",
+    appId: "1:666352014774:web:159ab5b455efb2fb2f9d17"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const fs = firebase.firestore();
+const googleProvider = new firebase.auth.GoogleAuthProvider();
+googleProvider.setCustomParameters({prompt: 'select_account'});
+
+const GITHUB_CONFIG = JSON.parse(localStorage.getItem('github_config') || '{"token":"","owner":"","repo":"","branch":"main","enabled":false}');
+
+// ================================================================
+// PRODUK DATABASE
+// ================================================================
+const ALL_PRODUCTS = {
+    game: [
+        {id: 'ml', name: 'Mobile Legends', icon: '👑', dev: 'Moonton', items: [['3 Diamonds', 1500], ['5 Diamonds', 2000], ['11 Diamonds', 3500], ['22 Diamonds', 6500], ['56 Diamonds', 13000], ['86 Diamonds', 20000]]},
+        {id: 'ff', name: 'Free Fire', icon: '🔥', dev: 'Garena', items: [['5 Diamonds', 1500], ['12 Diamonds', 3000], ['50 Diamonds', 8500], ['70 Diamonds', 12000], ['140 Diamonds', 23000], ['355 Diamonds', 56000]]},
+        {id: 'pubg', name: 'PUBG Mobile', icon: '🔫', dev: 'Tencent', items: [['30 UC', 8000], ['60 UC', 15000], ['120 UC', 29000], ['180 UC', 43000], ['300 UC', 70000]]},
+        {id: 'gi', name: 'Genshin Impact', icon: '✨', dev: 'HoYoverse', items: [['60 GC', 15000], ['300 GC', 70000], ['980 GC', 220000], ['1980 GC', 420000]]},
+        {id: 'valo', name: 'Valorant', icon: '🎯', dev: 'Riot', items: [['125 VP', 22000], ['420 VP', 62000], ['475 VP', 70000], ['1000 VP', 140000]]}
+    ],
+    pulsa: [
+        {id: 'tsel', name: 'Telkomsel', icon: '📱', dev: 'Pulsa', items: [['5000', 6500], ['10000', 11500], ['20000', 21500], ['50000', 51500], ['100000', 101500]]},
+        {id: 'xl', name: 'XL', icon: '📱', dev: 'Pulsa', items: [['5000', 6500], ['10000', 11500], ['20000', 21500], ['50000', 51500]]}
+    ],
+    data: [
+        {id: 'tsel-data', name: 'Telkomsel Data', icon: '📶', dev: 'Data', items: [['1GB', 12000], ['3GB', 32000], ['5GB', 50000], ['10GB', 95000]]}
+    ],
+    token: [
+        {id: 'pln', name: 'Token PLN', icon: '⚡', dev: 'PLN', items: [['20000', 22000], ['50000', 52000], ['100000', 102000]]}
+    ],
+    voucher: [
+        {id: 'steam', name: 'Steam Wallet', icon: '🎮', dev: 'Valve', items: [['30000', 35000], ['60000', 67000]]},
+        {id: 'google', name: 'Google Play', icon: '▶️', dev: 'Google', items: [['50000', 55000], ['100000', 105000]]}
+    ],
+    ewallet: [
+        {id: 'gopay', name: 'GoPay', icon: '💚', dev: 'Gojek', items: [['10000', 11500], ['20000', 21500], ['50000', 51500]]},
+        {id: 'dana', name: 'DANA', icon: '💙', dev: 'DANA', items: [['10000', 11500], ['20000', 21500], ['50000', 51500]]}
+    ]
+};
+
+let categoryMeta = {
+    game: {name: 'Game', icon: '🎮'},
+    pulsa: {name: 'Pulsa', icon: '📱'},
+    data: {name: 'Data', icon: '📶'},
+    token: {name: 'Token', icon: '⚡'},
+    voucher: {name: 'Voucher', icon: '🎬'},
+    ewallet: {name: 'E-Wallet', icon: '💳'}
+};
+
+// ================================================================
+// STATE
+// ================================================================
+const S = {
+    user: null,
+    admin: false,
+    orders: JSON.parse(localStorage.getItem('store_orders') || '[]'),
+    paymentMethods: JSON.parse(localStorage.getItem('store_payments') || '[]'),
+    markup: parseInt(localStorage.getItem('store_markup') || '30'),
+    selectedPayment: null,
+    currentCategory: 'all',
+    favorites: JSON.parse(localStorage.getItem('favorites') || '[]'),
+    coupons: JSON.parse(localStorage.getItem('store_coupons') || '{"WELCOME10":{"discount":10,"type":"percent","active":true},"HEMAT50":{"discount":5000,"type":"fixed","active":true}}')
+};
+
+if (!S.paymentMethods.length) {
+    S.paymentMethods = [
+        {name: 'DANA', number: '083170617054', holder: 'YAD Store'},
+        {name: 'GoPay', number: '083170617054', holder: 'YAD Store'},
+        {name: 'Seabank', number: '901825485120', holder: 'Karyadi'}
+    ];
+    localStorage.setItem('store_payments', JSON.stringify(S.paymentMethods));
+}
+
+// Load saved products
+loadProductsFromStorage();
+
+function calcPrice(p) { return Math.round(p * (1 + S.markup / 100)); }
+
+// ================================================================
+// UTILITY
+// ================================================================
+function toast(m, t) {
+    t = t || 'info';
+    var c = document.getElementById('toastContainer');
+    if (c) {
+        var d = document.createElement('div');
+        d.className = 'toast ' + t;
+        d.textContent = m;
+        c.appendChild(d);
+        setTimeout(function() { d.style.opacity = '0'; setTimeout(function() { d.remove(); }, 300); }, 3000);
+    }
+}
+
+function escapeHtml(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function formatRupiah(n) { return 'Rp ' + Number(n || 0).toLocaleString('id-ID'); }
+function generateOrderId() { return 'YAD-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2, 4).toUpperCase(); }
+function getStatusBadge(status) {
+    var cls = 'order-status-badge ' + (status || 'pending');
+    var label = {'pending': '⏳ PENDING', 'done': '✅ DONE', 'cancelled': '❌ CANCELLED', 'refund_pending': '🔄 REFUND'}[status] || status.toUpperCase();
+    return '<span class="' + cls + '">' + label + '</span>';
+}
+
+// ================================================================
+// ENKRIPSI & KEAMANAN
+// ================================================================
+function encryptData(data) {
+    try { return btoa(unescape(encodeURIComponent(data + '|' + SECRET_KEY))); } catch(e) { return null; }
+}
+function decryptData(encrypted) {
+    try {
+        const decoded = decodeURIComponent(escape(atob(encrypted)));
+        if (decoded.endsWith('|' + SECRET_KEY)) return decoded.slice(0, -(SECRET_KEY.length + 1));
+        return null;
+    } catch(e) { return null; }
+}
+
+const EditLock = {
+    isLocked: false, lockedBy: null, lockTime: null, lockDuration: 300000,
+    acquire(user) {
+        if (!S.admin) { toast('🔒 Hanya admin!', 'error'); return false; }
+        if (this.isLocked && this.lockedBy !== user && Date.now() - this.lockTime < this.lockDuration) {
+            toast('🔒 Dikunci oleh ' + this.lockedBy, 'error'); return false;
+        }
+        this.isLocked = true; this.lockedBy = user; this.lockTime = Date.now();
+        auditLog('LOCK_ACQUIRE', 'Lock oleh ' + user);
+        return true;
+    },
+    release(user) {
+        if (!this.isLocked) return true;
+        if (this.lockedBy !== user && !S.admin) return false;
+        this.isLocked = false; this.lockedBy = null; this.lockTime = null;
+        return true;
+    },
+    getInfo() { return {isLocked: this.isLocked, lockedBy: this.lockedBy, remainingTime: this.isLocked ? Math.max(0, this.lockDuration - (Date.now() - this.lockTime)) : 0}; }
+};
+
+const RateLimiter = {
+    attempts: {}, maxAttempts: 5, windowMs: 3600000,
+    check(action, max) {
+        const maxAttempts = max || this.maxAttempts;
+        const now = Date.now();
+        if (!this.attempts[action]) this.attempts[action] = [];
+        this.attempts[action] = this.attempts[action].filter(t => now - t < this.windowMs);
+        if (this.attempts[action].length >= maxAttempts) { toast('⏳ Terlalu banyak percobaan!', 'warning'); return false; }
+        this.attempts[action].push(now);
+        return true;
+    }
+};
+
+function auditLog(action, detail) {
+    const logs = JSON.parse(localStorage.getItem('audit_logs') || '[]');
+    logs.push({action, detail: detail || '', user: S.user ? S.user.email : 'guest', time: new Date().toISOString(), version: APP_VERSION});
+    if (logs.length > 200) logs.shift();
+    localStorage.setItem('audit_logs', JSON.stringify(logs));
+}
+function getAuditLogs(limit) { const logs = JSON.parse(localStorage.getItem('audit_logs') || '[]'); return limit ? logs.slice(-limit) : logs; }
+
+// ================================================================
+// PRODUCT MANAGEMENT
+// ================================================================
+function saveProductsToStorage() {
+    localStorage.setItem('yad_products', JSON.stringify(ALL_PRODUCTS));
+    localStorage.setItem('yad_category_meta', JSON.stringify(categoryMeta));
+    renderGames(S.currentCategory);
+    updateOrderGame();
+}
+
+function loadProductsFromStorage() {
+    try {
+        const saved = localStorage.getItem('yad_products');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            for (var key in ALL_PRODUCTS) {
+                if (parsed[key]) ALL_PRODUCTS[key] = parsed[key];
+            }
+        }
+        const savedMeta = localStorage.getItem('yad_category_meta');
+        if (savedMeta) categoryMeta = JSON.parse(savedMeta);
+    } catch(e) { console.error('Load products failed:', e); }
+}
+
+// Tambah Items Massal
+function addItemsBulk(categoryId, gameId, itemsText) {
+    if (!S.admin) { toast('🔒 Hanya admin!', 'error'); return {success: false, added: 0}; }
+    const category = ALL_PRODUCTS[categoryId];
+    if (!category) { toast('❌ Kategori tidak ditemukan!', 'error'); return {success: false, added: 0}; }
+    const game = category.find(g => g.id === gameId);
+    if (!game) { toast('❌ Produk tidak ditemukan!', 'error'); return {success: false, added: 0}; }
+    
+    const lines = itemsText.split('\n');
+    let added = 0;
+    lines.forEach(line => {
+        line = line.trim();
+        if (!line) return;
+        const parts = line.split('|');
+        if (parts.length >= 2) {
+            const itemName = parts[0].trim();
+            const itemPrice = parseInt(parts[1].trim());
+            if (itemName && itemPrice > 0) { game.items.push([itemName, itemPrice]); added++; }
+        }
+    });
+    game.items.sort((a, b) => a[1] - b[1]);
+    saveProductsToStorage();
+    auditLog('ITEMS_BULK_ADD', categoryId + '/' + gameId + ': ' + added + ' items');
+    toast('✅ ' + added + ' item ditambahkan!', 'success');
+    return {success: true, added};
+}
+
+// Hapus Items Massal
+function deleteItemsBulk(categoryId, gameId, itemIndexes) {
+    if (!S.admin) { toast('🔒 Hanya admin!', 'error'); return {success: false, deleted: 0}; }
+    const game = (ALL_PRODUCTS[categoryId] || []).find(g => g.id === gameId);
+    if (!game) return {success: false, deleted: 0};
+    itemIndexes.sort((a, b) => b - a);
+    let deleted = 0;
+    itemIndexes.forEach(index => { if (index >= 0 && index < game.items.length) { game.items.splice(index, 1); deleted++; } });
+    saveProductsToStorage();
+    auditLog('ITEMS_BULK_DELETE', categoryId + '/' + gameId + ': ' + deleted + ' items');
+    toast('🗑️ ' + deleted + ' item dihapus!', 'success');
+    return {success: true, deleted};
+}
+
+// Tambah Kategori
+function addCategory(categoryId, categoryName, icon) {
+    if (!S.admin) { toast('🔒 Hanya admin!', 'error'); return false; }
+    if (ALL_PRODUCTS[categoryId]) { toast('❌ Kategori sudah ada!', 'error'); return false; }
+    ALL_PRODUCTS[categoryId] = [];
+    categoryMeta[categoryId] = {name: categoryName, icon: icon || '📦'};
+    saveProductsToStorage();
+    auditLog('CATEGORY_ADD', categoryId + ': ' + categoryName);
+    toast('✅ Kategori "' + categoryName + '" ditambahkan!', 'success');
+    return true;
+}
+
+// Hapus Kategori
+function deleteCategory(categoryId) {
+    if (!S.admin) { toast('🔒 Hanya admin!', 'error'); return false; }
+    if (!ALL_PRODUCTS[categoryId]) { toast('❌ Kategori tidak ditemukan!', 'error'); return false; }
+    if (!confirm('⚠️ Hapus kategori "' + categoryId + '"?\n\nSemua produk di dalamnya akan DIHAPUS!')) return false;
+    if (!confirm('🔴 KONFIRMASI TERAKHIR!')) return false;
+    delete ALL_PRODUCTS[categoryId];
+    delete categoryMeta[categoryId];
+    saveProductsToStorage();
+    auditLog('CATEGORY_DELETE', categoryId);
+    toast('🗑️ Kategori dihapus!', 'success');
+    return true;
+}
+
+// Tambah Produk
+function addProduct(categoryId, productData) {
+    if (!S.admin) { toast('🔒 Hanya admin!', 'error'); return false; }
+    if (!ALL_PRODUCTS[categoryId]) { toast('❌ Kategori tidak ditemukan!', 'error'); return false; }
+    if (ALL_PRODUCTS[categoryId].find(p => p.id === productData.id)) { toast('❌ Produk sudah ada!', 'error'); return false; }
+    ALL_PRODUCTS[categoryId].push(productData);
+    saveProductsToStorage();
+    auditLog('PRODUCT_ADD', categoryId + '/' + productData.id);
+    toast('✅ Produk "' + productData.name + '" ditambahkan!', 'success');
+    return true;
+}
+
+// Hapus Produk
+function deleteProduct(categoryId, productId) {
+    if (!S.admin) { toast('🔒 Hanya admin!', 'error'); return false; }
+    const index = (ALL_PRODUCTS[categoryId] || []).findIndex(p => p.id === productId);
+    if (index === -1) return false;
+    if (!confirm('Hapus produk "' + ALL_PRODUCTS[categoryId][index].name + '"?')) return false;
+    ALL_PRODUCTS[categoryId].splice(index, 1);
+    saveProductsToStorage();
+    auditLog('PRODUCT_DELETE', categoryId + '/' + productId);
+    toast('🗑️ Produk dihapus!', 'success');
+    return true;
+}
+
+// Export/Import
+function exportProducts() {
+    const data = {products: ALL_PRODUCTS, categories: categoryMeta, exportedAt: new Date().toISOString(), version: APP_VERSION};
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'yad_products_' + Date.now() + '.json';
+    a.click();
+    auditLog('PRODUCTS_EXPORT', 'Export products data');
+    toast('✅ Data produk diexport!', 'success');
+}
+
+function importProducts(file) {
+    if (!S.admin) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            if (!data.products || !data.categories) { toast('❌ Format tidak valid!', 'error'); return; }
+            if (!confirm('⚠️ Import akan MENGGANTI semua produk!\n\nLanjutkan?')) return;
+            localStorage.setItem('products_backup', JSON.stringify({products: ALL_PRODUCTS, categories: categoryMeta}));
+            for (var key in ALL_PRODUCTS) delete ALL_PRODUCTS[key];
+            for (var key in data.products) ALL_PRODUCTS[key] = data.products[key];
+            categoryMeta = data.categories;
+            saveProductsToStorage();
+            auditLog('PRODUCTS_IMPORT', 'Import products');
+            toast('✅ Produk diimport!', 'success');
+            location.reload();
+        } catch(e) { toast('❌ Gagal import: ' + e.message, 'error'); }
+    };
+    reader.readAsText(file);
+}
+
+function exportOrders() {
+    var csv = 'Order ID,Game,Item,Price,Status,UID,Email,Time\n';
+    S.orders.forEach(o => {
+        csv += o.id + ',' + o.game + ',' + o.item + ',' + o.price + ',' + o.status + ',' + o.uid + ',' + (o.email || '') + ',' + o.time + '\n';
+    });
+    const blob = new Blob([csv], {type: 'text/csv'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'yad_orders_' + Date.now() + '.csv';
+    a.click();
+    auditLog('ORDERS_EXPORT', 'Export orders');
+    toast('✅ Data pesanan diexport!', 'success');
+}
+
+// ================================================================
+// MANAJEMEN MASSAL PANEL
+// ================================================================
+function openBulkManagement() {
+    if (!S.admin) { toast('🔒 Hanya admin!', 'error'); return; }
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal show';
+    modal.id = 'bulkModal';
+    modal.innerHTML = 
+        '<div class="modal-dialog" style="max-width:700px">' +
+        '<div class="modal-header"><h3 style="color:#fff;font-size:16px;margin:0">📦 Manajemen Massal</h3><span onclick="closeBulkModal()" style="cursor:pointer;font-size:22px;color:#9090a8">×</span></div>' +
+        '<div class="modal-body">' +
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">' +
+        '<button class="btn btn-primary btn-sm" onclick="switchBulkTab(\'items\')">📦 Items</button>' +
+        '<button class="btn btn-sm" onclick="switchBulkTab(\'categories\')">📁 Kategori</button>' +
+        '<button class="btn btn-sm" onclick="switchBulkTab(\'products\')">🎮 Produk</button>' +
+        '<button class="btn btn-sm" onclick="switchBulkTab(\'import\')">📤 Import/Export</button>' +
+        '</div>' +
+        '<div id="bulkContent"></div>' +
+        '</div>' +
+        '<div class="modal-footer"><button onclick="closeBulkModal()" class="btn btn-sm">✕ Tutup</button></div>' +
+        '</div>';
+    document.body.appendChild(modal);
+    switchBulkTab('items');
+}
+
+function closeBulkModal() {
+    const modal = document.getElementById('bulkModal');
+    if (modal) modal.remove();
+}
+
+function switchBulkTab(tab) {
+    const content = document.getElementById('bulkContent');
+    if (!content) return;
+    
+    if (tab === 'items') {
+        content.innerHTML = 
+            '<div class="form-group"><label>📁 Kategori</label><select id="bulkCategory" onchange="updateBulkGame()">' +
+            Object.keys(ALL_PRODUCTS).map(cat => '<option value="' + cat + '">' + (categoryMeta[cat]?.name || cat) + '</option>').join('') +
+            '</select></div>' +
+            '<div class="form-group"><label>🎮 Produk</label><select id="bulkGame"></select></div>' +
+            '<div class="form-group"><label>📝 Tambah Items (Format: Nama|Harga per baris)</label>' +
+            '<textarea id="bulkAddItems" style="min-height:120px;font-family:monospace;width:100%;padding:10px;background:#0d0d20;border:1px solid #252540;border-radius:8px;color:#e8e8f0;font-size:12px" placeholder="Diamond 100|15000&#10;Diamond 200|28000"></textarea></div>' +
+            '<button class="btn btn-success" onclick="bulkAddItems()" style="width:100%;padding:12px">✅ Tambah Items</button>' +
+            '<hr style="margin:20px 0;border-color:var(--border)">' +
+            '<div class="form-group"><label>🗑️ Hapus Items (Index pisah koma)</label>' +
+            '<input id="bulkDeleteIndexes" placeholder="Contoh: 0,2,5" style="width:100%;padding:10px;background:#0d0d20;border:1px solid #252540;border-radius:8px;color:#e8e8f0;font-size:12px">' +
+            '<button class="btn btn-danger" onclick="bulkDeleteItems()" style="width:100%;padding:12px;margin-top:8px">🗑️ Hapus Items</button></div>' +
+            '<div id="bulkItemsList" style="margin-top:16px"></div>';
+        updateBulkGame();
+    }
+    else if (tab === 'categories') {
+        content.innerHTML = 
+            '<div class="form-group"><label>📁 Tambah Kategori</label>' +
+            '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+            '<input id="newCategoryId" placeholder="ID (contoh: streaming)" style="flex:1;min-width:120px;padding:8px;background:#0d0d20;border:1px solid #252540;border-radius:6px;color:#e8e8f0;font-size:12px">' +
+            '<input id="newCategoryName" placeholder="Nama (contoh: Streaming)" style="flex:1;min-width:120px;padding:8px;background:#0d0d20;border:1px solid #252540;border-radius:6px;color:#e8e8f0;font-size:12px">' +
+            '<input id="newCategoryIcon" placeholder="Icon" style="width:60px;padding:8px;background:#0d0d20;border:1px solid #252540;border-radius:6px;color:#e8e8f0;font-size:12px">' +
+            '</div>' +
+            '<button class="btn btn-success" onclick="bulkAddCategory()" style="width:100%;padding:12px;margin-top:8px">✅ Tambah Kategori</button></div>' +
+            '<hr style="margin:20px 0;border-color:var(--border)">' +
+            '<div id="categoriesList"></div>';
+        renderCategoriesList();
+    }
+    else if (tab === 'products') {
+        content.innerHTML = 
+            '<div class="form-group"><label>📁 Kategori</label><select id="bulkProductCategory" onchange="renderProductsList()">' +
+            Object.keys(ALL_PRODUCTS).map(cat => '<option value="' + cat + '">' + (categoryMeta[cat]?.name || cat) + '</option>').join('') +
+            '</select></div>' +
+            '<div class="form-group"><label>🎮 Tambah Produk</label>' +
+            '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+            '<input id="newProductId" placeholder="ID" style="flex:1;min-width:80px;padding:8px;background:#0d0d20;border:1px solid #252540;border-radius:6px;color:#e8e8f0;font-size:12px">' +
+            '<input id="newProductName" placeholder="Nama" style="flex:1;min-width:100px;padding:8px;background:#0d0d20;border:1px solid #252540;border-radius:6px;color:#e8e8f0;font-size:12px">' +
+            '<input id="newProductIcon" placeholder="Icon" style="width:50px;padding:8px;background:#0d0d20;border:1px solid #252540;border-radius:6px;color:#e8e8f0;font-size:12px">' +
+            '<input id="newProductDev" placeholder="Developer" style="flex:1;min-width:80px;padding:8px;background:#0d0d20;border:1px solid #252540;border-radius:6px;color:#e8e8f0;font-size:12px">' +
+            '</div>' +
+            '<button class="btn btn-success" onclick="bulkAddProduct()" style="width:100%;padding:12px;margin-top:8px">✅ Tambah Produk</button></div>' +
+            '<hr style="margin:20px 0;border-color:var(--border)">' +
+            '<div id="productsList"></div>';
+        renderProductsList();
+    }
+    else if (tab === 'import') {
+        content.innerHTML = 
+            '<div class="form-group"><label>📤 Export Data</label>' +
+            '<button class="btn btn-primary" onclick="exportProducts()" style="width:100%;padding:12px">📤 Export Products (JSON)</button>' +
+            '<button class="btn btn-primary" onclick="exportOrders()" style="width:100%;padding:12px;margin-top:8px">📤 Export Orders (CSV)</button></div>' +
+            '<hr style="margin:20px 0;border-color:var(--border)">' +
+            '<div class="form-group"><label>📥 Import Data</label>' +
+            '<input type="file" accept=".json" onchange="importProducts(this.files[0])" style="width:100%;padding:8px;background:#0d0d20;border:1px solid #252540;border-radius:6px;color:#e8e8f0;font-size:12px">' +
+            '<p style="font-size:10px;color:var(--text-dim);margin-top:4px">Format: JSON dari export</p></div>' +
+            '<hr style="margin:20px 0;border-color:var(--border)">' +
+            '<div class="form-group"><label>💾 Backup & Restore</label>' +
+            '<button class="btn btn-warning" onclick="backupProducts()" style="width:100%;padding:12px">💾 Backup Produk</button>' +
+            '<button class="btn btn-danger" onclick="restoreProducts()" style="width:100%;padding:12px;margin-top:8px">🔄 Restore Backup</button></div>';
+    }
+}
+
+function updateBulkGame() {
+    const catId = document.getElementById('bulkCategory').value;
+    const products = ALL_PRODUCTS[catId] || [];
+    document.getElementById('bulkGame').innerHTML = products.map(p => '<option value="' + p.id + '">' + p.icon + ' ' + p.name + '</option>').join('');
+    renderBulkItemsList();
+}
+
+function renderBulkItemsList() {
+    const catId = document.getElementById('bulkCategory')?.value;
+    const gameId = document.getElementById('bulkGame')?.value;
+    const listDiv = document.getElementById('bulkItemsList');
+    if (!listDiv || !catId || !gameId) return;
+    const game = (ALL_PRODUCTS[catId] || []).find(p => p.id === gameId);
+    if (!game || !game.items.length) { listDiv.innerHTML = '<p style="color:var(--text-dim)">📭 Tidak ada items</p>'; return; }
+    listDiv.innerHTML = '<b>📦 Items (' + game.items.length + '):</b>' + game.items.map((item, i) =>
+        '<div style="display:flex;justify-content:space-between;padding:6px;background:var(--bg-input);border-radius:4px;margin:4px 0">' +
+        '<span>' + i + '. ' + escapeHtml(item[0]) + '</span><span class="item-price">' + formatRupiah(calcPrice(item[1])) + '</span></div>'
+    ).join('');
+}
+
+function bulkAddItems() {
+    const catId = document.getElementById('bulkCategory').value;
+    const gameId = document.getElementById('bulkGame').value;
+    const itemsText = document.getElementById('bulkAddItems').value;
+    const result = addItemsBulk(catId, gameId, itemsText);
+    if (result.success) { document.getElementById('bulkAddItems').value = ''; renderBulkItemsList(); }
+}
+
+function bulkDeleteItems() {
+    const catId = document.getElementById('bulkCategory').value;
+    const gameId = document.getElementById('bulkGame').value;
+    const indexesText = document.getElementById('bulkDeleteIndexes').value;
+    const indexes = indexesText.split(',').map(i => parseInt(i.trim())).filter(i => !isNaN(i));
+    const result = deleteItemsBulk(catId, gameId, indexes);
+    if (result.success) { document.getElementById('bulkDeleteIndexes').value = ''; renderBulkItemsList(); }
+}
+
+function bulkAddCategory() {
+    const id = document.getElementById('newCategoryId').value.trim();
+    const name = document.getElementById('newCategoryName').value.trim();
+    const icon = document.getElementById('newCategoryIcon').value.trim();
+    if (!id || !name) { toast('❌ ID dan Nama wajib!', 'error'); return; }
+    if (addCategory(id, name, icon)) { switchBulkTab('categories'); }
+}
+
+function renderCategoriesList() {
+    const listDiv = document.getElementById('categoriesList');
+    if (!listDiv) return;
+    listDiv.innerHTML = Object.keys(ALL_PRODUCTS).map(cat => {
+        const meta = categoryMeta[cat] || {name: cat, icon: '📦'};
+        return '<div style="display:flex;justify-content:space-between;padding:8px;background:var(--bg-input);border-radius:4px;margin:4px 0;font-size:12px">' +
+            '<span>' + meta.icon + ' ' + escapeHtml(meta.name) + ' <small style="color:var(--text-dim)">(' + cat + ')</small></span>' +
+            '<span>' + ALL_PRODUCTS[cat].length + ' produk</span>' +
+            '<button class="btn btn-danger btn-sm" onclick="bulkDeleteCategory(\'' + cat + '\')">✕</button></div>';
+    }).join('');
+}
+
+function bulkDeleteCategory(catId) { if (deleteCategory(catId)) renderCategoriesList(); }
+
+function bulkAddProduct() {
+    const catId = document.getElementById('bulkProductCategory').value;
+    const id = document.getElementById('newProductId').value.trim();
+    const name = document.getElementById('newProductName').value.trim();
+    const icon = document.getElementById('newProductIcon').value.trim() || '📦';
+    const dev = document.getElementById('newProductDev').value.trim() || 'Custom';
+    if (!id || !name) { toast('❌ ID dan Nama wajib!', 'error'); return; }
+    if (addProduct(catId, {id, name, icon, dev, items: []})) { renderProductsList(); }
+}
+
+function renderProductsList() {
+    const listDiv = document.getElementById('productsList');
+    if (!listDiv) return;
+    const catId = document.getElementById('bulkProductCategory').value;
+    const products = ALL_PRODUCTS[catId] || [];
+    listDiv.innerHTML = '<b>🎮 Produk (' + products.length + '):</b>' + products.map((p, i) =>
+        '<div style="display:flex;justify-content:space-between;padding:8px;background:var(--bg-input);border-radius:4px;margin:4px 0;font-size:12px">' +
+        '<span>' + p.icon + ' ' + escapeHtml(p.name) + ' <small style="color:var(--text-dim)">(' + p.items.length + ' items)</small></span>' +
+        '<button class="btn btn-danger btn-sm" onclick="bulkDeleteProduct(\'' + catId + '\',\'' + p.id + '\')">✕</button></div>'
+    ).join('');
+}
+
+function bulkDeleteProduct(catId, prodId) { if (deleteProduct(catId, prodId)) renderProductsList(); }
+
+function backupProducts() {
+    localStorage.setItem('products_backup', JSON.stringify({products: ALL_PRODUCTS, categories: categoryMeta, time: new Date().toISOString()}));
+    auditLog('PRODUCTS_BACKUP', 'Manual backup');
+    toast('✅ Backup produk dibuat!', 'success');
+}
+
+function restoreProducts() {
+    const backup = localStorage.getItem('products_backup');
+    if (!backup) { toast('❌ Tidak ada backup!', 'error'); return; }
+    if (!confirm('⚠️ Restore backup produk?')) return;
+    const data = JSON.parse(backup);
+    for (var key in ALL_PRODUCTS) delete ALL_PRODUCTS[key];
+    for (var key in data.products) ALL_PRODUCTS[key] = data.products[key];
+    categoryMeta = data.categories;
+    saveProductsToStorage();
+    auditLog('PRODUCTS_RESTORE', 'Restore from backup');
+    toast('✅ Produk direstore!', 'success');
+}
+
+// ================================================================
+// MANAJEMEN KUPON
+// ================================================================
+function openCouponManagement() {
+    if (!S.admin) { toast('🔒 Hanya admin!', 'error'); return; }
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal show';
+    modal.innerHTML = 
+        '<div class="modal-dialog">' +
+        '<div class="modal-header"><h3 style="color:#fff;font-size:16px;margin:0">🎟️ Manajemen Kupon</h3><span onclick="this.closest(\'.modal\').remove()" style="cursor:pointer;font-size:22px;color:#9090a8">×</span></div>' +
+        '<div class="modal-body">' +
+        '<div class="form-group"><label>➕ Tambah Kupon</label>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+        '<input id="newCouponCode" placeholder="Kode (contoh: GAMER20)" style="flex:1;min-width:100px;padding:8px;background:#0d0d20;border:1px solid #252540;border-radius:6px;color:#e8e8f0;font-size:12px">' +
+        '<input id="newCouponDiscount" placeholder="Diskon" style="width:80px;padding:8px;background:#0d0d20;border:1px solid #252540;border-radius:6px;color:#e8e8f0;font-size:12px" type="number">' +
+        '<select id="newCouponType" style="padding:8px;background:#0d0d20;border:1px solid #252540;border-radius:6px;color:#e8e8f0;font-size:12px">' +
+        '<option value="percent">%</option><option value="fixed">Rp</option></select>' +
+        '</div>' +
+        '<button class="btn btn-success" onclick="addNewCoupon()" style="width:100%;padding:12px;margin-top:8px">✅ Tambah Kupon</button></div>' +
+        '<hr style="margin:20px 0;border-color:var(--border)">' +
+        '<div id="couponsList"></div>' +
+        '</div>' +
+        '<div class="modal-footer"><button onclick="this.closest(\'.modal\').remove()" class="btn btn-sm">✕ Tutup</button></div>' +
+        '</div>';
+    document.body.appendChild(modal);
+    renderCouponsList();
+}
+
+function renderCouponsList() {
+    const listDiv = document.getElementById('couponsList');
+    if (!listDiv) return;
+    const coupons = S.coupons;
+    const keys = Object.keys(coupons);
+    listDiv.innerHTML = '<b>🎟️ Kupon (' + keys.length + '):</b>' + keys.map(code => {
+        const c = coupons[code];
+        return '<div style="display:flex;justify-content:space-between;padding:8px;background:var(--bg-input);border-radius:4px;margin:4px 0;font-size:12px">' +
+            '<span><b>' + escapeHtml(code) + '</b> - ' + c.discount + (c.type === 'percent' ? '%' : ' Rp') + ' ' + (c.active ? '✅' : '❌') + '</span>' +
+            '<div><button class="btn btn-sm ' + (c.active ? 'btn-warning' : 'btn-success') + '" onclick="toggleCoupon(\'' + code + '\')">' + (c.active ? 'Nonaktif' : 'Aktif') + '</button> ' +
+            '<button class="btn btn-danger btn-sm" onclick="deleteCoupon(\'' + code + '\')">✕</button></div></div>';
+    }).join('') || '<p style="color:var(--text-dim)">📭 Tidak ada kupon</p>';
+}
+
+function addNewCoupon() {
+    const code = document.getElementById('newCouponCode').value.trim().toUpperCase();
+    const discount = parseInt(document.getElementById('newCouponDiscount').value);
+    const type = document.getElementById('newCouponType').value;
+    if (!code || !discount || discount <= 0) { toast('❌ Lengkapi data!', 'error'); return; }
+    if (S.coupons[code]) { toast('❌ Kode sudah ada!', 'error'); return; }
+    S.coupons[code] = {discount, type, active: true};
+    localStorage.setItem('store_coupons', JSON.stringify(S.coupons));
+    auditLog('COUPON_ADD', code);
+    toast('✅ Kupon "' + code + '" ditambahkan!', 'success');
+    renderCouponsList();
+    document.getElementById('newCouponCode').value = '';
+    document.getElementById('newCouponDiscount').value = '';
+}
+
+function toggleCoupon(code) {
+    if (S.coupons[code]) {
+        S.coupons[code].active = !S.coupons[code].active;
+        localStorage.setItem('store_coupons', JSON.stringify(S.coupons));
+        renderCouponsList();
+    }
+}
+
+function deleteCoupon(code) {
+    if (!confirm('Hapus kupon "' + code + '"?')) return;
+    delete S.coupons[code];
+    localStorage.setItem('store_coupons', JSON.stringify(S.coupons));
+    auditLog('COUPON_DELETE', code);
+    renderCouponsList();
+}
+
+// ================================================================
+// RENDER GAMES
+// ================================================================
+function renderGames(cat) {
+    S.currentCategory = cat || 'all';
+    var products = [];
+    if (S.currentCategory === 'all') {
+        for (var k in ALL_PRODUCTS) { products = products.concat(ALL_PRODUCTS[k]); }
+    } else {
+        products = ALL_PRODUCTS[S.currentCategory] || [];
+    }
+    
+    document.getElementById('gameGrid').innerHTML = products.map(function(g) {
+        var isFav = S.favorites.includes(g.id);
+        return '<div class="game-card" onclick="selectProduct(\'' + S.currentCategory + '\',\'' + g.id + '\')">' +
+            '<button class="favorite-btn" onclick="event.stopPropagation();toggleFavorite(\'' + g.id + '\')" style="color:' + (isFav ? '#ef4444' : '#9090a8') + '">' + (isFav ? '❤️' : '🤍') + '</button>' +
+            '<div class="game-header"><span style="font-size:40px;">' + g.icon + '</span>' +
+            '<div><div class="game-name">' + escapeHtml(g.name) + '</div>' +
+            '<div class="game-developer">' + g.dev + '</div></div></div>' +
+            '<div class="item-list">' +
+            g.items.slice(0, 5).map(function(i) {
+                return '<div class="item-row" onclick="event.stopPropagation();quickOrder(\'' + escapeHtml(g.name) + '\',\'' + escapeHtml(i[0]) + '\',\'' + i[1] + '\')">' +
+                    '<span>' + escapeHtml(i[0]) + '</span>' +
+                    '<span class="item-price">' + formatRupiah(calcPrice(i[1])) + '</span></div>';
+            }).join('') +
+            '</div></div>';
+    }).join('');
+    
+    // Update category tabs
+    renderCategoryTabs();
+}
+
+function renderCategoryTabs() {
+    const tabs = document.getElementById('categoryTabs');
+    tabs.innerHTML = '<button class="cat-tab' + (S.currentCategory === 'all' ? ' active' : '') + '" onclick="filterCategory(\'all\',event)">🎮 Semua</button>' +
+        Object.keys(ALL_PRODUCTS).map(cat => {
+            const meta = categoryMeta[cat] || {name: cat, icon: '📦'};
+            return '<button class="cat-tab' + (S.currentCategory === cat ? ' active' : '') + '" onclick="filterCategory(\'' + cat + '\',event)">' + meta.icon + ' ' + escapeHtml(meta.name) + '</button>';
+        }).join('');
+}
+
+function filterCategory(c, e) {
+    S.currentCategory = c;
+    renderGames(c);
+    // Update active tab
+    document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+    if (e && e.currentTarget) e.currentTarget.classList.add('active');
+}
+
+function selectProduct(cat, id) {
+    var products = ALL_PRODUCTS[cat] || [];
+    var game = products.find(function(p) { return p.id === id; });
+    if (!game) return;
+    updateOrderGame(cat);
+    document.getElementById('orderGame').value = game.name;
+    document.getElementById('orderItem').innerHTML = game.items.map(function(i) {
+        return '<option value="' + escapeHtml(i[0]) + '|' + i[1] + '">' + escapeHtml(i[0]) + ' - ' + formatRupiah(calcPrice(i[1])) + '</option>';
+    }).join('');
+    updateTotalPrice();
+    showSection('order');
+}
+
+function quickOrder(gameName, itemName, price) {
+    document.getElementById('orderGame').value = gameName;
+    document.getElementById('orderItem').innerHTML = '<option value="' + escapeHtml(itemName) + '|' + price + '">' + escapeHtml(itemName) + ' - ' + formatRupiah(calcPrice(price)) + '</option>';
+    updateTotalPrice();
+    showSection('order');
+}
+
+function updateOrderGame(cat) {
+    var category = cat || document.getElementById('orderCategory').value;
+    var products = ALL_PRODUCTS[category] || [];
+    
+    // Update category dropdown
+    var catSelect = document.getElementById('orderCategory');
+    catSelect.innerHTML = Object.keys(ALL_PRODUCTS).map(function(k) {
+        var meta = categoryMeta[k] || {name: k};
+        return '<option value="' + k + '"' + (k === category ? ' selected' : '') + '>' + meta.icon + ' ' + escapeHtml(meta.name) + '</option>';
+    }).join('');
+    
+    document.getElementById('orderGame').innerHTML = '<option value="">Pilih Produk</option>' +
+        products.map(function(p) {
+            return '<option value="' + escapeHtml(p.name) + '">' + p.icon + ' ' + escapeHtml(p.name) + '</option>';
+        }).join('');
+    
+    document.getElementById('orderGame').onchange = function() {
+        var selected = products.find(function(p) { return p.name === this.value; });
+        if (selected) {
+            document.getElementById('orderItem').innerHTML = selected.items.map(function(i) {
+                return '<option value="' + escapeHtml(i[0]) + '|' + i[1] + '">' + escapeHtml(i[0]) + ' - ' + formatRupiah(calcPrice(i[1])) + '</option>';
+            }).join('');
+            updateTotalPrice();
+        }
+    };
+}
+
+function updateTotalPrice() {
+    var value = document.getElementById('orderItem').value;
+    var total = value ? calcPrice(parseInt(value.split('|')[1])) : 0;
+    document.getElementById('totalPrice').textContent = formatRupiah(total);
+    document.getElementById('totalPrice').setAttribute('data-base', total);
+}
+
+function applyCoupon() {
+    var code = document.getElementById('couponCode').value.trim().toUpperCase();
+    var coupon = S.coupons[code];
+    if (!coupon || !coupon.active) {
+        toast('❌ Kupon tidak valid!', 'error');
+        return;
+    }
+    
+    var base = parseInt(document.getElementById('totalPrice').getAttribute('data-base') || '0');
+    var discount = coupon.type === 'percent' ? Math.round(base * coupon.discount / 100) : coupon.discount;
+    var newTotal = Math.max(0, base - discount);
+    
+    document.getElementById('totalPrice').innerHTML = formatRupiah(newTotal) + ' <small style="color:var(--green)">(-' + formatRupiah(discount) + ')</small>';
+    document.getElementById('totalPrice').setAttribute('data-discount', discount);
+    document.getElementById('totalPrice').setAttribute('data-coupon', code);
+    toast('✅ Kupon "' + code + '" diterapkan! Hemat ' + formatRupiah(discount), 'success');
+}
+
+// ================================================================
+// FAVORITES
+// ================================================================
+function toggleFavorite(productId) {
+    var index = S.favorites.indexOf(productId);
+    if (index > -1) {
+        S.favorites.splice(index, 1);
+        toast('🗑️ Dihapus dari favorit', 'info');
+    } else {
+        S.favorites.push(productId);
+        toast('❤️ Ditambahkan ke favorit', 'success');
+    }
+    localStorage.setItem('favorites', JSON.stringify(S.favorites));
+    renderGames(S.currentCategory);
+}
+
+// ================================================================
+// SEARCH
+// ================================================================
+function searchProducts() {
+    var query = document.getElementById('searchInput').value.toLowerCase().trim();
+    var category = document.getElementById('searchCategory').value;
+    
+    if (!query && category === 'all') {
+        renderGames('all');
+        return;
+    }
+    
+    var results = [];
+    for (var cat in ALL_PRODUCTS) {
+        if (category !== 'all' && cat !== category) continue;
+        ALL_PRODUCTS[cat].forEach(function(product) {
+            if (!query || product.name.toLowerCase().includes(query) || 
+                product.dev.toLowerCase().includes(query) ||
+                product.items.some(function(item) { return item[0].toLowerCase().includes(query); })) {
+                results.push({category: cat, product: product});
+            }
+        });
+    }
+    
+    var grid = document.getElementById('gameGrid');
+    if (!results.length) {
+        grid.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>Tidak ditemukan</p></div>';
+        return;
+    }
+    
+    grid.innerHTML = results.map(function(r) {
+        var product = r.product;
+        var isFav = S.favorites.includes(product.id);
+        return '<div class="game-card" onclick="selectProduct(\'' + r.category + '\',\'' + product.id + '\')">' +
+            '<button class="favorite-btn" onclick="event.stopPropagation();toggleFavorite(\'' + product.id + '\')" style="color:' + (isFav ? '#ef4444' : '#9090a8') + '">' + (isFav ? '❤️' : '🤍') + '</button>' +
+            '<div class="game-header"><span style="font-size:40px;">' + product.icon + '</span>' +
+            '<div><div class="game-name">' + escapeHtml(product.name) + '</div>' +
+            '<div class="game-developer">' + product.dev + ' | ' + (categoryMeta[r.category]?.name || r.category) + '</div></div></div>' +
+            '<div class="item-list">' +
+            product.items.slice(0, 5).map(function(item) {
+                return '<div class="item-row" onclick="event.stopPropagation();quickOrder(\'' + escapeHtml(product.name) + '\',\'' + escapeHtml(item[0]) + '\',\'' + item[1] + '\')">' +
+                    '<span>' + escapeHtml(item[0]) + '</span>' +
+                    '<span class="item-price">' + formatRupiah(calcPrice(item[1])) + '</span></div>';
+            }).join('') +
+            '</div></div>';
+    }).join('');
+}
+
+// ================================================================
+// THEME TOGGLE
+// ================================================================
+function toggleTheme() {
+    document.body.classList.toggle('light');
+    var isLight = document.body.classList.contains('light');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    document.getElementById('themeBtn').textContent = isLight ? '☀️' : '🌙';
+}
+
+// ================================================================
+// PAYMENTS
+// ================================================================
+function renderPayments() {
+    document.getElementById('paymentGrid').innerHTML = S.paymentMethods.map(function(p, i) {
+        return '<div class="payment-card" onclick="selectPayment(' + i + ')" id="payCard' + i + '">' +
+            '<div>🏦</div><b>' + escapeHtml(p.name) + '</b><br>' +
+            '<small>' + escapeHtml(p.number) + '</small><br>' +
+            '<small style="color:var(--text-dim)">' + escapeHtml(p.holder || '') + '</small></div>';
+    }).join('');
+}
+
+function selectPayment(i) {
+    S.selectedPayment = S.paymentMethods[i];
+    document.querySelectorAll('.payment-card').forEach(c => c.classList.remove('selected'));
+    var el = document.getElementById('payCard' + i);
+    if (el) el.classList.add('selected');
+}
+
+// ================================================================
+// NAVIGATION
+// ================================================================
+function showSection(section) {
+    ['homeSection', 'orderSection', 'statusSection'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+    });
+    document.getElementById(section + 'Section').classList.remove('hidden');
+}
+
+// ================================================================
+// ORDERS
+// ================================================================
+function validateOrder() {
+    var uid = document.getElementById('orderUID').value.trim();
+    var email = document.getElementById('orderEmail').value.trim();
+    var category = document.getElementById('orderCategory').value;
+    
+    if (uid.length < 3) { toast('❌ ID minimal 3 karakter!', 'error'); return false; }
+    if (category === 'pulsa' && !/^08\d{8,11}$/.test(uid)) { toast('❌ Nomor HP tidak valid!', 'error'); return false; }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast('❌ Email tidak valid!', 'error'); return false; }
+    return true;
+}
+
+async function submitOrder() {
+    if (!validateOrder()) return;
+    
+    var game = document.getElementById('orderGame').value;
+    var itemValue = document.getElementById('orderItem').value;
+    var uid = document.getElementById('orderUID').value.trim();
+    var email = document.getElementById('orderEmail').value.trim();
+    var server = document.getElementById('orderServer').value.trim();
+    
+    if (!game || !itemValue || !uid) { toast('❌ Lengkapi data!', 'error'); return; }
+    if (!S.selectedPayment) { toast('❌ Pilih pembayaran!', 'error'); return; }
+    
+    var parts = itemValue.split('|');
+    var basePrice = calcPrice(parseInt(parts[1]));
+    var discount = parseInt(document.getElementById('totalPrice').getAttribute('data-discount') || '0');
+    var totalPrice = basePrice - discount;
+    var orderId = generateOrderId();
+    
+    var order = {
+        id: orderId, game, item: parts[0], price: totalPrice, basePrice,
+        uid, server, email, payment: S.selectedPayment, status: 'pending',
+        time: new Date().toISOString(), coupon: document.getElementById('totalPrice').getAttribute('data-coupon') || null
+    };
+    
+    S.orders.unshift(order);
+    localStorage.setItem('store_orders', JSON.stringify(S.orders));
+    
+    try { await fs.collection('orders').add(order); } catch(e) {}
+    
+    auditLog('ORDER_CREATE', orderId + ' - ' + game);
+    toast('✅ Pesanan berhasil!', 'success');
+    addLive('🛒 ' + game + ' - ' + parts[0]);
+    
+    alert('✅ PESANAN BERHASIL!\n\nOrder ID: ' + orderId + '\nProduk: ' + game + ' - ' + parts[0] + '\nID/No HP: ' + uid + '\nTotal: ' + formatRupiah(totalPrice) + '\n\nSilakan transfer ke ' + S.selectedPayment.name + ' (' + S.selectedPayment.number + ')');
+    
+    document.getElementById('orderUID').value = '';
+    document.getElementById('orderEmail').value = '';
+    document.getElementById('orderServer').value = '';
+    document.getElementById('proofPreview').innerHTML = '';
+    document.getElementById('paymentProof').value = '';
+    document.getElementById('couponCode').value = '';
+    document.getElementById('totalPrice').removeAttribute('data-discount');
+    document.getElementById('totalPrice').removeAttribute('data-coupon');
+    updateProfileUI();
+}
+
+function previewProof() {
+    var file = document.getElementById('paymentProof').files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        document.getElementById('proofPreview').innerHTML = '<img src="' + e.target.result + '" style="max-width:200px;border-radius:8px;margin-top:8px">';
+    };
+    reader.readAsDataURL(file);
+}
+
+function checkOrder() {
+    var id = document.getElementById('checkOrderID').value.trim();
+    if (!id) { toast('❌ Masukkan Order ID!', 'error'); return; }
+    var order = S.orders.find(o => o.id.toLowerCase() === id.toLowerCase());
+    if (order) {
+        document.getElementById('orderResult').innerHTML =
+            '<div style="background:var(--bg-input);padding:12px;border-radius:8px;margin-top:10px">' +
+            '<b>' + escapeHtml(order.id) + '</b> ' + getStatusBadge(order.status) + '<br>' +
+            '🎮 ' + escapeHtml(order.game) + ' - ' + escapeHtml(order.item) + '<br>' +
+            '👤 ID: ' + escapeHtml(order.uid) + (order.server ? ' | Server: ' + escapeHtml(order.server) : '') + '<br>' +
+            '💰 ' + formatRupiah(order.price) + '<br>' +
+            '📅 ' + new Date(order.time).toLocaleString('id-ID') + '</div>';
+    } else {
+        document.getElementById('orderResult').innerHTML = '<p style="color:var(--red);margin-top:10px">❌ Pesanan tidak ditemukan</p>';
+    }
+}
+
+function loadUserHistory() {
+    var email = document.getElementById('historyEmail').value.trim().toLowerCase();
+    if (!email) return;
+    var orders = S.orders.filter(o => o.email && o.email.toLowerCase().includes(email));
+    document.getElementById('userOrderHistory').innerHTML = orders.length ?
+        orders.map(o => '<div style="background:var(--bg-input);padding:10px;margin:6px 0;border-radius:8px">' +
+            '<b>' + escapeHtml(o.id) + '</b> ' + getStatusBadge(o.status) + '<br>' +
+            escapeHtml(o.game) + ' - ' + escapeHtml(o.item) + '<br>' +
+            formatRupiah(o.price) + ' | ' + new Date(o.time).toLocaleDateString('id-ID') + '</div>').join('') :
+        '<p style="color:var(--text-dim);text-align:center;padding:10px">📭 Tidak ada pesanan</p>';
+}
+
+function addLive(message) {
+    var feed = document.getElementById('liveFeed');
+    var div = document.createElement('div');
+    div.className = 'live-item';
+    div.textContent = '[' + new Date().toLocaleTimeString('id-ID') + '] ' + message;
+    feed.insertBefore(div, feed.firstChild);
+    if (feed.children.length > 15) feed.removeChild(feed.lastChild);
+}
+
+// ================================================================
+// PROFILE
+// ================================================================
+var profileData = JSON.parse(localStorage.getItem('yad_profile') || '{"name":"","memberSince":"","points":0}');
+
+function openProfile() {
+    document.getElementById('profilePanel').style.display = 'flex';
+    updateProfileUI();
+}
+
+function closeProfile() { document.getElementById('profilePanel').style.display = 'none'; }
+
+function updateProfileUI() {
+    var loginSection = document.getElementById('profileLoginSection');
+    var loggedIn = document.getElementById('profileLoggedIn');
+    var logoutBtn = document.getElementById('profileLogoutBtn');
+    
+    if (S.user) {
+        loginSection.style.display = 'none';
+        loggedIn.style.display = 'block';
+        logoutBtn.style.display = 'inline-block';
+        
+        var name = profileData.name || S.user.displayName || S.user.email.split('@')[0] || 'User';
+        document.getElementById('profileName').textContent = name;
+        document.getElementById('profileEmail').textContent = S.user.email;
+        document.getElementById('profileRole').textContent = S.admin ? '👑 ADMIN' : '👤 USER';
+        document.getElementById('profileAvatar').textContent = name.charAt(0).toUpperCase();
+        
+        if (!profileData.memberSince) {
+            profileData.memberSince = new Date().toISOString();
+            localStorage.setItem('yad_profile', JSON.stringify(profileData));
+        }
+        document.getElementById('profileInfoSince').textContent = new Date(profileData.memberSince).toLocaleDateString('id-ID');
+        
+        var userOrders = S.orders.filter(o => o.email && o.email === S.user.email);
+        document.getElementById('profileTotalOrders').textContent = userOrders.length;
+        document.getElementById('profileTotalSpent').textContent = formatRupiah(userOrders.reduce((sum, o) => sum + (o.price || 0), 0));
+        document.getElementById('profilePoints').textContent = (profileData.points || 0) + userOrders.filter(o => o.status === 'done').length * 10;
+        
+        document.getElementById('profileOrders').innerHTML = userOrders.slice(-5).reverse().map(o =>
+            '<div class="profile-order-item"><b>' + escapeHtml(o.id) + '</b> ' + getStatusBadge(o.status) + '<br>' +
+            escapeHtml(o.game) + ' - ' + escapeHtml(o.item) + '<br>' + formatRupiah(o.price) + '</div>'
+        ).join('') || '<p style="font-size:10px;color:var(--text-dim)">Belum ada pesanan</p>';
+        
+        if (S.admin) {
+            document.getElementById('profileAdminSection').style.display = 'block';
+            document.getElementById('adminPendingOrders').textContent = S.orders.filter(o => o.status === 'pending').length;
+            document.getElementById('adminTotalRevenue').textContent = formatRupiah(S.orders.filter(o => o.status === 'done').reduce((sum, o) => sum + (o.price || 0), 0));
+            document.getElementById('adminTotalUsers').textContent = [...new Set(S.orders.filter(o => o.email).map(o => o.email))].length;
+        }
+        
+        var navBtn = document.getElementById('profileNavBtn');
+        if (navBtn) navBtn.innerHTML = S.admin ? '👑 ' + name : '👤 ' + name;
+    } else {
+        loginSection.style.display = 'block';
+        loggedIn.style.display = 'none';
+        logoutBtn.style.display = 'none';
+        document.getElementById('profileName').textContent = 'Pengguna';
+        document.getElementById('profileEmail').textContent = '-';
+        document.getElementById('profileAvatar').textContent = '👤';
+        var navBtn = document.getElementById('profileNavBtn');
+        if (navBtn) navBtn.innerHTML = '👤 Profil';
+    }
+}
+
+// ================================================================
+// AUTH
+// ================================================================
+async function handleLogin() {
+    try {
+        if (auth.currentUser) {
+            S.user = auth.currentUser;
+            S.admin = auth.currentUser.email === ADMIN_EMAIL;
+            updateUI();
+            return;
+        }
+        var result = await auth.signInWithPopup(googleProvider);
+        S.user = result.user;
+        S.admin = result.user.email === ADMIN_EMAIL;
+        auditLog('LOGIN', result.user.email);
+        updateUI();
+        toast('✅ Login berhasil!', 'success');
+    } catch(e) {
+        if (e.code === 'auth/popup-blocked') {
+            await auth.signInWithRedirect(googleProvider);
+        } else {
+            toast('❌ Login gagal: ' + e.message, 'error');
+        }
+    }
+}
+
+async function handleLogout() {
+    if (confirm('Logout?')) {
+        try {
+            await auth.signOut();
+            auditLog('LOGOUT', S.user ? S.user.email : 'unknown');
+            S.user = null;
+            S.admin = false;
+            updateUI();
+            closeProfile();
+        } catch(e) { toast('❌ ' + e.message, 'error'); }
+    }
+}
+
+auth.onAuthStateChanged(function(user) {
+    S.user = user || null;
+    S.admin = (user && user.email === ADMIN_EMAIL) || false;
+    updateUI();
+});
+
+function updateUI() {
+    var quickEditBar = document.getElementById('quickEditBar');
+    var loginBtn = document.getElementById('loginBtn');
+    var fitMenuBtn = document.getElementById('fitMenuBtn');
+    var consoleBtn = document.getElementById('consoleBtn');
+    
+    if (quickEditBar) quickEditBar.style.display = S.admin ? 'block' : 'none';
+    if (fitMenuBtn) fitMenuBtn.style.display = S.admin ? 'inline-flex' : 'none';
+    if (consoleBtn) consoleBtn.style.display = S.admin ? 'inline-block' : 'none';
+    if (loginBtn) loginBtn.style.display = S.user ? 'none' : 'inline-block';
+    
+    updateProfileUI();
+}
+
+// ================================================================
+// QUICK EDIT
+// ================================================================
+function quickEdit(type) {
+    if (!S.admin) return;
+    switch(type) {
+        case 'judul':
+            var title = prompt('Judul baru:');
+            if (title) { document.querySelector('.logo').textContent = title; document.title = title; }
+            break;
+        case 'warna':
+            var color = prompt('Warna aksen (hex):');
+            if (color) document.documentElement.style.setProperty('--accent', color);
+            break;
+        case 'bg':
+            var bg = prompt('Background (hex):');
+            if (bg) document.documentElement.style.setProperty('--bg', bg);
+            break;
+        case 'wa':
+            var wa = prompt('No WA:');
+            if (wa) document.querySelector('.whatsapp-float').href = 'https://wa.me/62' + wa.replace(/^0/, '');
+            break;
+        case 'toko':
+            var store = prompt('Nama toko:');
+            if (store) document.querySelector('.logo').textContent = '🎮 ' + store;
+            break;
+        case 'bulk':
+            openBulkManagement();
+            break;
+        case 'backup':
+            backupProducts();
+            break;
+        case 'analisis':
+            openAnalysis();
+            break;
+    }
+}
+
+// ================================================================
+// ANALYSIS
+// ================================================================
+function openAnalysis() {
+    if (!S.admin) return;
+    var panel = document.getElementById('analysisPanel');
+    var body = document.getElementById('analysisBody');
+    
+    var html = document.documentElement.outerHTML;
+    var totalChars = html.length;
+    var totalLines = html.split('\n').length;
+    var domNodes = document.getElementsByTagName('*').length;
+    
+    body.innerHTML = 
+        '<div class="analysis-section"><h3>📏 Statistik</h3>' +
+        '<table><tr><th>Metrik</th><th>Nilai</th></tr>' +
+        '<tr><td>Karakter</td><td>' + totalChars.toLocaleString('id-ID') + '</td></tr>' +
+        '<tr><td>Baris</td><td>' + totalLines.toLocaleString('id-ID') + '</td></tr>' +
+        '<tr><td>DOM Nodes</td><td>' + domNodes + '</td></tr>' +
+        '<tr><td>Kategori</td><td>' + Object.keys(ALL_PRODUCTS).length + '</td></tr>' +
+        '<tr><td>Produk</td><td>' + Object.values(ALL_PRODUCTS).reduce((sum, arr) => sum + arr.length, 0) + '</td></tr>' +
+        '<tr><td>Orders</td><td>' + S.orders.length + '</td></tr>' +
+        '<tr><td>Kupon</td><td>' + Object.keys(S.coupons).length + '</td></tr>' +
+        '</table></div>' +
+        '<div class="analysis-section"><h3>💾 Storage</h3>' +
+        '<table><tr><th>Key</th><th>Ukuran</th></tr>';
+    
+    var totalStorage = 0;
+    Object.keys(localStorage).forEach(function(key) {
+        var size = (localStorage.getItem(key) || '').length;
+        totalStorage += size;
+        body.innerHTML += '<tr><td>' + escapeHtml(key) + '</td><td>' + (size / 1024).toFixed(2) + ' KB</td></tr>';
+    });
+    body.innerHTML += '<tr><td><b>Total</b></td><td><b>' + (totalStorage / 1024).toFixed(2) + ' KB</b></td></tr></table></div>';
+    
+    panel.classList.add('show');
+}
+
+function closeAnalysis() { document.getElementById('analysisPanel').classList.remove('show'); }
+
+// ================================================================
+// AUTO FIX & OPTIMIZE
+// ================================================================
+async function runAutoFix() {
+    var issues = [];
+    var ids = {};
+    document.querySelectorAll('[id]').forEach(function(el) {
+        if (ids[el.id]) { issues.push({name: 'Duplicate ID: ' + el.id, fix: function() { el.remove(); }}); }
+        else ids[el.id] = true;
+    });
+    var fixed = 0;
+    issues.slice(0, 10).forEach(function(issue) { try { issue.fix(); fixed++; } catch(e) {} });
+    auditLog('AUTOFIX', fixed + '/' + issues.length);
+    toast('🔧 AutoFix: ' + fixed + '/' + issues.length + ' masalah diperbaiki', 'success');
+    return {issues: issues.length, fixed};
+}
+
+async function runOptimize() {
+    var cleaned = 0;
+    var seen = {};
+    document.querySelectorAll('[data-feature]').forEach(function(el) {
+        var name = el.getAttribute('data-feature');
+        if (seen[name]) { el.remove(); cleaned++; } else seen[name] = true;
+    });
+    auditLog('OPTIMIZE', cleaned + ' items');
+    toast('🔧 Optimize: ' + cleaned + ' item dibersihkan', 'success');
+    return {cleaned};
+}
+
+// ================================================================
+// AI CHAT
+// ================================================================
+function openAIChat() {
+    var widget = document.getElementById('aiChatWidget');
+    widget.classList.toggle('show');
+    if (widget.classList.contains('show')) {
+        document.getElementById('aiChatBody').classList.remove('hidden');
+        setTimeout(function() { document.getElementById('aiChatInput').focus(); }, 300);
+    }
+}
+
+function toggleAIChat() {
+    var body = document.getElementById('aiChatBody');
+    body.classList.toggle('hidden');
+    document.getElementById('aiChatToggle').textContent = body.classList.contains('hidden') ? '▶' : '▼';
+}
+
+async function sendAIMsg() {
+    var input = document.getElementById('aiChatInput');
+    var text = input.value.trim();
+    if (!text) return;
+    
+    var msgs = document.getElementById('aiChatMsgs');
+    msgs.innerHTML += '<div class="ai-msg user">' + escapeHtml(text) + '</div>';
+    input.value = '';
+    msgs.scrollTop = msgs.scrollHeight;
+    
+    var lowerText = text.toLowerCase();
+    var response = '';
+    
+    if (text === 'help') {
+        response = '📚 BANTUAN:\n' +
+            '💬 hai, kabar, harga\n' +
+            '🛒 cara pesan\n' +
+            '📋 cek pesanan [ID]\n' +
+            '💳 pembayaran\n' +
+            '🎟️ kupon\n' +
+            (S.admin ? '\n👑 ADMIN:\n' +
+            '🔸 konfirmasi [ID], tolak [ID]\n' +
+            '🔸 pending\n' +
+            '🔸 bulk - manajemen massal\n' +
+            '🔸 tambah item [kat]|[game]|[item]|[harga]\n' +
+            '🔸 tambah bayar [nama]|[nomor]\n' +
+            '🔸 tambah kupon [kode]|[diskon]|[type]\n' +
+            '🔸 markup [0-100]\n' +
+            '🔸 backup, restore\n' +
+            '🔸 console, autofix, optimize' : '');
+    }
+    else if (['hai', 'halo', 'hi'].some(g => lowerText.includes(g))) response = 'Halo! 😊';
+    else if (lowerText.includes('kabar')) response = 'Kabar baik! 😊';
+    else if (lowerText.includes('harga') || lowerText.includes('game')) response = '🎮 Game, Pulsa, Data, Token, Voucher, E-Wallet.';
+    else if (lowerText.includes('bayar')) {
+        response = '💳 PEMBAYARAN:\n' + S.paymentMethods.map(p => '• ' + p.name + ': ' + p.number).join('\n');
+    }
+    else if (lowerText.includes('kupon')) {
+        var activeCoupons = Object.keys(S.coupons).filter(c => S.coupons[c].active);
+        response = activeCoupons.length ? '🎟️ KUPON AKTIF:\n' + activeCoupons.map(c => '• ' + c).join('\n') : '📭 Tidak ada kupon aktif';
+    }
+    else if (lowerText.includes('cara') || lowerText.includes('pesan')) response = '🛒 1. Order 2. Pilih produk 3. ID 4. Bayar 5. Kirim';
+    else if (S.admin && lowerText === 'bulk') { openBulkManagement(); response = '📦 Manajemen massal dibuka!'; }
+    else if (S.admin && lowerText.startsWith('tambah kupon ')) {
+        var parts = text.replace(/tambah kupon\s+/i, '').split('|');
+        if (parts.length >= 2) {
+            var code = parts[0].trim().toUpperCase();
+            var disc = parseInt(parts[1]);
+            var type = parts[2]?.trim() || 'percent';
+            if (code && disc > 0) {
+                S.coupons[code] = {discount: disc, type, active: true};
+                localStorage.setItem('store_coupons', JSON.stringify(S.coupons));
+                response = '✅ Kupon "' + code + '" ditambahkan!';
+            }
+        }
+    }
+    else if (S.admin && lowerText.startsWith('konfirmasi ')) {
+        var id = text.replace(/konfirmasi\s+/i, '').trim().toUpperCase();
+        var order = S.orders.find(o => o.id.toUpperCase() === id);
+        if (order) { order.status = 'done'; localStorage.setItem('store_orders', JSON.stringify(S.orders)); response = '✅ ' + id + ' DIKONFIRMASI!'; }
+        else response = '❌ Tidak ditemukan';
+    }
+    else if (S.admin && lowerText.startsWith('tolak ')) {
+        var id = text.replace(/tolak\s+/i, '').trim().toUpperCase();
+        var order = S.orders.find(o => o.id.toUpperCase() === id);
+        if (order) { order.status = 'cancelled'; localStorage.setItem('store_orders', JSON.stringify(S.orders)); response = '❌ ' + id + ' DITOLAK'; }
+        else response = '❌ Tidak ditemukan';
+    }
+    else if (S.admin && lowerText === 'pending') {
+        var pending = S.orders.filter(o => o.status === 'pending');
+        response = pending.length ? '⏳ ' + pending.length + ' pending:\n' + pending.map(o => o.id).join('\n') : '📭 Kosong';
+    }
+    else response = '❓ Ketik "help" untuk bantuan.';
+    
+    setTimeout(function() {
+        msgs.innerHTML += '<div class="ai-msg">' + response.replace(/\n/g, '<br>') + '</div>';
+        msgs.scrollTop = msgs.scrollHeight;
+    }, 300);
+}
+
+// ================================================================
+// VOICE
+// ================================================================
+var isListening = false, recognition = null;
+function toggleVoice() { if (isListening) stopVoice(); else startVoice(); }
+function startVoice() {
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { alert('⚠️ Gunakan Chrome.'); return; }
+    recognition = new SR();
+    recognition.lang = 'id-ID';
+    recognition.interimResults = true;
+    recognition.onstart = function() { isListening = true; document.getElementById('voiceBtn').textContent = '🔴'; document.getElementById('voiceBtn').classList.add('listening'); };
+    recognition.onresult = function(event) {
+        var transcript = '';
+        for (var i = event.resultIndex; i < event.results.length; i++) transcript += event.results[i][0].transcript;
+        var input = document.getElementById('aiChatInput');
+        if (input && transcript) { input.value = transcript; input.focus(); }
+    };
+    recognition.onend = function() { stopVoice(); };
+    recognition.onerror = function() { stopVoice(); };
+    recognition.start();
+}
+function stopVoice() {
+    if (recognition) { try { recognition.stop(); } catch(e) {} }
+    isListening = false;
+    var btn = document.getElementById('voiceBtn');
+    if (btn) { btn.textContent = '🎤'; btn.classList.remove('listening'); }
+}
+
+// ================================================================
+// CONSOLE
+// ================================================================
+var currentConsoleTab = 'terminal';
+var consoleLogs = {terminal: [], debug: [], firebase: [], github: [], security: []};
+
+function openConsole() {
+    if (!S.admin) { toast('🔒 Admin only!', 'error'); return; }
+    document.getElementById('consolePanel').classList.add('show');
+    document.getElementById('consoleInput').focus();
+}
+function closeConsole() { document.getElementById('consolePanel').classList.remove('show'); }
+function switchConsoleTab(tab) {
+    currentConsoleTab = tab;
+    document.querySelectorAll('.console-tab').forEach(t => t.classList.remove('active'));
+    var tabMap = {terminal: 0, debug: 1, firebase: 2, github: 3, security: 4};
+    document.querySelectorAll('.console-tab')[tabMap[tab]]?.classList.add('active');
+    renderConsoleContent();
+}
+function consolePrint(message, type) {
+    type = type || 'info';
+    consoleLogs[currentConsoleTab] = consoleLogs[currentConsoleTab] || [];
+    consoleLogs[currentConsoleTab].push({message, type});
+    renderConsoleContent();
+}
+function renderConsoleContent() {
+    var content = document.getElementById('consoleContent');
+    var logs = consoleLogs[currentConsoleTab] || [];
+    content.innerHTML = logs.length ? logs.map(l => '<div class="console-line ' + l.type + '">' + escapeHtml(l.message) + '</div>').join('') : '<div class="console-line info">💡 Ketik "help".</div>';
+    content.scrollTop = content.scrollHeight;
+}
+async function executeConsole() {
+    var input = document.getElementById('consoleInput');
+    var command = input.value.trim();
+    if (!command) return;
+    consolePrint('➜ ' + command, 'cmd');
+    input.value = '';
+    var parts = command.split(' ');
+    var cmd = parts[0].toLowerCase();
+    var args = parts.slice(1);
+    
+    switch(cmd) {
+        case 'help': consolePrint('📋 PERINTAH: help, clear, exit, storage, orders, bulk, coupons, backup, autofix, optimize'); break;
+        case 'clear': consoleLogs[currentConsoleTab] = []; renderConsoleContent(); break;
+        case 'exit': closeConsole(); break;
+        case 'storage':
+            var total = 0;
+            Object.keys(localStorage).forEach(k => { var s = (localStorage.getItem(k) || '').length; total += s; consolePrint('• ' + k + ': ' + (s/1024).toFixed(1) + ' KB'); });
+            consolePrint('Total: ' + (total/1024).toFixed(1) + ' KB', 'warn');
+            break;
+        case 'orders': consolePrint('📋 Orders (' + S.orders.length + '):'); S.orders.slice(0, 10).forEach(o => consolePrint('• ' + o.id + ' | ' + o.status)); break;
+        case 'bulk': openBulkManagement(); consolePrint('📦 Bulk management dibuka', 'success'); break;
+        case 'coupons': consolePrint('🎟️ Kupon (' + Object.keys(S.coupons).length + '):'); Object.keys(S.coupons).forEach(c => consolePrint('• ' + c + ': ' + S.coupons[c].discount + (S.coupons[c].type === 'percent' ? '%' : ' Rp'))); break;
+        case 'backup': backupProducts(); consolePrint('✅ Backup dibuat', 'success'); break;
+        case 'autofix': var r = await runAutoFix(); consolePrint('🔧 ' + r.fixed + '/' + r.issues, 'success'); break;
+        case 'optimize': var r = await runOptimize(); consolePrint('🔧 ' + r.cleaned + ' item', 'success'); break;
+        case 'js': try { var result = eval(args.join(' ')); consolePrint('✅ ' + String(result), 'success'); } catch(e) { consolePrint('❌ ' + e.message, 'error'); } break;
+        default: consolePrint('❌ Tidak dikenal: ' + cmd, 'error');
+    }
+}
+
+// ================================================================
+// BACKUP & RESTORE (ANTI OVERRIDE)
+// ================================================================
+async function backupBeforePush() {
+    if (!S.admin) { toast('🔒 Hanya admin!', 'error'); return null; }
+    if (!RateLimiter.check('backup', 10)) return null;
+    const backupKey = 'backup_' + Date.now();
+    const html = document.documentElement.outerHTML;
+    try {
+        const encrypted = encryptData(html);
+        if (!encrypted) throw new Error('Enkripsi gagal');
+        localStorage.setItem(backupKey, encrypted);
+        const backups = JSON.parse(localStorage.getItem('backup_list') || '[]');
+        backups.push({key: backupKey, time: new Date().toISOString(), size: html.length, version: APP_VERSION, by: S.user.email});
+        if (backups.length > 10) { const old = backups.shift(); localStorage.removeItem(old.key); }
+        localStorage.setItem('backup_list', JSON.stringify(backups));
+        auditLog('BACKUP_CREATE', backupKey);
+        return backupKey;
+    } catch(e) { toast('❌ Backup gagal: ' + e.message, 'error'); return null; }
+}
+
+function listBackups() { return JSON.parse(localStorage.getItem('backup_list') || '[]'); }
+
+function restoreBackup(key) {
+    if (!S.admin) { toast('🔒 Hanya admin!', 'error'); return false; }
+    if (!RateLimiter.check('restore', 3)) return false;
+    if (!EditLock.acquire(S.user.email)) return false;
+    const encrypted = localStorage.getItem(key);
+    if (!encrypted) { toast('❌ Backup tidak ditemukan!', 'error'); EditLock.release(S.user.email); return false; }
+    if (!confirm('⚠️ Restore akan MENIMPA versi saat ini!\n\nLanjutkan?')) { EditLock.release(S.user.email); return false; }
+    if (!confirm('🔴 KONFIRMASI TERAKHIR!')) { EditLock.release(S.user.email); return false; }
+    try {
+        backupBeforePush();
+        const decrypted = decryptData(encrypted);
+        if (!decrypted) throw new Error('Dekripsi gagal');
+        auditLog('RESTORE_EXECUTE', key);
+        document.open();
+        document.write(decrypted);
+        document.close();
+        return true;
+    } catch(e) { toast('❌ Restore gagal: ' + e.message, 'error'); EditLock.release(S.user.email); return false; }
+}
+
+// ================================================================
+// PAYMENT FORM
+// ================================================================
+function openPaymentForm() {
+    if (!S.admin) { toast('🔒 Admin only!', 'error'); return; }
+    document.getElementById('paymentFormPanel').classList.add('show');
+}
+function closePaymentForm() { document.getElementById('paymentFormPanel').classList.remove('show'); }
+function savePayment() {
+    var name = document.getElementById('payName').value.trim();
+    var number = document.getElementById('payNumber').value.trim();
+    var holder = document.getElementById('payHolder').value.trim() || 'YAD Store';
+    if (!name || !number) { alert('⚠️ Lengkapi!'); return; }
+    if (S.paymentMethods.find(p => p.name.toLowerCase() === name.toLowerCase())) { alert('⚠️ Sudah ada!'); return; }
+    S.paymentMethods.push({name, number, holder});
+    localStorage.setItem('store_payments', JSON.stringify(S.paymentMethods));
+    renderPayments();
+    closePaymentForm();
+    auditLog('PAYMENT_ADD', name);
+    toast('✅ ' + name + ' ditambahkan!', 'success');
+}
+
+// ================================================================
+// NOVEL SYSTEM (Ringkas)
+// ================================================================
+var novels = JSON.parse(localStorage.getItem('yad_novels_v1') || '[]');
+var readingProgress = JSON.parse(localStorage.getItem('yad_novel_progress_v1') || '{}');
+var currentNovel = null, currentPage = 0;
+
+function openNovelReader() {
+    document.getElementById('novelReaderPanel').classList.add('show');
+    renderNovelLibrary();
+}
+function closeNovelReader() { document.getElementById('novelReaderPanel').classList.remove('show'); }
+function renderNovelLibrary() {
+    var library = document.getElementById('novelLibrary');
+    if (!novels.length) {
+        library.innerHTML = '<div class="empty-state"><div class="icon">📚</div><p>Belum ada novel</p></div>';
+        return;
+    }
+    library.innerHTML = novels.map((n, i) =>
+        '<div class="novel-card" onclick="openNovel(' + i + ')"><b>📖 ' + escapeHtml(n.title) + '</b><br><small>' + n.pages.length + ' halaman</small></div>'
+    ).join('');
+}
+function openNovel(index) {
+    currentNovel = novels[index];
+    currentPage = readingProgress[currentNovel.id] || 0;
+    document.getElementById('novelTitle').textContent = '📖 ' + currentNovel.title;
+    document.getElementById('novelLibrary').style.display = 'none';
+    document.getElementById('novelContent').style.display = 'block';
+    document.getElementById('novelControls').style.display = 'flex';
+    renderCurrentPage();
+}
+function renderCurrentPage() {
+    if (!currentNovel) return;
+    var pageContent = currentNovel.pages[currentPage] || '';
+    document.getElementById('novelContent').innerHTML = pageContent.split('\n').filter(l => l.trim()).map(l => '<p>' + escapeHtml(l.trim()) + '</p>').join('') || '<p style="color:var(--text-dim)">Halaman kosong</p>';
+    document.getElementById('novelPageInfo').textContent = (currentPage + 1) + '/' + currentNovel.pages.length;
+    readingProgress[currentNovel.id] = currentPage;
+    localStorage.setItem('yad_novel_progress_v1', JSON.stringify(readingProgress));
+}
+function novelNextPage() { if (currentNovel && currentPage < currentNovel.pages.length - 1) { currentPage++; renderCurrentPage(); } }
+function novelPrevPage() { if (currentPage > 0) { currentPage--; renderCurrentPage(); } }
+function changeFontSize() { document.getElementById('novelContent').style.fontSize = document.getElementById('novelFontSize').value + 'px'; }
+function searchInNovel() {
+    var t = document.getElementById('novelSearch').value.trim();
+    if (!t) { renderCurrentPage(); return; }
+    var results = [];
+    currentNovel.pages.forEach((p, i) => { if (p.toLowerCase().includes(t.toLowerCase())) results.push(i); });
+    if (results.length) { currentPage = results[0]; renderCurrentPage(); toast('🔍 Ditemukan di halaman ' + (currentPage + 1), 'info'); }
+    else toast('❌ Tidak ditemukan', 'error');
+}
+function toggleNovelSpeech() {
+    if (!currentNovel) return;
+    var synth = window.speechSynthesis;
+    if (!synth) return;
+    if (synth.speaking) { synth.cancel(); document.getElementById('speechBtn').textContent = '🔊 Baca'; return; }
+    var text = currentNovel.pages[currentPage].replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+    var utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'id-ID';
+    utterance.rate = 0.8;
+    utterance.onend = function() {
+        document.getElementById('speechBtn').textContent = '🔊 Baca';
+        if (currentPage < currentNovel.pages.length - 1) setTimeout(function() { novelNextPage(); toggleNovelSpeech(); }, 800);
+    };
+    synth.speak(utterance);
+    document.getElementById('speechBtn').textContent = '⏹ Stop';
+}
+function downloadNovel() {
+    if (!currentNovel) return;
+    var blob = new Blob([currentNovel.content], {type: 'text/plain;charset=utf-8'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = currentNovel.title + '.txt';
+    a.click();
+}
+function openNovelEditor() {
+    if (!S.admin) { toast('🔒 Admin only!', 'error'); return; }
+    document.getElementById('novelEditorPanel').classList.add('show');
+}
+function closeNovelEditor() { document.getElementById('novelEditorPanel').classList.remove('show'); }
+function saveNovel() {
+    var title = document.getElementById('novelTitleInput').value.trim();
+    var content = document.getElementById('novelContentInput').value.trim();
+    if (!title || !content) { alert('⚠️ Lengkapi!'); return; }
+    var id = 'novel_' + Date.now();
+    var pages = splitIntoPages(content);
+    novels.push({id, title, content, added: new Date().toISOString(), pages, bookmarks: []});
+    localStorage.setItem('yad_novels_v1', JSON.stringify(novels));
+    closeNovelEditor();
+    toast('✅ Novel disimpan!', 'success');
+}
+function splitIntoPages(text, cp) {
+    cp = cp || 2000;
+    var pages = [], paras = text.split(/\n\n+/), current = '';
+    for (var i = 0; i < paras.length; i++) {
+        if ((current + paras[i]).length > cp && current) { pages.push(current.trim()); current = paras[i]; }
+        else current += (current ? '\n\n' : '') + paras[i];
+    }
+    if (current.trim()) pages.push(current.trim());
+    return pages.length ? pages : [text];
+}
+
+// ================================================================
+// LIVE ACTIVITY
+// ================================================================
+function simulateLiveActivity() {
+    var activities = ['🛒 Pesanan baru: Mobile Legends', '✅ Order dikonfirmasi: Free Fire', '🛒 Pesanan baru: Token PLN', '✅ Order dikonfirmasi: PUBG'];
+    setInterval(function() {
+        addLive(activities[Math.floor(Math.random() * activities.length)]);
+        var onlineCount = document.getElementById('onlineCount');
+        if (onlineCount) {
+            var current = parseInt(onlineCount.textContent) || 87;
+            onlineCount.textContent = Math.max(50, Math.min(200, current + Math.floor(Math.random() * 11) - 5));
+        }
+    }, 5000);
+}
+
+// ================================================================
+// INITIALIZATION
+// ================================================================
+function init() {
+    renderGames('all');
+    renderPayments();
+    updateOrderGame();
+    simulateLiveActivity();
+    
+    // Load theme
+    var savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+        document.body.classList.add('light');
+        document.getElementById('themeBtn').textContent = '☀️';
+    }
+    
+    // Load custom features
+    var features = JSON.parse(localStorage.getItem('yad_features') || '[]');
+    features.forEach(function(feature) {
+        if (!document.querySelector('[data-feature="' + feature.name + '"]')) {
+            var wrapper = document.createElement('div');
+            wrapper.setAttribute('data-feature', feature.name);
+            wrapper.innerHTML = feature.code;
+            document.body.appendChild(wrapper);
+        }
+    });
+    
+    auditLog('APP_INIT', 'Aplikasi dimulai v' + APP_VERSION);
+    console.log('🎮 YAD Store v' + APP_VERSION + ' initialized!');
+    console.log('📦 Products:', Object.values(ALL_PRODUCTS).reduce((s, a) => s + a.length, 0));
+    console.log('🔒 Security: Aktif');
+}
+
+init();
+</script>
 </body>
 </html>

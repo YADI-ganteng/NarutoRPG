@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YAD Video AI - Final Stable v5.0</title>
+    <title>YAD Video AI - Ultimate Fix v8.0</title>
     <style>
         :root{--bg:#0a0a14;--card:#12122a;--input:#0d0d20;--text:#e8e8f0;--dim:#9090a8;--accent:#8b5cf6;--green:#10b981;--red:#ef4444;--gold:#f59e0b;--border:#252540;--radius:14px}
         *{margin:0;padding:0;box-sizing:border-box}
@@ -25,6 +25,11 @@
         textarea{width:100%;min-height:150px;padding:14px;background:var(--input);border:2px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;line-height:1.6;resize:vertical;font-family:Georgia,serif;outline:none}
         textarea:focus{border-color:var(--accent)}
         
+        .analysis-box{background:var(--input);padding:12px;border-radius:8px;margin:12px 0;border-left:4px solid #06b6d4;display:none}
+        .analysis-box.active{display:block}
+        .analysis-box h3{font-size:12px;color:#06b6d4;margin-bottom:8px}
+        .analysis-box p{font-size:10px;color:var(--dim);margin:4px 0}
+        
         .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
         .setting{background:var(--input);padding:10px;border-radius:8px;border:1px solid var(--border)}
         .setting label{display:block;font-size:9px;color:var(--dim);margin-bottom:4px;text-transform:uppercase;font-weight:600}
@@ -43,7 +48,6 @@
         .video-container{display:none;margin-top:16px}
         .video-container.active{display:block}
         video{width:100%;border-radius:10px;border:2px solid var(--border);background:#000;max-height:350px}
-        .video-info{font-size:10px;color:var(--dim);text-align:center;margin:8px 0}
         
         .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:10px;color:#fff;font-size:12px;z-index:10000;animation:slideDown .3s;max-width:90%;text-align:center}
         .toast.success{background:var(--green)}
@@ -52,14 +56,17 @@
         .toast.warning{background:var(--gold);color:#000}
         @keyframes slideDown{from{opacity:0;transform:translate(-50%,-20px)}to{opacity:1;transform:translate(-50%,0)}}
         
-        .console-panel{position:fixed;top:60px;right:10px;width:450px;max-width:95vw;max-height:70vh;background:#0a0a0a;border-radius:10px;border:2px solid #00ff00;display:none;flex-direction:column;z-index:9999;overflow:hidden}
+        .console-panel{position:fixed;top:60px;right:10px;width:480px;max-width:95vw;max-height:75vh;background:#0a0a0a;border-radius:10px;border:2px solid #00ff00;display:none;flex-direction:column;z-index:9999;overflow:hidden}
         .console-panel.show{display:flex}
         .console-header{background:#0d1a0d;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1a3a1a}
-        .console-body{flex:1;overflow-y:auto;padding:8px;font-family:monospace;font-size:9px;color:#00ff00;background:#000;min-height:150px}
+        .console-body{flex:1;overflow-y:auto;padding:8px;font-family:monospace;font-size:9px;color:#00ff00;background:#000;min-height:200px}
         .console-line{margin:1px 0;line-height:1.4;word-break:break-word}
-        .console-line.error{color:#f44}.console-line.success{color:#4f4}.console-line.info{color:#4af}.console-line.warning{color:#fa4}
-        .console-input{display:flex;padding:6px;background:#0d0d0d;border-top:1px solid #1a3a1a}
-        .console-input input{flex:1;background:transparent;border:none;color:#00ff00;font-family:monospace;font-size:10px;outline:none}
+        .console-line.error{color:#f44}.console-line.success{color:#4f4}.console-line.info{color:#4af}.console-line.warning{color:#fa4}.console-line.cmd{color:#fff}
+        .console-input{display:flex;padding:8px;background:#0d0d0d;border-top:1px solid #1a3a1a;align-items:center}
+        .console-input .prompt{color:#0f0;margin-right:6px;font-family:monospace;font-size:12px;font-weight:bold}
+        .console-input input{flex:1;background:transparent;border:none;color:#00ff00;font-family:monospace;font-size:11px;outline:none;padding:4px}
+        .console-input button{padding:4px 10px;background:#0d1a0d;color:#0f0;border:1px solid #1a3a1a;border-radius:4px;cursor:pointer;font-size:10px;font-family:monospace}
+        .console-input button:hover{background:#1a3a1a}
         
         .log-panel{position:fixed;top:60px;left:10px;width:350px;max-width:95vw;max-height:70vh;background:#0a0a0a;border-radius:10px;border:2px solid #ffaa44;display:none;flex-direction:column;z-index:9999;overflow:hidden}
         .log-panel.show{display:flex}
@@ -67,12 +74,17 @@
         .log-body{flex:1;overflow-y:auto;padding:8px;font-family:monospace;font-size:8px;color:#ffaa44;background:#0a0a0a;min-height:100px;white-space:pre-wrap}
         .log-actions{display:flex;gap:4px;padding:6px;background:#0d0d0d;border-top:1px solid #3a1a00}
         .log-actions button{flex:1;padding:5px;font-size:8px;border-radius:4px;border:1px solid #ffaa44;background:transparent;color:#ffaa44;cursor:pointer;font-family:inherit}
+        
+        .status-badge{display:inline-block;padding:3px 8px;border-radius:10px;font-size:9px;font-weight:600;margin-left:4px}
+        .status-badge.ready{background:var(--green);color:#fff}
+        .status-badge.busy{background:var(--gold);color:#000}
+        .status-badge.error{background:var(--red);color:#fff}
     </style>
 </head>
 <body>
 
 <header class="header">
-    <div class="logo">🎬 YAD Video AI <span style="font-size:8px;color:#10b981">v5.0 STABLE</span></div>
+    <div class="logo">🎬 YAD Video AI v8.0 <span class="status-badge ready" id="statusBadge">READY</span></div>
     <div class="nav">
         <button class="btn btn-primary" onclick="openConsole()">🖥️ Console</button>
         <button class="btn" style="border-color:#ffaa44;color:#ffaa44" onclick="openLogPanel()">📋 Log</button>
@@ -84,20 +96,21 @@
 
 <div class="console-panel" id="consolePanel">
     <div class="console-header">
-        <span style="color:#0f0;font-family:monospace;font-size:10px;font-weight:bold">🖥️ Console</span>
-        <button onclick="closeConsole()" style="background:none;border:none;color:#f44;cursor:pointer;font-size:16px">✕</button>
+        <span style="color:#0f0;font-family:monospace;font-size:11px;font-weight:bold">🖥️ CONSOLE</span>
+        <button onclick="closeConsole()" style="background:none;border:none;color:#f44;cursor:pointer;font-size:18px">✕</button>
     </div>
     <div class="console-body" id="consoleBody"></div>
     <div class="console-input">
-        <span style="color:#0f0;margin-right:4px;font-family:monospace">➜</span>
-        <input type="text" id="consoleInput" placeholder="help, fix, status, test..." onkeydown="if(event.key==='Enter')execCmd()">
+        <span class="prompt">➜</span>
+        <input type="text" id="consoleInput" placeholder="Ketik perintah lalu Enter..." autocomplete="off">
+        <button onclick="execCmd()">Kirim</button>
     </div>
 </div>
 
 <div class="log-panel" id="logPanel">
     <div class="log-header">
-        <span style="color:#ffaa44;font-family:monospace;font-size:10px;font-weight:bold">📋 Log Masalah</span>
-        <button onclick="closeLogPanel()" style="background:none;border:none;color:#f44;cursor:pointer;font-size:16px">✕</button>
+        <span style="color:#ffaa44;font-family:monospace;font-size:11px;font-weight:bold">📋 LOG</span>
+        <button onclick="closeLogPanel()" style="background:none;border:none;color:#f44;cursor:pointer;font-size:18px">✕</button>
     </div>
     <div class="log-body" id="logBody">Belum ada masalah.</div>
     <div class="log-actions">
@@ -110,38 +123,74 @@
 <div class="container">
     <div class="card">
         <h2>📝 Tulis Cerita</h2>
-        <textarea id="storyInput" placeholder="Tulis cerita di sini...&#10;&#10;Setiap paragraf menjadi satu scene."></textarea>
+        <textarea id="storyInput" placeholder="Tulis cerita di sini..." oninput="analyzeText()"></textarea>
+        
+        <div class="analysis-box" id="analysisBox">
+            <h3>🔍 Analisis Otomatis</h3>
+            <p id="analysisGenre">Genre: -</p>
+            <p id="analysisDuration">Durasi: -</p>
+            <p id="analysisScenes">Scene: -</p>
+            <p id="analysisEmotion">Emosi: -</p>
+        </div>
+        
         <div class="grid">
             <div class="setting">
                 <label>🎨 Gaya</label>
                 <select id="styleSelect">
+                    <option value="auto">🤖 Auto</option>
                     <option value="horror">👻 Horor</option>
                     <option value="fantasy">✨ Fantasi</option>
                     <option value="adventure">🗺️ Petualangan</option>
                     <option value="romance">💕 Romantis</option>
                     <option value="sad">😢 Sedih</option>
+                    <option value="action">⚔️ Action</option>
                 </select>
             </div>
             <div class="setting">
                 <label>📐 Resolusi</label>
                 <select id="resolutionSelect">
-                    <option value="320x240">Low (320x240)</option>
-                    <option value="640x360" selected>SD (640x360)</option>
-                    <option value="1280x720">HD (1280x720)</option>
+                    <option value="320x240">Low</option>
+                    <option value="640x360" selected>SD</option>
+                    <option value="1280x720">HD</option>
                 </select>
             </div>
             <div class="setting">
-                <label>⏱️ Durasi/Scene</label>
+                <label>⏱️ Durasi</label>
                 <select id="durationSelect">
-                    <option value="2">2 detik</option>
+                    <option value="auto">🤖 Auto</option>
                     <option value="3" selected>3 detik</option>
                     <option value="5">5 detik</option>
+                    <option value="7">7 detik</option>
                 </select>
             </div>
         </div>
-        <p style="font-size:10px;color:var(--dim);margin-top:8px;text-align:center">
-            ⚠️ Video dihasilkan tanpa audio (keterbatasan browser). Gunakan resolusi Low/SD untuk hasil terbaik.
-        </p>
+        
+        <div class="grid">
+            <div class="setting">
+                <label>🗣️ Suara</label>
+                <select id="voiceSelect">
+                    <option value="id-ID">🇮🇩 Indonesia</option>
+                    <option value="en-US">🇺🇸 English</option>
+                </select>
+            </div>
+            <div class="setting">
+                <label>🎵 Musik</label>
+                <select id="musicSelect">
+                    <option value="none">🔇 Tanpa</option>
+                    <option value="horror">👻 Horor</option>
+                    <option value="calm">😌 Tenang</option>
+                    <option value="action">⚔️ Action</option>
+                </select>
+            </div>
+            <div class="setting">
+                <label>🔊 Volume</label>
+                <select id="volumeSelect">
+                    <option value="0.5">50%</option>
+                    <option value="0.7">70%</option>
+                    <option value="1" selected>100%</option>
+                </select>
+            </div>
+        </div>
     </div>
     
     <button class="btn-generate" id="generateBtn" onclick="generateVideo()">🎬 Generate Video</button>
@@ -153,44 +202,40 @@
     
     <div class="video-container" id="videoContainer">
         <video id="videoPreview" controls playsinline></video>
-        <div class="video-info" id="videoInfo"></div>
-        <button class="btn-generate" style="margin-top:10px" onclick="downloadVideo()">💾 Download Video</button>
+        <div style="font-size:10px;color:var(--dim);text-align:center;margin:8px 0" id="videoInfo"></div>
+        <button class="btn-generate" style="margin-top:10px" onclick="downloadVideo()">💾 Download</button>
     </div>
 </div>
 
 <script>
-// ============================================================
-// STATE MANAGEMENT (Isolated)
-// ============================================================
-var appState = {
-    generatedBlob: null,
-    isGenerating: false,
+// ========== STATE ==========
+var S = {
+    blob: null,
+    generating: false,
     problems: [],
     chunks: [],
     recorder: null,
-    stream: null,
-    canvas: null,
-    ctx: null
+    analysis: null,
+    github: JSON.parse(localStorage.getItem('github_config') || '{}')
 };
 
-// ============================================================
-// TOAST SYSTEM
-// ============================================================
+// ========== TOAST ==========
 function toast(msg, type) {
     type = type || 'info';
-    var toast = document.createElement('div');
-    toast.className = 'toast ' + type;
-    toast.textContent = msg;
-    document.body.appendChild(toast);
-    setTimeout(function() { toast.remove(); }, 4000);
+    var t = document.createElement('div');
+    t.className = 'toast ' + type;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function() { t.remove(); }, 4000);
 }
 
-// ============================================================
-// CONSOLE SYSTEM
-// ============================================================
+// ========== CONSOLE (FIXED) ==========
 function openConsole() {
-    document.getElementById('consolePanel').classList.add('show');
-    document.getElementById('consoleInput').focus();
+    var panel = document.getElementById('consolePanel');
+    panel.classList.add('show');
+    setTimeout(function() {
+        document.getElementById('consoleInput').focus();
+    }, 100);
 }
 
 function closeConsole() {
@@ -206,308 +251,447 @@ function consoleLog(msg, type) {
     line.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
     body.appendChild(line);
     body.scrollTop = body.scrollHeight;
-    while (body.children.length > 300) {
+    while (body.children.length > 500) {
         body.removeChild(body.firstChild);
     }
 }
 
 function execCmd() {
-    var inp = document.getElementById('consoleInput');
-    var cmd = inp.value.trim().toLowerCase();
+    var input = document.getElementById('consoleInput');
+    var cmd = input.value.trim();
     if (!cmd) return;
-    consoleLog('> ' + cmd, 'info');
-    inp.value = '';
+    
+    consoleLog('> ' + cmd, 'cmd');
+    input.value = '';
+    input.focus();
     
     var parts = cmd.split(' ');
-    var main = parts[0];
+    var main = parts[0].toLowerCase();
+    var args = parts.slice(1);
     
     switch(main) {
         case 'help':
-            consoleLog('Commands: fix, status, test, codec, log, clearlog, reset', 'info');
+            consoleLog('=== PERINTAH ===', 'info');
+            consoleLog('fix - Auto fix sistem', 'info');
+            consoleLog('status - Cek status', 'info');
+            consoleLog('test - Test sistem', 'info');
+            consoleLog('codec - Cek codec', 'info');
+            consoleLog('analyze - Analisis teks', 'info');
+            consoleLog('log - Tampilkan log', 'info');
+            consoleLog('clearlog - Bersihkan log', 'info');
+            consoleLog('reset - Reset semua', 'info');
+            consoleLog('github - Set GitHub (token username repo)', 'info');
+            consoleLog('githubset [token] [username] [repo] - Set GitHub', 'info');
+            consoleLog('push - Push ke GitHub', 'info');
+            consoleLog('pushauto - Fix + Push otomatis', 'info');
+            consoleLog('fixpush - Perbaiki + Push', 'info');
             break;
+            
         case 'fix':
             autoFix();
             break;
+            
         case 'status':
-            consoleLog('Generating: ' + (appState.isGenerating ? 'Yes' : 'No'), 'info');
-            consoleLog('Video: ' + (appState.generatedBlob ? (appState.generatedBlob.size / 1024).toFixed(1) + ' KB' : 'None'), 'info');
-            consoleLog('Problems: ' + appState.problems.length, appState.problems.length > 0 ? 'warning' : 'success');
+            consoleLog('Generating: ' + (S.generating ? 'YES' : 'NO'), 'info');
+            consoleLog('Video: ' + (S.blob ? (S.blob.size/1024).toFixed(1) + ' KB' : 'None'), 'info');
+            consoleLog('Problems: ' + S.problems.length, S.problems.length > 0 ? 'warning' : 'success');
+            consoleLog('GitHub: ' + (S.github.token ? 'Configured (' + S.github.username + '/' + S.github.repo + ')' : 'Not configured'), S.github.token ? 'success' : 'warning');
             break;
+            
         case 'test':
             testSystem();
             break;
+            
         case 'codec':
-            var codecs = getSupportedCodecs();
-            consoleLog('Supported codecs:', 'info');
-            codecs.forEach(function(c) { consoleLog('  OK ' + c, 'success'); });
-            if (codecs.length === 0) consoleLog('  NO CODEC!', 'error');
-            break;
-        case 'log':
-            appState.problems.forEach(function(p, i) {
-                consoleLog((i + 1) + '. ' + p.msg, 'warning');
+            var codecs = ['video/webm;codecs=vp8,opus', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4'];
+            codecs.forEach(function(c) {
+                var supported = MediaRecorder.isTypeSupported(c);
+                consoleLog((supported ? '✓ ' : '✗ ') + c, supported ? 'success' : 'error');
             });
             break;
-        case 'clearlog':
-            appState.problems = [];
-            updateLogPanel();
-            consoleLog('Log cleared', 'success');
+            
+        case 'analyze':
+            analyzeText();
+            if (S.analysis) {
+                consoleLog('Genre: ' + S.analysis.genre, 'info');
+                consoleLog('Durasi: ' + S.analysis.duration + 's', 'info');
+                consoleLog('Scene: ' + S.analysis.scenes, 'info');
+                consoleLog('Emosi: ' + S.analysis.emotion, 'info');
+            }
             break;
+            
+        case 'log':
+            if (S.problems.length === 0) {
+                consoleLog('Tidak ada masalah', 'success');
+            } else {
+                S.problems.forEach(function(p, i) {
+                    consoleLog((i+1) + '. ' + p.msg, 'warning');
+                });
+            }
+            break;
+            
+        case 'clearlog':
+            S.problems = [];
+            updateLogPanel();
+            consoleLog('Log dibersihkan', 'success');
+            break;
+            
         case 'reset':
             resetAll();
             break;
+            
+        case 'github':
+            setGitHubInteractive();
+            break;
+            
+        case 'githubset':
+            if (args.length >= 3) {
+                setGitHub(args[0], args[1], args[2]);
+            } else {
+                consoleLog('Format: githubset [token] [username] [repo]', 'error');
+                consoleLog('Contoh: githubset ghp_xxx username repo', 'warning');
+            }
+            break;
+            
+        case 'push':
+            pushToGitHub();
+            break;
+            
+        case 'pushauto':
+        case 'fixpush':
+            consoleLog('Menjalankan auto fix + push...', 'info');
+            autoFix();
+            setTimeout(function() { pushToGitHub(); }, 1000);
+            break;
+            
         default:
-            consoleLog('Unknown: ' + cmd, 'error');
+            consoleLog('Perintah tidak dikenal: ' + cmd, 'error');
+            consoleLog('Ketik "help" untuk bantuan', 'info');
     }
 }
 
-// ============================================================
-// LOG SYSTEM
-// ============================================================
-function logProblem(msg, severity) {
-    severity = severity || 'warning';
-    appState.problems.push({
-        time: new Date().toISOString(),
-        msg: msg,
-        severity: severity,
-        browser: detectBrowser(),
-        codec: getSupportedCodecs()
+// Enter key handler
+document.addEventListener('DOMContentLoaded', function() {
+    var input = document.getElementById('consoleInput');
+    if (input) {
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                execCmd();
+            }
+        });
+    }
+});
+
+// ========== GITHUB ==========
+function setGitHubInteractive() {
+    consoleLog('=== SET GITHUB ===', 'info');
+    consoleLog('Masukkan token:', 'warning');
+    
+    var token = prompt('GitHub Token:');
+    if (!token) { consoleLog('Dibatalkan', 'warning'); return; }
+    
+    var username = prompt('Username GitHub:');
+    if (!username) { consoleLog('Dibatalkan', 'warning'); return; }
+    
+    var repo = prompt('Nama Repository:');
+    if (!repo) { consoleLog('Dibatalkan', 'warning'); return; }
+    
+    setGitHub(token, username, repo);
+}
+
+function setGitHub(token, username, repo) {
+    S.github = {
+        token: token,
+        username: username,
+        repo: repo
+    };
+    
+    try {
+        localStorage.setItem('github_config', JSON.stringify(S.github));
+    } catch(e) {}
+    
+    consoleLog('GitHub dikonfigurasi:', 'success');
+    consoleLog('Username: ' + username, 'info');
+    consoleLog('Repo: ' + repo, 'info');
+    consoleLog('Token: ' + token.substring(0, 8) + '...', 'info');
+    
+    toast('GitHub dikonfigurasi!', 'success');
+}
+
+function pushToGitHub() {
+    if (!S.github.token || !S.github.username || !S.github.repo) {
+        consoleLog('GitHub belum dikonfigurasi!', 'error');
+        consoleLog('Gunakan: githubset [token] [username] [repo]', 'warning');
+        setGitHubInteractive();
+        return;
+    }
+    
+    consoleLog('Push ke GitHub: ' + S.github.username + '/' + S.github.repo, 'info');
+    
+    var html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    var content = btoa(unescape(encodeURIComponent(html)));
+    
+    var url = 'https://api.github.com/repos/' + S.github.username + '/' + S.github.repo + '/contents/index.html';
+    
+    // Cek file existing
+    fetch(url, {
+        headers: {
+            'Authorization': 'token ' + S.github.token,
+            'Accept': 'application/vnd.github.v3+json'
+        }
+    })
+    .then(function(res) {
+        if (res.status === 404) {
+            return { sha: null };
+        }
+        if (res.status === 401) {
+            throw new Error('Token tidak valid (401)');
+        }
+        if (res.status === 403) {
+            throw new Error('Rate limit atau permission (403)');
+        }
+        return res.json();
+    })
+    .then(function(data) {
+        if (data.message && data.message.includes('Not Found')) {
+            return { sha: null };
+        }
+        return data;
+    })
+    .then(function(data) {
+        var body = {
+            message: 'Update YAD Video AI v8.0 - ' + new Date().toISOString(),
+            content: content,
+            branch: 'main'
+        };
+        
+        if (data && data.sha) {
+            body.sha = data.sha;
+            consoleLog('File ditemukan, update...', 'info');
+        } else {
+            consoleLog('File baru, create...', 'info');
+        }
+        
+        return fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Authorization': 'token ' + S.github.token,
+                'Content-Type': 'application/json',
+                'Accept': 'application/vnd.github.v3+json'
+            },
+            body: JSON.stringify(body)
+        });
+    })
+    .then(function(res) {
+        if (res.status === 401) {
+            throw new Error('Token tidak valid!');
+        }
+        if (res.status === 403) {
+            throw new Error('Rate limit tercapai!');
+        }
+        if (res.status === 422) {
+            throw new Error('Validasi gagal - cek repo dan branch');
+        }
+        return res.json();
+    })
+    .then(function(data) {
+        if (data.content) {
+            consoleLog('Push berhasil!', 'success');
+            consoleLog('URL: ' + data.content.html_url, 'info');
+            toast('Berhasil push ke GitHub!', 'success');
+        } else if (data.message) {
+            throw new Error(data.message);
+        } else {
+            consoleLog('Push berhasil!', 'success');
+            toast('Berhasil push!', 'success');
+        }
+    })
+    .catch(function(e) {
+        consoleLog('Push gagal: ' + e.message, 'error');
+        toast('Push gagal: ' + e.message, 'error');
     });
-    updateLogPanel();
-    consoleLog('PROBLEM: ' + msg, 'warning');
 }
 
-function detectBrowser() {
-    var ua = navigator.userAgent;
-    if (ua.indexOf('Chrome') > -1) return 'Chrome';
-    if (ua.indexOf('Firefox') > -1) return 'Firefox';
-    if (ua.indexOf('Safari') > -1) return 'Safari';
-    if (ua.indexOf('Edge') > -1) return 'Edge';
-    return 'Other';
-}
-
-function getSupportedCodecs() {
-    var list = [];
-    var codecs = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4'];
-    if (window.MediaRecorder) {
-        codecs.forEach(function(c) {
-            try {
-                if (MediaRecorder.isTypeSupported(c)) list.push(c);
-            } catch(e) {}
-        });
-    }
-    return list;
-}
-
-function openLogPanel() {
-    document.getElementById('logPanel').classList.add('show');
-    updateLogPanel();
-}
-
-function closeLogPanel() {
-    document.getElementById('logPanel').classList.remove('show');
-}
-
-function updateLogPanel() {
-    var body = document.getElementById('logBody');
-    if (!body) return;
-    if (appState.problems.length === 0) {
-        body.textContent = 'Belum ada masalah.';
-        return;
-    }
-    body.textContent = appState.problems.map(function(p, i) {
-        return '[' + (i + 1) + '] ' + p.time + '\n' +
-               'Browser: ' + p.browser + '\n' +
-               'Codec: ' + (p.codec.join(', ') || 'None') + '\n' +
-               'Severity: ' + p.severity + '\n' +
-               'Message: ' + p.msg + '\n---';
-    }).join('\n');
-}
-
-function copyLog() {
-    if (appState.problems.length === 0) {
-        toast('Tidak ada log', 'info');
-        return;
-    }
-    var text = appState.problems.map(function(p, i) {
-        return '[' + (i + 1) + '] ' + p.time + ' - ' + p.msg + ' (Browser: ' + p.browser + ')';
-    }).join('\n');
-    
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(function() {
-            toast('Log disalin!', 'success');
-        }).catch(function() {
-            fallbackCopy(text);
-        });
-    } else {
-        fallbackCopy(text);
-    }
-}
-
-function fallbackCopy(text) {
-    var ta = document.createElement('textarea');
-    ta.value = text;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    toast('Log disalin!', 'success');
-}
-
-function downloadLog() {
-    if (appState.problems.length === 0) {
-        toast('Tidak ada log', 'info');
-        return;
-    }
-    var text = appState.problems.map(function(p, i) {
-        return '[' + (i + 1) + '] ' + p.time + '\n' +
-               'Browser: ' + p.browser + '\n' +
-               'Message: ' + p.msg + '\n' +
-               'Codec: ' + p.codec.join(', ') + '\n---';
-    }).join('\n');
-    
-    var blob = new Blob([text], { type: 'text/plain' });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = 'yad_log_' + Date.now() + '.txt';
-    a.click();
-    URL.revokeObjectURL(url);
-    toast('Log didownload!', 'success');
-}
-
-function clearLog() {
-    appState.problems = [];
-    updateLogPanel();
-    toast('Log dibersihkan!', 'info');
-}
-
-// ============================================================
-// AUTO FIX (Synchronous - No Promise Issues)
-// ============================================================
+// ========== AUTO FIX ==========
 function autoFix() {
-    consoleLog('Running auto fix...', 'info');
+    consoleLog('Auto fix...', 'info');
+    updateStatus('busy', 'FIXING');
     
-    // Check MediaRecorder
     if (!window.MediaRecorder) {
-        logProblem('MediaRecorder tidak didukung browser ini', 'error');
-        toast('Browser tidak mendukung perekaman video', 'error');
+        logProblem('MediaRecorder tidak didukung');
+        updateStatus('error', 'ERROR');
         return false;
     }
-    consoleLog('MediaRecorder: OK', 'success');
+    consoleLog('✓ MediaRecorder', 'success');
     
-    // Check codec
-    var codecs = getSupportedCodecs();
-    if (codecs.length === 0) {
-        logProblem('Tidak ada codec yang didukung', 'error');
-        toast('Tidak ada codec video', 'error');
-        return false;
+    var codec = 'video/webm;codecs=vp8';
+    if (!MediaRecorder.isTypeSupported(codec)) {
+        codec = 'video/webm';
+        if (!MediaRecorder.isTypeSupported(codec)) {
+            logProblem('Tidak ada codec');
+            updateStatus('error', 'ERROR');
+            return false;
+        }
     }
-    consoleLog('Codec: ' + codecs[0], 'success');
+    consoleLog('✓ Codec: ' + codec, 'success');
     
-    // Check canvas
     try {
         var c = document.createElement('canvas');
-        var ctx = c.getContext('2d');
-        if (!ctx) throw new Error('Canvas 2D not available');
-        consoleLog('Canvas: OK', 'success');
+        c.getContext('2d');
+        consoleLog('✓ Canvas', 'success');
     } catch(e) {
-        logProblem('Canvas error: ' + e.message, 'error');
+        logProblem('Canvas error');
+        updateStatus('error', 'ERROR');
         return false;
     }
     
-    // Save config
-    try {
-        localStorage.setItem('video_config', JSON.stringify({
-            codec: codecs[0],
-            time: Date.now()
-        }));
-    } catch(e) {
-        consoleLog('Warning: Cannot save config', 'warning');
-    }
-    
+    updateStatus('ready', 'READY');
     toast('Auto fix selesai!', 'success');
     return true;
 }
 
-// ============================================================
-// TEST SYSTEM
-// ============================================================
+function updateStatus(type, text) {
+    var badge = document.getElementById('statusBadge');
+    if (badge) {
+        badge.className = 'status-badge ' + type;
+        badge.textContent = text;
+    }
+}
+
+// ========== TEST ==========
 function testSystem() {
-    consoleLog('Testing system...', 'info');
+    consoleLog('Testing...', 'info');
     
     try {
         var canvas = document.createElement('canvas');
         canvas.width = 100;
         canvas.height = 100;
         var ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#ff0000';
         ctx.fillRect(0, 0, 100, 100);
         
         var stream = canvas.captureStream(10);
-        var codecs = getSupportedCodecs();
-        var codec = codecs[0] || 'video/webm';
+        var codec = 'video/webm;codecs=vp8';
+        if (!MediaRecorder.isTypeSupported(codec)) codec = 'video/webm';
         
-        var recorder = new MediaRecorder(stream, { mimeType: codec });
-        var testChunks = [];
+        var rec = new MediaRecorder(stream, {mimeType: codec});
+        var chunks = [];
         
-        recorder.ondataavailable = function(e) {
-            if (e.data.size > 0) testChunks.push(e.data);
-        };
-        
-        recorder.onstop = function() {
-            var blob = new Blob(testChunks, { type: codec });
-            consoleLog('Test result: ' + blob.size + ' bytes', blob.size > 0 ? 'success' : 'error');
-            
-            if (blob.size === 0) {
-                logProblem('Test menghasilkan video kosong', 'error');
-                toast('Test gagal: video kosong', 'error');
+        rec.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
+        rec.onstop = function() {
+            var blob = new Blob(chunks, {type: codec});
+            consoleLog('Test: ' + blob.size + ' bytes', blob.size > 0 ? 'success' : 'error');
+            if (blob.size > 0) {
+                toast('Sistem OK!', 'success');
             } else {
-                toast('Sistem berfungsi normal!', 'success');
+                logProblem('Test video kosong');
+                toast('Test gagal!', 'error');
             }
-            
-            testChunks = [];
         };
         
-        recorder.onerror = function(e) {
-            logProblem('Test recorder error: ' + e.error, 'error');
-            toast('Test gagal: recorder error', 'error');
-        };
-        
-        recorder.start(100);
-        setTimeout(function() {
-            if (recorder.state !== 'inactive') {
-                recorder.stop();
-            }
-        }, 1000);
+        rec.start(100);
+        setTimeout(function() { if (rec.state !== 'inactive') rec.stop(); }, 800);
         
     } catch(e) {
-        logProblem('Test error: ' + e.message, 'error');
-        toast('Test gagal: ' + e.message, 'error');
+        logProblem('Test error: ' + e.message);
+        toast('Test gagal!', 'error');
     }
 }
 
-// ============================================================
-// GENERATE VIDEO (STABLE - No Audio in Video)
-// ============================================================
+// ========== TEXT ANALYSIS ==========
+function analyzeText() {
+    var text = document.getElementById('storyInput').value.trim();
+    if (text.length < 10) {
+        document.getElementById('analysisBox').classList.remove('active');
+        return;
+    }
+    
+    var genre = detectGenre(text);
+    var duration = Math.max(5, Math.ceil(text.split(/\s+/).length / 2.5));
+    var scenes = text.split('\n\n').filter(function(p) { return p.trim(); }).length;
+    var emotion = detectEmotion(text);
+    
+    S.analysis = { genre: genre, duration: duration, scenes: scenes, emotion: emotion };
+    
+    document.getElementById('analysisGenre').textContent = 'Genre: ' + genre;
+    document.getElementById('analysisDuration').textContent = 'Durasi: ' + duration + ' detik';
+    document.getElementById('analysisScenes').textContent = 'Scene: ' + scenes;
+    document.getElementById('analysisEmotion').textContent = 'Emosi: ' + emotion;
+    document.getElementById('analysisBox').classList.add('active');
+    
+    var styleSelect = document.getElementById('styleSelect');
+    if (styleSelect.value === 'auto') {
+        styleSelect.value = genre;
+    }
+}
+
+function detectGenre(text) {
+    var lower = text.toLowerCase();
+    var genres = {
+        horror: ['hantu', 'setan', 'malam', 'gelap', 'takut', 'seram', 'horor', 'boneka', 'menyeramkan', 'angker'],
+        fantasy: ['ajaib', 'sihir', 'naga', 'putri', 'istana', 'peri', 'penyihir', 'kastil'],
+        adventure: ['petualang', 'gunung', 'laut', 'hutan', 'pulau', 'harta', 'jelajah'],
+        romance: ['cinta', 'kasih', 'sayang', 'rindu', 'hati', 'kencan', 'bunga'],
+        sad: ['sedih', 'menangis', 'air mata', 'kehilangan', 'duka', 'pilu'],
+        action: ['bertarung', 'pedang', 'tembak', 'kejar', 'lawan', 'serang']
+    };
+    
+    var best = 'neutral';
+    var bestScore = 0;
+    
+    for (var genre in genres) {
+        var score = 0;
+        for (var i = 0; i < genres[genre].length; i++) {
+            if (lower.indexOf(genres[genre][i]) > -1) score++;
+        }
+        if (score > bestScore) {
+            bestScore = score;
+            best = genre;
+        }
+    }
+    
+    return best;
+}
+
+function detectEmotion(text) {
+    var lower = text.toLowerCase();
+    var emotions = {
+        'Takut': ['takut', 'seram', 'ngeri', 'horor'],
+        'Sedih': ['sedih', 'menangis', 'duka'],
+        'Senang': ['senang', 'bahagia', 'gembira'],
+        'Marah': ['marah', 'kesal', 'geram'],
+        'Tegang': ['tegang', 'menegangkan']
+    };
+    
+    for (var e in emotions) {
+        for (var i = 0; i < emotions[e].length; i++) {
+            if (lower.indexOf(emotions[e][i]) > -1) return e;
+        }
+    }
+    return 'Netral';
+}
+
+// ========== GENERATE VIDEO ==========
 function generateVideo() {
     var text = document.getElementById('storyInput').value.trim();
-    if (!text) {
-        toast('Tulis cerita dulu!', 'error');
-        return;
-    }
+    if (!text) { toast('Tulis cerita dulu!', 'error'); return; }
+    if (S.generating) { toast('Masih generating!', 'warning'); return; }
     
-    if (appState.isGenerating) {
-        toast('Masih generating!', 'warning');
-        return;
-    }
+    S.generating = true;
+    S.chunks = [];
+    updateStatus('busy', 'GENERATING');
     
-    // Reset state
-    appState.isGenerating = true;
-    appState.chunks = [];
-    
+    analyzeText();
+    var genre = S.analysis ? S.analysis.genre : 'neutral';
     var style = document.getElementById('styleSelect').value;
+    if (style === 'auto') style = genre;
+    
     var resolution = document.getElementById('resolutionSelect').value;
-    var durationPerScene = parseInt(document.getElementById('durationSelect').value) || 3;
+    var durationSelect = document.getElementById('durationSelect').value;
+    var durationPerScene = durationSelect === 'auto' ? Math.max(3, Math.ceil(S.analysis.duration / S.analysis.scenes)) : parseInt(durationSelect);
+    var voice = document.getElementById('voiceSelect').value;
+    var volume = parseFloat(document.getElementById('volumeSelect').value);
+    
     var dims = resolution.split('x');
     var width = parseInt(dims[0]);
     var height = parseInt(dims[1]);
@@ -522,405 +706,327 @@ function generateVideo() {
     generateBtn.disabled = true;
     generateBtn.textContent = 'Generating...';
     
-    consoleLog('Generate started', 'info');
-    consoleLog('Resolution: ' + width + 'x' + height, 'info');
-    consoleLog('Duration/scene: ' + durationPerScene + 's', 'info');
+    consoleLog('Generate: ' + width + 'x' + height + ', ' + genre, 'info');
+    consoleLog('Durasi/scene: ' + durationPerScene + 's', 'info');
     
-    // Run auto fix first
-    var fixResult = autoFix();
-    if (!fixResult) {
-        finishGenerate(generateBtn, progressContainer);
-        return;
-    }
+    autoFix();
     
-    // Get codec
-    var savedConfig = {};
-    try {
-        savedConfig = JSON.parse(localStorage.getItem('video_config') || '{}');
-    } catch(e) {}
-    var codec = savedConfig.codec || getSupportedCodecs()[0] || 'video/webm';
-    consoleLog('Using codec: ' + codec, 'info');
-    
-    // Create canvas
     var canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
     var ctx = canvas.getContext('2d');
     
-    // Create stream
-    var stream = null;
-    try {
-        stream = canvas.captureStream(fps);
-        consoleLog('Stream created', 'success');
-    } catch(e) {
-        logProblem('Stream error: ' + e.message, 'error');
-        toast('Gagal membuat stream: ' + e.message, 'error');
-        finishGenerate(generateBtn, progressContainer);
-        return;
-    }
+    var canvasStream = canvas.captureStream(fps);
     
-    // Create recorder
-    var recorder = null;
+    var codec = 'video/webm;codecs=vp8';
+    if (!MediaRecorder.isTypeSupported(codec)) codec = 'video/webm';
+    
+    var recorder;
     try {
-        recorder = new MediaRecorder(stream, {
+        recorder = new MediaRecorder(canvasStream, {
             mimeType: codec,
             videoBitsPerSecond: 2000000
         });
-        consoleLog('Recorder created', 'success');
     } catch(e) {
-        logProblem('Recorder error: ' + e.message, 'error');
-        toast('Gagal membuat recorder: ' + e.message, 'error');
-        finishGenerate(generateBtn, progressContainer);
+        logProblem('Recorder error: ' + e.message);
+        toast('Gagal membuat recorder!', 'error');
+        finishGenerate();
         return;
     }
     
-    // Recorder events
     recorder.ondataavailable = function(e) {
-        if (e.data && e.data.size > 0) {
-            appState.chunks.push(e.data);
-            consoleLog('Data: ' + e.data.size + ' bytes', 'info');
-        }
+        if (e.data && e.data.size > 0) S.chunks.push(e.data);
     };
     
     recorder.onstop = function() {
-        consoleLog('Recorder stopped', 'info');
-        
-        if (appState.chunks.length === 0) {
-            logProblem('Video kosong (0 chunks)', 'error');
-            toast('Video kosong! Coba resolusi lebih kecil.', 'error');
-            finishGenerate(generateBtn, progressContainer);
+        if (S.chunks.length === 0) {
+            logProblem('Video kosong');
+            toast('Video kosong!', 'error');
+            updateStatus('error', 'ERROR');
+            finishGenerate();
             return;
         }
         
-        var blob = new Blob(appState.chunks, { type: codec });
-        consoleLog('Video size: ' + (blob.size / 1024).toFixed(1) + ' KB', 'success');
-        
-        if (blob.size < 1000) {
-            logProblem('Video terlalu kecil: ' + blob.size + ' bytes', 'warning');
-        }
-        
-        appState.generatedBlob = blob;
+        var blob = new Blob(S.chunks, {type: codec});
+        S.blob = blob;
         
         var url = URL.createObjectURL(blob);
         var video = document.getElementById('videoPreview');
         video.src = url;
         video.load();
         
-        video.onerror = function() {
-            logProblem('Video tidak bisa diputar', 'error');
-            toast('Video rusak! Coba Auto Fix.', 'error');
-        };
-        
         video.onloadeddata = function() {
-            toast('Video berhasil dibuat!', 'success');
+            toast('Video berhasil!', 'success');
+            updateStatus('ready', 'READY');
         };
         
-        // Show video info
-        var infoEl = document.getElementById('videoInfo');
-        infoEl.textContent = 'Size: ' + (blob.size / 1024).toFixed(1) + ' KB | Codec: ' + codec + ' | Duration: ~' + (paragraphs.length * durationPerScene) + 's';
-        
+        var paragraphs = text.split('\n\n').filter(function(p) { return p.trim(); });
+        document.getElementById('videoInfo').textContent = 'Size: ' + (blob.size/1024).toFixed(1) + ' KB | ' + paragraphs.length + ' scene';
         document.getElementById('videoContainer').classList.add('active');
         
-        // Clean up
-        appState.chunks = [];
-        
-        finishGenerate(generateBtn, progressContainer);
+        S.chunks = [];
+        finishGenerate();
     };
     
     recorder.onerror = function(e) {
-        logProblem('Recorder error: ' + (e.error || 'Unknown'), 'error');
+        logProblem('Recorder error: ' + e.error);
         toast('Recorder error!', 'error');
-        finishGenerate(generateBtn, progressContainer);
+        finishGenerate();
     };
     
-    // Start recording
-    try {
-        recorder.start(500);
-        consoleLog('Recording started', 'success');
-    } catch(e) {
-        logProblem('Start recording error: ' + e.message, 'error');
-        toast('Gagal mulai recording: ' + e.message, 'error');
-        finishGenerate(generateBtn, progressContainer);
-        return;
-    }
+    recorder.start(500);
     
-    // Split text into paragraphs
     var paragraphs = text.split('\n\n').filter(function(p) { return p.trim(); });
     if (paragraphs.length === 0) paragraphs = [text];
-    
-    consoleLog('Scenes: ' + paragraphs.length, 'info');
     
     var totalFrames = paragraphs.length * durationPerScene * fps;
     var frameCount = 0;
     
-    // Render frames using setTimeout for better control
-    function renderNextScene(sceneIndex) {
+    function renderScene(sceneIndex) {
         if (sceneIndex >= paragraphs.length) {
-            // All scenes done
             progressText.textContent = 'Finalizing...';
             progressFill.style.width = '90%';
-            
             setTimeout(function() {
-                if (recorder.state !== 'inactive') {
-                    recorder.stop();
-                }
+                if (recorder.state !== 'inactive') recorder.stop();
             }, 500);
             return;
         }
         
-        progressText.textContent = 'Scene ' + (sceneIndex + 1) + '/' + paragraphs.length;
+        progressText.textContent = 'Scene ' + (sceneIndex+1) + '/' + paragraphs.length;
         
         var paragraph = paragraphs[sceneIndex];
         var framesForScene = durationPerScene * fps;
         var frameInScene = 0;
         
+        // Speech
+        try {
+            var utterance = new SpeechSynthesisUtterance(paragraph);
+            utterance.lang = voice;
+            utterance.rate = 0.9;
+            utterance.volume = volume;
+            speechSynthesis.speak(utterance);
+        } catch(e) {}
+        
         function renderFrame() {
             if (frameInScene >= framesForScene) {
-                renderNextScene(sceneIndex + 1);
+                renderScene(sceneIndex + 1);
                 return;
             }
             
-            // Draw frame
-            drawFrame(ctx, width, height, style, paragraph, sceneIndex, frameInScene, framesForScene);
+            drawComicFrame(ctx, width, height, style, paragraph, sceneIndex, frameInScene, framesForScene, genre);
             
             frameCount++;
             var progress = 10 + (frameCount / totalFrames) * 80;
             progressFill.style.width = progress + '%';
             
             frameInScene++;
-            
-            // Schedule next frame
             setTimeout(renderFrame, 1000 / fps);
         }
         
         renderFrame();
     }
     
-    // Start rendering
-    renderNextScene(0);
+    renderScene(0);
 }
 
-function finishGenerate(generateBtn, progressContainer) {
-    appState.isGenerating = false;
-    if (generateBtn) {
-        generateBtn.disabled = false;
-        generateBtn.textContent = '🎬 Generate Video';
-    }
-    if (progressContainer) {
-        progressContainer.classList.remove('active');
-    }
-}
-
-// ============================================================
-// DRAW FRAME
-// ============================================================
-function drawFrame(ctx, w, h, style, text, sceneIndex, frame, totalFrames) {
+function drawComicFrame(ctx, w, h, style, text, sceneIndex, frame, totalFrames, genre) {
     var progress = frame / totalFrames;
     
     var colors = {
-        horror: ['#0a0a0a', '#1a0a0a', '#0d0d0d'],
-        fantasy: ['#1a0533', '#3d1a6b', '#0a0a2e'],
-        adventure: ['#87CEEB', '#90EE90', '#228B22'],
-        romance: ['#FF6B6B', '#FFA07A', '#FFD700'],
-        sad: ['#4a4a4a', '#3a3a3a', '#2a2a2a']
+        horror: ['#1a0a0a', '#0d0d0d', '#2a0a0a'],
+        fantasy: ['#1a0533', '#2a1a4a', '#0a0a2e'],
+        adventure: ['#1a3a1a', '#2a4a2a', '#0a1a0a'],
+        romance: ['#3a1a1a', '#4a2a2a', '#1a0a0a'],
+        sad: ['#2a2a2a', '#1a1a1a', '#3a3a3a'],
+        action: ['#3a1a0a', '#2a0a0a', '#1a0a0a'],
+        neutral: ['#1a1a2e', '#16213e', '#0f3460']
     };
-    var c = colors[style] || colors.horror;
+    var c = colors[genre] || colors[style] || colors.neutral;
     
-    // Background gradient
     var grad = ctx.createLinearGradient(0, 0, 0, h);
     grad.addColorStop(0, c[0]);
-    grad.addColorStop(0.5, c[1]);
-    grad.addColorStop(1, c[2]);
+    grad.addColorStop(1, c[1]);
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, w, h);
     
-    // Scene icon
-    var icons = { horror: '👻', fantasy: '✨', adventure: '🗺️', romance: '💕', sad: '😢' };
-    var icon = icons[style] || '🎬';
+    // Comic border
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(10, 10, w - 20, h - 20);
     
-    var iconSize = Math.floor(h / 4);
+    // Icon
+    var icons = {
+        horror: ['👻', '💀', '🎃', '👹'],
+        fantasy: ['🐉', '🧙', '🏰', '✨'],
+        adventure: ['🗺️', '🏔️', '⚔️', '🧭'],
+        romance: ['💕', '🌹', '💑', '💖'],
+        sad: ['😢', '💔', '🌧️', '🥀'],
+        action: ['💥', '⚡', '🔥', '🗡️'],
+        neutral: ['📖', '🎬', '📝', '🎭']
+    };
+    var iconList = icons[genre] || icons[style] || icons.neutral;
+    var icon = iconList[sceneIndex % iconList.length];
+    
+    var iconSize = Math.floor(h / 3);
+    var iconX = w / 2 + Math.sin(progress * Math.PI * 2) * 30;
+    var iconY = h / 3 + Math.cos(progress * Math.PI * 3) * 15;
+    
     ctx.font = iconSize + 'px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    
-    // Animated icon
-    var iconX = w / 2 + Math.sin(progress * Math.PI * 2) * 20;
-    var iconY = h / 3 + Math.cos(progress * Math.PI * 3) * 10;
     ctx.fillText(icon, iconX, iconY);
     
-    // Text overlay
+    // Speech bubble
+    var bubbleX = w / 2;
+    var bubbleY = h * 0.65;
+    var bubbleW = Math.min(w * 0.7, 400);
+    var bubbleH = Math.min(h * 0.25, 100);
+    
+    ctx.fillStyle = '#fff';
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(bubbleX, bubbleY, bubbleW/2, bubbleH/2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    
     var fadeIn = Math.min(1, (frame / totalFrames) * 3);
     ctx.save();
-    ctx.globalAlpha = fadeIn * 0.85;
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    var textHeight = Math.min(100, Math.floor(h / 4));
-    ctx.fillRect(0, h - textHeight, w, textHeight);
-    
-    ctx.fillStyle = '#ffffff';
-    var fontSize = Math.min(16, Math.floor(w / 50));
+    ctx.globalAlpha = fadeIn;
+    ctx.fillStyle = '#000';
+    var fontSize = Math.min(14, Math.floor(w / 60));
     ctx.font = 'bold ' + fontSize + 'px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
-    var shortText = text.length > 80 ? text.substring(0, 80) + '...' : text;
-    ctx.fillText(shortText, w / 2, h - textHeight / 2);
+    var shortText = text.length > 60 ? text.substring(0, 60) + '...' : text;
+    ctx.fillText(shortText, bubbleX, bubbleY);
     ctx.restore();
     
-    // Scene indicator
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
     ctx.font = '10px Arial';
     ctx.textAlign = 'right';
-    ctx.fillText('Scene ' + (sceneIndex + 1), w - 10, h - 10);
+    ctx.fillText('Panel ' + (sceneIndex + 1), w - 25, h - 20);
 }
 
-// ============================================================
-// DOWNLOAD VIDEO
-// ============================================================
+function finishGenerate() {
+    S.generating = false;
+    var btn = document.getElementById('generateBtn');
+    if (btn) {
+        btn.disabled = false;
+        btn.textContent = '🎬 Generate Video';
+    }
+    var progress = document.getElementById('progressContainer');
+    if (progress) progress.classList.remove('active');
+}
+
+// ========== DOWNLOAD ==========
 function downloadVideo() {
-    if (!appState.generatedBlob) {
-        toast('Belum ada video!', 'error');
+    if (!S.blob) { toast('Belum ada video!', 'error'); return; }
+    
+    var url = URL.createObjectURL(S.blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'yad_video_' + Date.now() + '.webm';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(url); }, 5000);
+    toast('Download dimulai!', 'success');
+}
+
+// ========== LOG ==========
+function logProblem(msg) {
+    S.problems.push({ time: new Date().toISOString(), msg: msg });
+    updateLogPanel();
+}
+
+function openLogPanel() {
+    document.getElementById('logPanel').classList.add('show');
+    updateLogPanel();
+}
+
+function closeLogPanel() {
+    document.getElementById('logPanel').classList.remove('show');
+}
+
+function updateLogPanel() {
+    var body = document.getElementById('logBody');
+    if (!body) return;
+    if (S.problems.length === 0) {
+        body.textContent = 'Belum ada masalah.';
         return;
     }
+    body.textContent = S.problems.map(function(p, i) {
+        return '[' + (i+1) + '] ' + p.time + '\n' + p.msg + '\n---';
+    }).join('\n');
+}
+
+function copyLog() {
+    if (S.problems.length === 0) { toast('Tidak ada log', 'info'); return; }
+    var text = S.problems.map(function(p, i) { return '[' + (i+1) + '] ' + p.msg; }).join('\n');
     
-    try {
-        var url = URL.createObjectURL(appState.generatedBlob);
-        var a = document.createElement('a');
-        a.href = url;
-        a.download = 'yad_video_' + Date.now() + '.webm';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        
-        setTimeout(function() {
-            URL.revokeObjectURL(url);
-        }, 5000);
-        
-        toast('Download dimulai!', 'success');
-        consoleLog('Download started', 'success');
-    } catch(e) {
-        logProblem('Download error: ' + e.message, 'error');
-        toast('Download gagal: ' + e.message, 'error');
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(function() { toast('Log disalin!', 'success'); });
     }
 }
 
-// ============================================================
-// PUSH TO GITHUB
-// ============================================================
-function pushToGitHub() {
-    consoleLog('Push to GitHub...', 'info');
+function downloadLog() {
+    if (S.problems.length === 0) { toast('Tidak ada log', 'info'); return; }
+    var text = S.problems.map(function(p, i) { return '[' + (i+1) + '] ' + p.time + '\n' + p.msg + '\n---'; }).join('\n');
     
-    var config = {};
-    try {
-        config = JSON.parse(localStorage.getItem('github_config') || '{}');
-    } catch(e) {}
-    
-    if (!config.token) {
-        config.token = prompt('GitHub Token:');
-        if (!config.token) return;
-    }
-    if (!config.username) {
-        config.username = prompt('Username GitHub:');
-        if (!config.username) return;
-    }
-    if (!config.repo) {
-        config.repo = prompt('Nama Repository:');
-        if (!config.repo) return;
-    }
-    
-    try {
-        localStorage.setItem('github_config', JSON.stringify(config));
-    } catch(e) {}
-    
-    var html = document.documentElement.outerHTML;
-    var content = btoa(unescape(encodeURIComponent(html)));
-    
-    var xhr = new XMLHttpRequest();
-    xhr.open('PUT', 'https://api.github.com/repos/' + config.username + '/' + config.repo + '/contents/index.html');
-    xhr.setRequestHeader('Authorization', 'token ' + config.token);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    
-    xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300) {
-            var data = JSON.parse(xhr.responseText);
-            if (data.content) {
-                toast('Berhasil push ke GitHub!', 'success');
-                consoleLog('Push successful', 'success');
-            } else {
-                logProblem('Push failed: ' + (data.message || 'Unknown'), 'error');
-                toast('Push gagal: ' + (data.message || 'Error'), 'error');
-            }
-        } else {
-            var msg = 'Push failed: ' + xhr.status;
-            try {
-                var errData = JSON.parse(xhr.responseText);
-                msg += ' - ' + errData.message;
-            } catch(e) {}
-            logProblem(msg, 'error');
-            toast(msg, 'error');
-        }
-    };
-    
-    xhr.onerror = function() {
-        logProblem('Push network error', 'error');
-        toast('Push gagal: network error', 'error');
-    };
-    
-    xhr.send(JSON.stringify({
-        message: 'Update YAD Video AI v5.0',
-        content: content,
-        branch: 'main'
-    }));
+    var blob = new Blob([text], {type: 'text/plain'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'log_' + Date.now() + '.txt';
+    a.click();
 }
 
-// ============================================================
-// RESET
-// ============================================================
+function clearLog() {
+    S.problems = [];
+    updateLogPanel();
+    toast('Log dibersihkan!', 'info');
+}
+
+// ========== RESET ==========
 function resetAll() {
     if (!confirm('Reset semua data?')) return;
     
-    try {
-        localStorage.clear();
-    } catch(e) {}
+    try { localStorage.clear(); } catch(e) {}
     
-    appState.generatedBlob = null;
-    appState.problems = [];
-    appState.chunks = [];
-    appState.isGenerating = false;
+    S.blob = null;
+    S.problems = [];
+    S.chunks = [];
+    S.generating = false;
+    S.github = {};
     
-    var videoPreview = document.getElementById('videoPreview');
-    if (videoPreview) videoPreview.src = '';
+    var video = document.getElementById('videoPreview');
+    if (video) video.src = '';
     
-    var videoContainer = document.getElementById('videoContainer');
-    if (videoContainer) videoContainer.classList.remove('active');
+    var container = document.getElementById('videoContainer');
+    if (container) container.classList.remove('active');
     
-    var storyInput = document.getElementById('storyInput');
-    if (storyInput) storyInput.value = '';
+    var input = document.getElementById('storyInput');
+    if (input) input.value = '';
     
     updateLogPanel();
-    consoleLog('Reset complete', 'warning');
+    updateStatus('ready', 'READY');
     toast('Reset selesai!', 'info');
 }
 
-// ============================================================
-// INIT
-// ============================================================
+// ========== INIT ==========
 function init() {
-    consoleLog('YAD Video AI v5.0 initialized', 'success');
-    consoleLog('Browser: ' + detectBrowser(), 'info');
+    consoleLog('YAD Video AI v8.0 initialized', 'success');
+    consoleLog('Ketik "help" untuk bantuan', 'info');
     
-    var codecs = getSupportedCodecs();
-    consoleLog('Codecs: ' + (codecs.join(', ') || 'None'), codecs.length > 0 ? 'success' : 'error');
-    
-    if (!window.MediaRecorder) {
-        logProblem('MediaRecorder tidak didukung', 'error');
-        toast('Browser tidak mendukung perekaman!', 'error');
+    if (S.github.token) {
+        consoleLog('GitHub: ' + S.github.username + '/' + S.github.repo, 'success');
     }
     
-    // Auto fix on init
     autoFix();
 }
 
-// Start
 init();
 </script>
 </body>

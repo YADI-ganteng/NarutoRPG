@@ -3,1255 +3,925 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YAD Video AI - Video Cerita Animasi dengan Suara</title>
-    
+    <title>YAD Video AI - Final Stable v5.0</title>
     <style>
-        :root {
-            --bg: #0a0a14;
-            --bg-card: #12122a;
-            --bg-input: #0d0d20;
-            --text: #e8e8f0;
-            --text-dim: #9090a8;
-            --accent: #8b5cf6;
-            --accent2: #06b6d4;
-            --gold: #f59e0b;
-            --green: #10b981;
-            --red: #ef4444;
-            --pink: #ec4899;
-            --border: #252540;
-            --radius: 14px;
-        }
+        :root{--bg:#0a0a14;--card:#12122a;--input:#0d0d20;--text:#e8e8f0;--dim:#9090a8;--accent:#8b5cf6;--green:#10b981;--red:#ef4444;--gold:#f59e0b;--border:#252540;--radius:14px}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
         
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .header{background:rgba(10,10,20,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:10px}
+        .logo{font-size:18px;font-weight:800;background:linear-gradient(135deg,#8b5cf6,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .nav{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+        .btn{padding:8px 12px;border-radius:16px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;font-size:10px;font-weight:600;font-family:inherit;transition:all .2s;white-space:nowrap}
+        .btn:hover{background:#1a1a35;border-color:var(--accent)}
+        .btn-primary{background:var(--accent);color:#fff;border:none}
+        .btn-success{background:var(--green);color:#fff;border:none}
+        .btn-danger{background:var(--red);color:#fff;border:none}
+        .btn-warning{background:var(--gold);color:#000;border:none}
         
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            min-height: 100vh;
-            padding: 20px;
-        }
+        .container{max-width:900px;margin:0 auto;padding:20px}
+        .card{background:var(--card);border-radius:var(--radius);padding:20px;margin-bottom:16px;border:1px solid var(--border)}
+        .card h2{font-size:16px;color:var(--accent);margin-bottom:12px}
+        textarea{width:100%;min-height:150px;padding:14px;background:var(--input);border:2px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;line-height:1.6;resize:vertical;font-family:Georgia,serif;outline:none}
+        textarea:focus{border-color:var(--accent)}
         
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
+        .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+        .setting{background:var(--input);padding:10px;border-radius:8px;border:1px solid var(--border)}
+        .setting label{display:block;font-size:9px;color:var(--dim);margin-bottom:4px;text-transform:uppercase;font-weight:600}
+        .setting select{width:100%;padding:6px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;outline:none}
         
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            border-radius: var(--radius);
-            border: 2px solid var(--accent);
-        }
+        .btn-generate{width:100%;padding:14px;background:linear-gradient(135deg,#8b5cf6,#ec4899);color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;transition:all .3s}
+        .btn-generate:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 24px rgba(139,92,246,.4)}
+        .btn-generate:disabled{opacity:.5;cursor:not-allowed}
         
-        .header h1 {
-            font-size: 32px;
-            background: linear-gradient(135deg, #8b5cf6, #ec4899, #06b6d4);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
-        }
+        .progress{display:none;margin:16px 0}
+        .progress.active{display:block}
+        .progress-bar{width:100%;height:10px;background:var(--input);border-radius:5px;overflow:hidden;border:1px solid var(--border)}
+        .progress-fill{height:100%;background:linear-gradient(90deg,#8b5cf6,#ec4899,#06b6d4);width:0%;transition:width .3s}
+        .progress-text{text-align:center;font-size:10px;color:var(--dim);margin-top:6px}
         
-        .header p {
-            color: var(--text-dim);
-            font-size: 14px;
-        }
+        .video-container{display:none;margin-top:16px}
+        .video-container.active{display:block}
+        video{width:100%;border-radius:10px;border:2px solid var(--border);background:#000;max-height:350px}
+        .video-info{font-size:10px;color:var(--dim);text-align:center;margin:8px 0}
         
-        .card {
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            padding: 24px;
-            margin-bottom: 20px;
-            border: 1px solid var(--border);
-        }
+        .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:10px;color:#fff;font-size:12px;z-index:10000;animation:slideDown .3s;max-width:90%;text-align:center}
+        .toast.success{background:var(--green)}
+        .toast.error{background:var(--red)}
+        .toast.info{background:#06b6d4}
+        .toast.warning{background:var(--gold);color:#000}
+        @keyframes slideDown{from{opacity:0;transform:translate(-50%,-20px)}to{opacity:1;transform:translate(-50%,0)}}
         
-        .card h2 {
-            margin-bottom: 16px;
-            font-size: 20px;
-            color: var(--accent);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .console-panel{position:fixed;top:60px;right:10px;width:450px;max-width:95vw;max-height:70vh;background:#0a0a0a;border-radius:10px;border:2px solid #00ff00;display:none;flex-direction:column;z-index:9999;overflow:hidden}
+        .console-panel.show{display:flex}
+        .console-header{background:#0d1a0d;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1a3a1a}
+        .console-body{flex:1;overflow-y:auto;padding:8px;font-family:monospace;font-size:9px;color:#00ff00;background:#000;min-height:150px}
+        .console-line{margin:1px 0;line-height:1.4;word-break:break-word}
+        .console-line.error{color:#f44}.console-line.success{color:#4f4}.console-line.info{color:#4af}.console-line.warning{color:#fa4}
+        .console-input{display:flex;padding:6px;background:#0d0d0d;border-top:1px solid #1a3a1a}
+        .console-input input{flex:1;background:transparent;border:none;color:#00ff00;font-family:monospace;font-size:10px;outline:none}
         
-        textarea {
-            width: 100%;
-            min-height: 200px;
-            padding: 16px;
-            background: var(--bg-input);
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            color: var(--text);
-            font-size: 16px;
-            line-height: 1.8;
-            resize: vertical;
-            font-family: 'Georgia', serif;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-        
-        textarea:focus {
-            border-color: var(--accent);
-        }
-        
-        .keyword-display {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin: 12px 0;
-            padding: 12px;
-            background: var(--bg-input);
-            border-radius: 8px;
-            min-height: 40px;
-        }
-        
-        .keyword-tag {
-            padding: 6px 12px;
-            background: var(--accent);
-            color: white;
-            border-radius: 20px;
-            font-size: 12px;
-            animation: fadeIn 0.3s;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.8); }
-            to { opacity: 1; transform: scale(1); }
-        }
-        
-        .settings-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px;
-            margin: 16px 0;
-        }
-        
-        .setting {
-            background: var(--bg-input);
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-        }
-        
-        .setting label {
-            display: block;
-            font-size: 11px;
-            color: var(--text-dim);
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            font-weight: 600;
-        }
-        
-        .setting select, .setting input {
-            width: 100%;
-            padding: 8px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: var(--text);
-            font-size: 13px;
-            outline: none;
-        }
-        
-        .btn {
-            padding: 12px 24px;
-            border-radius: 12px;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s;
-            font-family: inherit;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #8b5cf6, #ec4899);
-            color: white;
-            width: 100%;
-            padding: 16px;
-            font-size: 16px;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
-        }
-        
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .progress-container {
-            display: none;
-            margin: 20px 0;
-        }
-        
-        .progress-container.active {
-            display: block;
-        }
-        
-        .progress-bar {
-            width: 100%;
-            height: 12px;
-            background: var(--bg-input);
-            border-radius: 6px;
-            overflow: hidden;
-            border: 1px solid var(--border);
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #8b5cf6, #ec4899, #06b6d4);
-            width: 0%;
-            transition: width 0.3s;
-        }
-        
-        .progress-text {
-            text-align: center;
-            margin-top: 8px;
-            font-size: 12px;
-            color: var(--text-dim);
-        }
-        
-        .preview-container {
-            display: none;
-            margin-top: 20px;
-        }
-        
-        .preview-container.active {
-            display: block;
-        }
-        
-        video {
-            width: 100%;
-            border-radius: 12px;
-            border: 2px solid var(--border);
-            background: #000;
-        }
-        
-        .storage-options {
-            display: flex;
-            gap: 12px;
-            margin: 20px 0;
-            flex-wrap: wrap;
-        }
-        
-        .storage-btn {
-            flex: 1;
-            min-width: 150px;
-            padding: 16px;
-            background: var(--bg-input);
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.3s;
-            color: var(--text);
-            font-size: 14px;
-            font-weight: 600;
-            font-family: inherit;
-        }
-        
-        .storage-btn:hover, .storage-btn.selected {
-            border-color: var(--accent);
-            background: var(--bg-card);
-            transform: translateY(-2px);
-        }
-        
-        .toast {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 12px 24px;
-            border-radius: 12px;
-            color: white;
-            font-size: 14px;
-            z-index: 1000;
-            animation: slideDown 0.3s ease;
-            max-width: 90%;
-        }
-        
-        .toast.success { background: var(--green); }
-        .toast.error { background: var(--red); }
-        .toast.info { background: var(--accent2); }
-        .toast.warning { background: var(--gold); }
-        
-        @keyframes slideDown {
-            from { opacity: 0; transform: translate(-50%, -20px); }
-            to { opacity: 1; transform: translate(-50%, 0); }
-        }
-        
-        .animation-preview {
-            display: none;
-            margin: 16px 0;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 2px solid var(--border);
-        }
-        
-        .animation-preview.active {
-            display: block;
-        }
-        
-        .animation-preview canvas {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
+        .log-panel{position:fixed;top:60px;left:10px;width:350px;max-width:95vw;max-height:70vh;background:#0a0a0a;border-radius:10px;border:2px solid #ffaa44;display:none;flex-direction:column;z-index:9999;overflow:hidden}
+        .log-panel.show{display:flex}
+        .log-header{background:#1a0d00;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #3a1a00}
+        .log-body{flex:1;overflow-y:auto;padding:8px;font-family:monospace;font-size:8px;color:#ffaa44;background:#0a0a0a;min-height:100px;white-space:pre-wrap}
+        .log-actions{display:flex;gap:4px;padding:6px;background:#0d0d0d;border-top:1px solid #3a1a00}
+        .log-actions button{flex:1;padding:5px;font-size:8px;border-radius:4px;border:1px solid #ffaa44;background:transparent;color:#ffaa44;cursor:pointer;font-family:inherit}
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🎬 YAD Video AI - Animasi Otomatis</h1>
-            <p>Buat video dengan gambar animasi sesuai cerita + suara</p>
-        </div>
-        
-        <div class="card">
-            <h2>📝 Tulis Cerita Anda</h2>
-            <textarea id="storyInput" placeholder="Tulis cerita di sini...&#10;&#10;Contoh cerita horor:&#10;Di sebuah rumah tua, ada seorang gadis kecil yang suka bermain boneka...&#10;&#10;Malam itu, bonekanya bergerak sendiri..."></textarea>
-            
-            <h3 style="margin-top: 16px; font-size: 14px; color: var(--text-dim);">🔍 Kata kunci terdeteksi:</h3>
-            <div class="keyword-display" id="keywordDisplay">
-                <span style="color: var(--text-dim); font-size: 12px;">Ketik cerita untuk melihat kata kunci...</span>
-            </div>
-            
-            <div class="animation-preview" id="animationPreview">
-                <canvas id="previewCanvas" width="800" height="450"></canvas>
-            </div>
-            
-            <div class="settings-grid">
-                <div class="setting">
-                    <label>🎨 Gaya Animasi</label>
-                    <select id="styleSelect">
-                        <option value="horror">👻 Horor</option>
-                        <option value="fantasy">✨ Fantasi</option>
-                        <option value="cartoon">🎨 Kartun</option>
-                        <option value="realistic">🎬 Realistis</option>
-                        <option value="anime">🌸 Anime</option>
-                    </select>
-                </div>
-                
-                <div class="setting">
-                    <label>🗣️ Suara Narator</label>
-                    <select id="voiceSelect">
-                        <option value="id-ID-Standard-A">🇮🇩 Wanita Indonesia</option>
-                        <option value="id-ID-Standard-B">🇮🇩 Pria Indonesia</option>
-                    </select>
-                </div>
-                
-                <div class="setting">
-                    <label>📐 Resolusi</label>
-                    <select id="resolutionSelect">
-                        <option value="1280x720">HD (1280x720)</option>
-                        <option value="1920x1080">Full HD (1920x1080)</option>
-                        <option value="720x1280">Vertical HD</option>
-                    </select>
-                </div>
-                
-                <div class="setting">
-                    <label>🎵 Musik Latar</label>
-                    <select id="musicSelect">
-                        <option value="none">🔇 Tanpa Musik</option>
-                        <option value="horror">👻 Horor</option>
-                        <option value="adventure">⚔️ Petualangan</option>
-                        <option value="sad">😢 Sedih</option>
-                        <option value="happy">😊 Ceria</option>
-                        <option value="mysterious">🔮 Misterius</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-        
-        <div class="card">
-            <h2>💾 Pilih Penyimpanan</h2>
-            <div class="storage-options">
-                <button class="storage-btn selected" id="downloadBtn" onclick="selectStorage('download')">
-                    💾 Download Langsung
-                </button>
-                <button class="storage-btn" id="githubBtn" onclick="selectStorage('github')">
-                    🐙 GitHub
-                </button>
-                <button class="storage-btn" id="driveBtn" onclick="selectStorage('drive')">
-                    📁 Google Drive
-                </button>
-            </div>
-        </div>
-        
-        <button class="btn btn-primary" id="generateBtn" onclick="generateStoryVideo()">
-            🎬 Generate Video Animasi
-        </button>
-        
-        <div class="progress-container" id="progressContainer">
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>
-            </div>
-            <div class="progress-text" id="progressText">Memulai...</div>
-        </div>
-        
-        <div class="preview-container" id="previewContainer">
-            <div class="card">
-                <h2>✅ Video Animasi Selesai!</h2>
-                <video id="videoPreview" controls></video>
-                <button class="btn btn-primary" onclick="saveVideo()" style="margin-top: 12px;">
-                    💾 Simpan Video
-                </button>
-            </div>
-        </div>
-    </div>
 
-    <script>
-        let selectedStorage = 'download';
-        let generatedVideoBlob = null;
-        let audioContext = null;
-        
-        function selectStorage(type) {
-            selectedStorage = type;
-            document.querySelectorAll('.storage-btn').forEach(btn => {
-                btn.classList.remove('selected');
+<header class="header">
+    <div class="logo">🎬 YAD Video AI <span style="font-size:8px;color:#10b981">v5.0 STABLE</span></div>
+    <div class="nav">
+        <button class="btn btn-primary" onclick="openConsole()">🖥️ Console</button>
+        <button class="btn" style="border-color:#ffaa44;color:#ffaa44" onclick="openLogPanel()">📋 Log</button>
+        <button class="btn btn-success" onclick="autoFix()">🔧 Fix</button>
+        <button class="btn btn-warning" onclick="pushToGitHub()">📤 Push</button>
+        <button class="btn btn-danger" onclick="resetAll()">🗑️ Reset</button>
+    </div>
+</header>
+
+<div class="console-panel" id="consolePanel">
+    <div class="console-header">
+        <span style="color:#0f0;font-family:monospace;font-size:10px;font-weight:bold">🖥️ Console</span>
+        <button onclick="closeConsole()" style="background:none;border:none;color:#f44;cursor:pointer;font-size:16px">✕</button>
+    </div>
+    <div class="console-body" id="consoleBody"></div>
+    <div class="console-input">
+        <span style="color:#0f0;margin-right:4px;font-family:monospace">➜</span>
+        <input type="text" id="consoleInput" placeholder="help, fix, status, test..." onkeydown="if(event.key==='Enter')execCmd()">
+    </div>
+</div>
+
+<div class="log-panel" id="logPanel">
+    <div class="log-header">
+        <span style="color:#ffaa44;font-family:monospace;font-size:10px;font-weight:bold">📋 Log Masalah</span>
+        <button onclick="closeLogPanel()" style="background:none;border:none;color:#f44;cursor:pointer;font-size:16px">✕</button>
+    </div>
+    <div class="log-body" id="logBody">Belum ada masalah.</div>
+    <div class="log-actions">
+        <button onclick="copyLog()">📋 Copy</button>
+        <button onclick="downloadLog()">💾 Save</button>
+        <button onclick="clearLog()">🗑️ Clear</button>
+    </div>
+</div>
+
+<div class="container">
+    <div class="card">
+        <h2>📝 Tulis Cerita</h2>
+        <textarea id="storyInput" placeholder="Tulis cerita di sini...&#10;&#10;Setiap paragraf menjadi satu scene."></textarea>
+        <div class="grid">
+            <div class="setting">
+                <label>🎨 Gaya</label>
+                <select id="styleSelect">
+                    <option value="horror">👻 Horor</option>
+                    <option value="fantasy">✨ Fantasi</option>
+                    <option value="adventure">🗺️ Petualangan</option>
+                    <option value="romance">💕 Romantis</option>
+                    <option value="sad">😢 Sedih</option>
+                </select>
+            </div>
+            <div class="setting">
+                <label>📐 Resolusi</label>
+                <select id="resolutionSelect">
+                    <option value="320x240">Low (320x240)</option>
+                    <option value="640x360" selected>SD (640x360)</option>
+                    <option value="1280x720">HD (1280x720)</option>
+                </select>
+            </div>
+            <div class="setting">
+                <label>⏱️ Durasi/Scene</label>
+                <select id="durationSelect">
+                    <option value="2">2 detik</option>
+                    <option value="3" selected>3 detik</option>
+                    <option value="5">5 detik</option>
+                </select>
+            </div>
+        </div>
+        <p style="font-size:10px;color:var(--dim);margin-top:8px;text-align:center">
+            ⚠️ Video dihasilkan tanpa audio (keterbatasan browser). Gunakan resolusi Low/SD untuk hasil terbaik.
+        </p>
+    </div>
+    
+    <button class="btn-generate" id="generateBtn" onclick="generateVideo()">🎬 Generate Video</button>
+    
+    <div class="progress" id="progressContainer">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="progress-text" id="progressText">Memulai...</div>
+    </div>
+    
+    <div class="video-container" id="videoContainer">
+        <video id="videoPreview" controls playsinline></video>
+        <div class="video-info" id="videoInfo"></div>
+        <button class="btn-generate" style="margin-top:10px" onclick="downloadVideo()">💾 Download Video</button>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// STATE MANAGEMENT (Isolated)
+// ============================================================
+var appState = {
+    generatedBlob: null,
+    isGenerating: false,
+    problems: [],
+    chunks: [],
+    recorder: null,
+    stream: null,
+    canvas: null,
+    ctx: null
+};
+
+// ============================================================
+// TOAST SYSTEM
+// ============================================================
+function toast(msg, type) {
+    type = type || 'info';
+    var toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(function() { toast.remove(); }, 4000);
+}
+
+// ============================================================
+// CONSOLE SYSTEM
+// ============================================================
+function openConsole() {
+    document.getElementById('consolePanel').classList.add('show');
+    document.getElementById('consoleInput').focus();
+}
+
+function closeConsole() {
+    document.getElementById('consolePanel').classList.remove('show');
+}
+
+function consoleLog(msg, type) {
+    type = type || 'info';
+    var body = document.getElementById('consoleBody');
+    if (!body) return;
+    var line = document.createElement('div');
+    line.className = 'console-line ' + type;
+    line.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
+    body.appendChild(line);
+    body.scrollTop = body.scrollHeight;
+    while (body.children.length > 300) {
+        body.removeChild(body.firstChild);
+    }
+}
+
+function execCmd() {
+    var inp = document.getElementById('consoleInput');
+    var cmd = inp.value.trim().toLowerCase();
+    if (!cmd) return;
+    consoleLog('> ' + cmd, 'info');
+    inp.value = '';
+    
+    var parts = cmd.split(' ');
+    var main = parts[0];
+    
+    switch(main) {
+        case 'help':
+            consoleLog('Commands: fix, status, test, codec, log, clearlog, reset', 'info');
+            break;
+        case 'fix':
+            autoFix();
+            break;
+        case 'status':
+            consoleLog('Generating: ' + (appState.isGenerating ? 'Yes' : 'No'), 'info');
+            consoleLog('Video: ' + (appState.generatedBlob ? (appState.generatedBlob.size / 1024).toFixed(1) + ' KB' : 'None'), 'info');
+            consoleLog('Problems: ' + appState.problems.length, appState.problems.length > 0 ? 'warning' : 'success');
+            break;
+        case 'test':
+            testSystem();
+            break;
+        case 'codec':
+            var codecs = getSupportedCodecs();
+            consoleLog('Supported codecs:', 'info');
+            codecs.forEach(function(c) { consoleLog('  OK ' + c, 'success'); });
+            if (codecs.length === 0) consoleLog('  NO CODEC!', 'error');
+            break;
+        case 'log':
+            appState.problems.forEach(function(p, i) {
+                consoleLog((i + 1) + '. ' + p.msg, 'warning');
             });
-            document.getElementById(type + 'Btn').classList.add('selected');
-        }
+            break;
+        case 'clearlog':
+            appState.problems = [];
+            updateLogPanel();
+            consoleLog('Log cleared', 'success');
+            break;
+        case 'reset':
+            resetAll();
+            break;
+        default:
+            consoleLog('Unknown: ' + cmd, 'error');
+    }
+}
+
+// ============================================================
+// LOG SYSTEM
+// ============================================================
+function logProblem(msg, severity) {
+    severity = severity || 'warning';
+    appState.problems.push({
+        time: new Date().toISOString(),
+        msg: msg,
+        severity: severity,
+        browser: detectBrowser(),
+        codec: getSupportedCodecs()
+    });
+    updateLogPanel();
+    consoleLog('PROBLEM: ' + msg, 'warning');
+}
+
+function detectBrowser() {
+    var ua = navigator.userAgent;
+    if (ua.indexOf('Chrome') > -1) return 'Chrome';
+    if (ua.indexOf('Firefox') > -1) return 'Firefox';
+    if (ua.indexOf('Safari') > -1) return 'Safari';
+    if (ua.indexOf('Edge') > -1) return 'Edge';
+    return 'Other';
+}
+
+function getSupportedCodecs() {
+    var list = [];
+    var codecs = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4'];
+    if (window.MediaRecorder) {
+        codecs.forEach(function(c) {
+            try {
+                if (MediaRecorder.isTypeSupported(c)) list.push(c);
+            } catch(e) {}
+        });
+    }
+    return list;
+}
+
+function openLogPanel() {
+    document.getElementById('logPanel').classList.add('show');
+    updateLogPanel();
+}
+
+function closeLogPanel() {
+    document.getElementById('logPanel').classList.remove('show');
+}
+
+function updateLogPanel() {
+    var body = document.getElementById('logBody');
+    if (!body) return;
+    if (appState.problems.length === 0) {
+        body.textContent = 'Belum ada masalah.';
+        return;
+    }
+    body.textContent = appState.problems.map(function(p, i) {
+        return '[' + (i + 1) + '] ' + p.time + '\n' +
+               'Browser: ' + p.browser + '\n' +
+               'Codec: ' + (p.codec.join(', ') || 'None') + '\n' +
+               'Severity: ' + p.severity + '\n' +
+               'Message: ' + p.msg + '\n---';
+    }).join('\n');
+}
+
+function copyLog() {
+    if (appState.problems.length === 0) {
+        toast('Tidak ada log', 'info');
+        return;
+    }
+    var text = appState.problems.map(function(p, i) {
+        return '[' + (i + 1) + '] ' + p.time + ' - ' + p.msg + ' (Browser: ' + p.browser + ')';
+    }).join('\n');
+    
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+            toast('Log disalin!', 'success');
+        }).catch(function() {
+            fallbackCopy(text);
+        });
+    } else {
+        fallbackCopy(text);
+    }
+}
+
+function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    toast('Log disalin!', 'success');
+}
+
+function downloadLog() {
+    if (appState.problems.length === 0) {
+        toast('Tidak ada log', 'info');
+        return;
+    }
+    var text = appState.problems.map(function(p, i) {
+        return '[' + (i + 1) + '] ' + p.time + '\n' +
+               'Browser: ' + p.browser + '\n' +
+               'Message: ' + p.msg + '\n' +
+               'Codec: ' + p.codec.join(', ') + '\n---';
+    }).join('\n');
+    
+    var blob = new Blob([text], { type: 'text/plain' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'yad_log_' + Date.now() + '.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+    toast('Log didownload!', 'success');
+}
+
+function clearLog() {
+    appState.problems = [];
+    updateLogPanel();
+    toast('Log dibersihkan!', 'info');
+}
+
+// ============================================================
+// AUTO FIX (Synchronous - No Promise Issues)
+// ============================================================
+function autoFix() {
+    consoleLog('Running auto fix...', 'info');
+    
+    // Check MediaRecorder
+    if (!window.MediaRecorder) {
+        logProblem('MediaRecorder tidak didukung browser ini', 'error');
+        toast('Browser tidak mendukung perekaman video', 'error');
+        return false;
+    }
+    consoleLog('MediaRecorder: OK', 'success');
+    
+    // Check codec
+    var codecs = getSupportedCodecs();
+    if (codecs.length === 0) {
+        logProblem('Tidak ada codec yang didukung', 'error');
+        toast('Tidak ada codec video', 'error');
+        return false;
+    }
+    consoleLog('Codec: ' + codecs[0], 'success');
+    
+    // Check canvas
+    try {
+        var c = document.createElement('canvas');
+        var ctx = c.getContext('2d');
+        if (!ctx) throw new Error('Canvas 2D not available');
+        consoleLog('Canvas: OK', 'success');
+    } catch(e) {
+        logProblem('Canvas error: ' + e.message, 'error');
+        return false;
+    }
+    
+    // Save config
+    try {
+        localStorage.setItem('video_config', JSON.stringify({
+            codec: codecs[0],
+            time: Date.now()
+        }));
+    } catch(e) {
+        consoleLog('Warning: Cannot save config', 'warning');
+    }
+    
+    toast('Auto fix selesai!', 'success');
+    return true;
+}
+
+// ============================================================
+// TEST SYSTEM
+// ============================================================
+function testSystem() {
+    consoleLog('Testing system...', 'info');
+    
+    try {
+        var canvas = document.createElement('canvas');
+        canvas.width = 100;
+        canvas.height = 100;
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ff0000';
+        ctx.fillRect(0, 0, 100, 100);
         
-        function toast(message, type = 'info') {
-            const toast = document.createElement('div');
-            toast.className = 'toast ' + type;
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 4000);
-        }
+        var stream = canvas.captureStream(10);
+        var codecs = getSupportedCodecs();
+        var codec = codecs[0] || 'video/webm';
         
-        // ================================================================
-        // DETEKSI KATA KUNCI UNTUK GAMBAR ANIMASI
-        // ================================================================
-        const SCENE_TYPES = {
-            horror: {
-                keywords: ['hantu', 'setan', 'malam', 'gelap', 'takut', 'seram', 'horor', 'boneka', 'rumah tua', 'kamar', 'pintu', 'cermin', 'bayangan', 'berdarah', 'mayat', 'kuburan', 'hutan', 'angker'],
-                scenes: ['haunted_house', 'dark_room', 'ghost', 'doll', 'mirror', 'shadow', 'graveyard', 'dark_forest', 'old_door', 'creepy_hallway']
-            },
-            fantasy: {
-                keywords: ['ajaib', 'sihir', 'naga', 'putri', 'pangeran', 'istana', 'peri', 'unicorn', 'pedang', 'mahkota', 'kerajaan', 'penyihir', 'tongkat', 'kastil'],
-                scenes: ['castle', 'dragon', 'magic_forest', 'princess', 'wizard', 'fairy', 'enchanted_garden', 'throne_room']
-            },
-            adventure: {
-                keywords: ['petualang', 'gunung', 'laut', 'hutan', 'pulau', 'harta', 'peta', 'kapal', 'jelajah', 'berani', 'perjalanan', 'gua', 'air terjun'],
-                scenes: ['mountain', 'ocean', 'jungle', 'island', 'treasure_map', 'ship', 'cave', 'waterfall', 'desert']
-            },
-            romance: {
-                keywords: ['cinta', 'kasih', 'sayang', 'rindu', 'hati', 'pelukan', 'ciuman', 'kencan', 'bunga', 'mawar', 'senja', 'matahari terbenam'],
-                scenes: ['sunset', 'rose_garden', 'couple', 'heart', 'moonlight', 'beach_walk']
-            },
-            sad: {
-                keywords: ['sedih', 'menangis', 'air mata', 'kehilangan', 'pergi', 'meninggal', 'duka', 'pilu', 'rindu', 'sunyi', 'sendiri', 'hujan'],
-                scenes: ['rain', 'lonely_window', 'tears', 'empty_room', 'falling_leaves', 'grey_sky']
-            }
+        var recorder = new MediaRecorder(stream, { mimeType: codec });
+        var testChunks = [];
+        
+        recorder.ondataavailable = function(e) {
+            if (e.data.size > 0) testChunks.push(e.data);
         };
         
-        function detectSceneType(text) {
-            const lowerText = text.toLowerCase();
-            let bestMatch = { type: 'neutral', count: 0 };
+        recorder.onstop = function() {
+            var blob = new Blob(testChunks, { type: codec });
+            consoleLog('Test result: ' + blob.size + ' bytes', blob.size > 0 ? 'success' : 'error');
             
-            for (const [sceneType, config] of Object.entries(SCENE_TYPES)) {
-                let count = 0;
-                for (const keyword of config.keywords) {
-                    if (lowerText.includes(keyword)) {
-                        count++;
-                    }
-                }
-                if (count > bestMatch.count) {
-                    bestMatch = { type: sceneType, count };
-                }
-            }
-            
-            return bestMatch.type;
-        }
-        
-        function extractKeywords(text) {
-            const lowerText = text.toLowerCase();
-            const foundKeywords = [];
-            
-            for (const [sceneType, config] of Object.entries(SCENE_TYPES)) {
-                for (const keyword of config.keywords) {
-                    if (lowerText.includes(keyword) && !foundKeywords.includes(keyword)) {
-                        foundKeywords.push(keyword);
-                    }
-                }
-            }
-            
-            return foundKeywords;
-        }
-        
-        function updateKeywordDisplay() {
-            const text = document.getElementById('storyInput').value;
-            const keywords = extractKeywords(text);
-            const display = document.getElementById('keywordDisplay');
-            
-            if (keywords.length === 0) {
-                display.innerHTML = '<span style="color: var(--text-dim); font-size: 12px;">Ketik cerita untuk melihat kata kunci...</span>';
-                document.getElementById('animationPreview').classList.remove('active');
-                return;
-            }
-            
-            display.innerHTML = keywords.map(k => 
-                '<span class="keyword-tag">🏷️ ' + k + '</span>'
-            ).join('');
-            
-            // Tampilkan preview animasi
-            const sceneType = detectSceneType(text);
-            renderAnimationPreview(sceneType, keywords);
-        }
-        
-        // ================================================================
-        // GAMBAR ANIMASI OTOMATIS (Canvas Drawing)
-        // ================================================================
-        function renderAnimationPreview(sceneType, keywords) {
-            const canvas = document.getElementById('previewCanvas');
-            const ctx = canvas.getContext('2d');
-            
-            document.getElementById('animationPreview').classList.add('active');
-            
-            // Gambar scene berdasarkan tipe
-            drawScene(ctx, canvas.width, canvas.height, sceneType, 0, 1, keywords);
-        }
-        
-        function drawScene(ctx, width, height, sceneType, frame, totalFrames, keywords = []) {
-            const progress = frame / totalFrames;
-            
-            // Clear canvas
-            ctx.clearRect(0, 0, width, height);
-            
-            switch(sceneType) {
-                case 'horror':
-                    drawHorrorScene(ctx, width, height, progress, keywords);
-                    break;
-                case 'fantasy':
-                    drawFantasyScene(ctx, width, height, progress);
-                    break;
-                case 'adventure':
-                    drawAdventureScene(ctx, width, height, progress);
-                    break;
-                case 'romance':
-                    drawRomanceScene(ctx, width, height, progress);
-                    break;
-                case 'sad':
-                    drawSadScene(ctx, width, height, progress);
-                    break;
-                default:
-                    drawNeutralScene(ctx, width, height, progress);
-            }
-        }
-        
-        function drawHorrorScene(ctx, width, height, progress, keywords = []) {
-            // Background gelap
-            const gradient = ctx.createLinearGradient(0, 0, 0, height);
-            gradient.addColorStop(0, '#0a0a0a');
-            gradient.addColorStop(0.5, '#1a0a0a');
-            gradient.addColorStop(1, '#0d0d0d');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, width, height);
-            
-            // Bulan
-            const moonX = width * 0.8;
-            const moonY = height * 0.2;
-            ctx.fillStyle = '#d4d4d4';
-            ctx.beginPath();
-            ctx.arc(moonX, moonY, 40, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Awan
-            ctx.fillStyle = 'rgba(100, 100, 100, 0.3)';
-            ctx.beginPath();
-            ctx.arc(moonX - 30, moonY - 10, 30, 0, Math.PI * 2);
-            ctx.arc(moonX + 10, moonY - 20, 35, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Rumah tua (jika ada keyword rumah)
-            if (keywords.some(k => k.includes('rumah')) || keywords.some(k => k.includes('kamar'))) {
-                drawHauntedHouse(ctx, width * 0.3, height * 0.4, 300, 250, progress);
+            if (blob.size === 0) {
+                logProblem('Test menghasilkan video kosong', 'error');
+                toast('Test gagal: video kosong', 'error');
             } else {
-                // Pohon menyeramkan
-                drawCreepyTree(ctx, width * 0.3, height * 0.6, progress);
-                drawCreepyTree(ctx, width * 0.7, height * 0.5, progress + 0.5);
+                toast('Sistem berfungsi normal!', 'success');
             }
             
-            // Hantu (jika ada keyword hantu/setan)
-            if (keywords.some(k => k.includes('hantu')) || keywords.some(k => k.includes('setan'))) {
-                drawGhost(ctx, width * 0.6, height * 0.4, progress);
-            }
-            
-            // Boneka (jika ada keyword boneka)
-            if (keywords.some(k => k.includes('boneka'))) {
-                drawCreepyDoll(ctx, width * 0.5, height * 0.6, progress);
-            }
-            
-            // Kabut
-            for (let i = 0; i < 10; i++) {
-                const fogX = (Math.sin(progress * Math.PI * 2 + i) * 0.5 + 0.5) * width;
-                const fogY = height * (0.7 + Math.cos(progress * Math.PI + i) * 0.2);
-                ctx.fillStyle = 'rgba(150, 150, 150, 0.05)';
-                ctx.beginPath();
-                ctx.arc(fogX, fogY, 50 + i * 10, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            
-            // Mata merah di kegelapan
-            const eyeGlow = Math.sin(progress * Math.PI * 4) * 0.5 + 0.5;
-            ctx.fillStyle = `rgba(255, 0, 0, ${eyeGlow})`;
-            ctx.beginPath();
-            ctx.arc(width * 0.45, height * 0.35, 3, 0, Math.PI * 2);
-            ctx.arc(width * 0.55, height * 0.35, 3, 0, Math.PI * 2);
-            ctx.fill();
-        }
+            testChunks = [];
+        };
         
-        function drawHauntedHouse(ctx, x, y, w, h, progress) {
-            // Badan rumah
-            ctx.fillStyle = '#2a1a1a';
-            ctx.fillRect(x, y + h * 0.3, w, h * 0.7);
-            
-            // Atap
-            ctx.fillStyle = '#1a0a0a';
-            ctx.beginPath();
-            ctx.moveTo(x - 20, y + h * 0.3);
-            ctx.lineTo(x + w / 2, y);
-            ctx.lineTo(x + w + 20, y + h * 0.3);
-            ctx.fill();
-            
-            // Jendela menyala
-            const windowGlow = Math.sin(progress * Math.PI * 2) * 0.3 + 0.5;
-            ctx.fillStyle = `rgba(255, 200, 50, ${windowGlow})`;
-            ctx.fillRect(x + w * 0.3, y + h * 0.4, w * 0.15, h * 0.2);
-            ctx.fillRect(x + w * 0.55, y + h * 0.4, w * 0.15, h * 0.2);
-            
-            // Pintu
-            ctx.fillStyle = '#3a2a1a';
-            ctx.fillRect(x + w * 0.4, y + h * 0.5, w * 0.2, h * 0.5);
-            
-            // Gagang pintu
-            ctx.fillStyle = '#d4af37';
-            ctx.beginPath();
-            ctx.arc(x + w * 0.55, y + h * 0.75, 5, 0, Math.PI * 2);
-            ctx.fill();
-        }
+        recorder.onerror = function(e) {
+            logProblem('Test recorder error: ' + e.error, 'error');
+            toast('Test gagal: recorder error', 'error');
+        };
         
-        function drawCreepyTree(ctx, x, y, progress) {
-            // Batang
-            ctx.strokeStyle = '#1a1a1a';
-            ctx.lineWidth = 15;
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x + 20, y - 150);
-            ctx.stroke();
-            
-            // Cabang
-            ctx.lineWidth = 8;
-            const branchAngle = Math.sin(progress * Math.PI * 2) * 20;
-            ctx.beginPath();
-            ctx.moveTo(x + 20, y - 150);
-            ctx.lineTo(x + 50 + branchAngle, y - 200);
-            ctx.moveTo(x + 20, y - 150);
-            ctx.lineTo(x - 30 - branchAngle, y - 180);
-            ctx.stroke();
-        }
-        
-        function drawGhost(ctx, x, y, progress) {
-            const floatOffset = Math.sin(progress * Math.PI * 2) * 20;
-            
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-            ctx.beginPath();
-            ctx.arc(x, y + floatOffset, 40, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Bagian bawah bergelombang
-            ctx.beginPath();
-            ctx.moveTo(x - 40, y + floatOffset);
-            for (let i = 0; i < 5; i++) {
-                ctx.quadraticCurveTo(
-                    x - 30 + i * 20, y + floatOffset + 30 + Math.sin(i) * 10,
-                    x - 20 + i * 20, y + floatOffset
-                );
-            }
-            ctx.fill();
-            
-            // Mata
-            ctx.fillStyle = '#000';
-            ctx.beginPath();
-            ctx.arc(x - 15, y + floatOffset - 10, 5, 0, Math.PI * 2);
-            ctx.arc(x + 15, y + floatOffset - 10, 5, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Mulut
-            ctx.beginPath();
-            ctx.arc(x, y + floatOffset + 10, 10, 0, Math.PI);
-            ctx.stroke();
-        }
-        
-        function drawCreepyDoll(ctx, x, y, progress) {
-            // Kepala
-            ctx.fillStyle = '#e8c8a8';
-            ctx.beginPath();
-            ctx.arc(x, y, 30, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Mata
-            const eyeGlow = Math.sin(progress * Math.PI * 3) * 0.5 + 0.5;
-            ctx.fillStyle = `rgba(255, 0, 0, ${eyeGlow})`;
-            ctx.beginPath();
-            ctx.arc(x - 10, y - 5, 5, 0, Math.PI * 2);
-            ctx.arc(x + 10, y - 5, 5, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Senyum menyeramkan
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(x, y + 10, 15, 0, Math.PI);
-            ctx.stroke();
-            
-            // Retak di wajah
-            ctx.beginPath();
-            ctx.moveTo(x - 20, y - 15);
-            ctx.lineTo(x - 5, y - 5);
-            ctx.lineTo(x - 15, y + 5);
-            ctx.stroke();
-        }
-        
-        function drawFantasyScene(ctx, width, height, progress) {
-            // Langit
-            const gradient = ctx.createLinearGradient(0, 0, 0, height);
-            gradient.addColorStop(0, '#1a0533');
-            gradient.addColorStop(0.5, '#3d1a6b');
-            gradient.addColorStop(1, '#0a0a2e');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, width, height);
-            
-            // Bintang
-            for (let i = 0; i < 50; i++) {
-                const x = (Math.sin(i * 127.1) * 0.5 + 0.5) * width;
-                const y = (Math.cos(i * 311.7) * 0.5 + 0.5) * height * 0.5;
-                const twinkle = Math.sin(progress * Math.PI * 2 + i) * 0.5 + 0.5;
-                ctx.fillStyle = `rgba(255, 255, 255, ${twinkle})`;
-                ctx.beginPath();
-                ctx.arc(x, y, 2, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            
-            // Kastil
-            drawCastle(ctx, width * 0.3, height * 0.4, 300, 250, progress);
-            
-            // Sihir
-            const magicX = width * 0.7 + Math.sin(progress * Math.PI * 2) * 50;
-            const magicY = height * 0.5 + Math.cos(progress * Math.PI * 3) * 30;
-            ctx.fillStyle = `rgba(255, 215, 0, ${Math.sin(progress * Math.PI * 4) * 0.5 + 0.5})`;
-            ctx.beginPath();
-            ctx.arc(magicX, magicY, 20, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Partikel sihir
-            for (let i = 0; i < 10; i++) {
-                const angle = progress * Math.PI * 2 + i * Math.PI / 5;
-                const dist = 50 + Math.sin(progress * Math.PI + i) * 20;
-                const px = magicX + Math.cos(angle) * dist;
-                const py = magicY + Math.sin(angle) * dist;
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-                ctx.beginPath();
-                ctx.arc(px, py, 3, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-        
-        function drawCastle(ctx, x, y, w, h, progress) {
-            // Badan kastil
-            ctx.fillStyle = '#4a3a5a';
-            ctx.fillRect(x, y + h * 0.4, w, h * 0.6);
-            
-            // Menara
-            ctx.fillRect(x, y, w * 0.2, h);
-            ctx.fillRect(x + w * 0.8, y, w * 0.2, h);
-            
-            // Atap menara
-            ctx.fillStyle = '#2a1a3a';
-            ctx.beginPath();
-            ctx.moveTo(x - 10, y);
-            ctx.lineTo(x + w * 0.1, y - 30);
-            ctx.lineTo(x + w * 0.3, y);
-            ctx.fill();
-            
-            ctx.beginPath();
-            ctx.moveTo(x + w * 0.7, y);
-            ctx.lineTo(x + w * 0.9, y - 30);
-            ctx.lineTo(x + w * 1.1, y);
-            ctx.fill();
-            
-            // Jendela
-            ctx.fillStyle = `rgba(255, 200, 50, ${Math.sin(progress * Math.PI * 2) * 0.3 + 0.7})`;
-            ctx.fillRect(x + w * 0.4, y + h * 0.5, w * 0.1, h * 0.15);
-            ctx.fillRect(x + w * 0.6, y + h * 0.5, w * 0.1, h * 0.15);
-        }
-        
-        function drawAdventureScene(ctx, width, height, progress) {
-            // Gunung
-            const gradient = ctx.createLinearGradient(0, 0, 0, height);
-            gradient.addColorStop(0, '#87CEEB');
-            gradient.addColorStop(0.6, '#90EE90');
-            gradient.addColorStop(1, '#228B22');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, width, height);
-            
-            // Matahari
-            ctx.fillStyle = '#FFD700';
-            ctx.beginPath();
-            ctx.arc(width * 0.8, height * 0.15, 50, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Gunung
-            ctx.fillStyle = '#5a4a3a';
-            ctx.beginPath();
-            ctx.moveTo(width * 0.1, height);
-            ctx.lineTo(width * 0.3, height * 0.3);
-            ctx.lineTo(width * 0.5, height);
-            ctx.fill();
-            
-            ctx.fillStyle = '#4a3a2a';
-            ctx.beginPath();
-            ctx.moveTo(width * 0.4, height);
-            ctx.lineTo(width * 0.6, height * 0.25);
-            ctx.lineTo(width * 0.8, height);
-            ctx.fill();
-            
-            // Salju di puncak
-            ctx.fillStyle = '#fff';
-            ctx.beginPath();
-            ctx.moveTo(width * 0.25, height * 0.45);
-            ctx.lineTo(width * 0.3, height * 0.3);
-            ctx.lineTo(width * 0.35, height * 0.45);
-            ctx.fill();
-            
-            // Burung
-            const birdX = width * (0.5 + Math.sin(progress * Math.PI * 2) * 0.3);
-            const birdY = height * (0.2 + Math.cos(progress * Math.PI * 3) * 0.1);
-            ctx.strokeStyle = '#333';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(birdX - 10, birdY);
-            ctx.lineTo(birdX, birdY - 5);
-            ctx.lineTo(birdX + 10, birdY);
-            ctx.stroke();
-        }
-        
-        function drawRomanceScene(ctx, width, height, progress) {
-            // Sunset
-            const gradient = ctx.createLinearGradient(0, 0, 0, height);
-            gradient.addColorStop(0, '#FF6B6B');
-            gradient.addColorStop(0.5, '#FFA07A');
-            gradient.addColorStop(1, '#FFD700');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, width, height);
-            
-            // Matahari
-            ctx.fillStyle = '#FF4500';
-            ctx.beginPath();
-            ctx.arc(width * 0.5, height * 0.4, 80, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Hati
-            const heartSize = 50 + Math.sin(progress * Math.PI * 2) * 10;
-            drawHeart(ctx, width * 0.5, height * 0.3, heartSize);
-            
-            // Bunga mawar
-            ctx.fillStyle = '#FF0000';
-            ctx.beginPath();
-            ctx.arc(width * 0.8, height * 0.7, 20, 0, Math.PI * 2);
-            ctx.fill();
-            
-            ctx.fillStyle = '#006400';
-            ctx.fillRect(width * 0.79, height * 0.7, 4, 50);
-        }
-        
-        function drawHeart(ctx, x, y, size) {
-            ctx.fillStyle = '#FF1493';
-            ctx.beginPath();
-            ctx.moveTo(x, y + size * 0.3);
-            ctx.bezierCurveTo(x, y, x - size * 0.5, y - size * 0.3, x - size * 0.5, y + size * 0.2);
-            ctx.bezierCurveTo(x - size * 0.5, y + size * 0.7, x, y + size * 1.2, x, y + size * 1.2);
-            ctx.bezierCurveTo(x, y + size * 1.2, x + size * 0.5, y + size * 0.7, x + size * 0.5, y + size * 0.2);
-            ctx.bezierCurveTo(x + size * 0.5, y - size * 0.3, x, y, x, y + size * 0.3);
-            ctx.fill();
-        }
-        
-        function drawSadScene(ctx, width, height, progress) {
-            // Langit kelabu
-            ctx.fillStyle = '#4a4a4a';
-            ctx.fillRect(0, 0, width, height);
-            
-            // Awan
-            ctx.fillStyle = 'rgba(100, 100, 100, 0.5)';
-            ctx.beginPath();
-            ctx.arc(width * 0.3, height * 0.2, 60, 0, Math.PI * 2);
-            ctx.arc(width * 0.5, height * 0.15, 70, 0, Math.PI * 2);
-            ctx.arc(width * 0.7, height * 0.2, 60, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Hujan
-            ctx.strokeStyle = 'rgba(200, 200, 255, 0.5)';
-            ctx.lineWidth = 2;
-            for (let i = 0; i < 30; i++) {
-                const rainX = (i * 97.3) % width;
-                const rainY = (progress * 500 + i * 100) % height;
-                ctx.beginPath();
-                ctx.moveTo(rainX, rainY);
-                ctx.lineTo(rainX - 5, rainY + 15);
-                ctx.stroke();
-            }
-            
-            // Jendela
-            drawLonelyWindow(ctx, width * 0.5, height * 0.5, progress);
-        }
-        
-        function drawLonelyWindow(ctx, x, y, progress) {
-            // Bingkai jendela
-            ctx.fillStyle = '#5a4a3a';
-            ctx.fillRect(x - 100, y - 80, 200, 160);
-            
-            // Kaca
-            ctx.fillStyle = 'rgba(200, 220, 255, 0.3)';
-            ctx.fillRect(x - 85, y - 65, 170, 130);
-            
-            // Siluet orang
-            ctx.fillStyle = '#1a1a1a';
-            ctx.beginPath();
-            ctx.arc(x - 30, y - 20, 25, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillRect(x - 60, y + 5, 60, 70);
-            
-            // Tetesan air di kaca
-            ctx.fillStyle = 'rgba(200, 200, 255, 0.3)';
-            for (let i = 0; i < 5; i++) {
-                const dropY = (progress * 50 + i * 40) % 130 + y - 65;
-                ctx.beginPath();
-                ctx.arc(x - 50 + i * 20, dropY, 5, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-        
-        function drawNeutralScene(ctx, width, height, progress) {
-            // Gradient sederhana
-            const gradient = ctx.createLinearGradient(0, 0, 0, height);
-            gradient.addColorStop(0, '#1a1a2e');
-            gradient.addColorStop(1, '#16213e');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, width, height);
-            
-            // Bintang
-            for (let i = 0; i < 20; i++) {
-                const x = (Math.sin(i * 269.5) * 0.5 + 0.5) * width;
-                const y = (Math.cos(i * 181.3) * 0.5 + 0.5) * height * 0.6;
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-                ctx.beginPath();
-                ctx.arc(x, y, 2, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-        
-        // ================================================================
-        // GENERATE VIDEO DENGAN GAMBAR ANIMASI DAN SUARA
-        // ================================================================
-        async function generateStoryVideo() {
-            const text = document.getElementById('storyInput').value.trim();
-            if (!text) {
-                toast('❌ Tulis cerita terlebih dahulu!', 'error');
-                return;
-            }
-            
-            const style = document.getElementById('styleSelect').value;
-            const voiceSelection = document.getElementById('voiceSelect').value;
-            const resolution = document.getElementById('resolutionSelect').value;
-            const musicType = document.getElementById('musicSelect').value;
-            const [width, height] = resolution.split('x').map(Number);
-            const fps = 30;
-            
-            // Deteksi scene type
-            const sceneType = detectSceneType(text);
-            const keywords = extractKeywords(text);
-            
-            console.log('Scene type:', sceneType);
-            console.log('Keywords:', keywords);
-            
-            toast('🎬 Menganalisis cerita...', 'info');
-            
-            // Tampilkan progress
-            const progressContainer = document.getElementById('progressContainer');
-            const progressFill = document.getElementById('progressFill');
-            const progressText = document.getElementById('progressText');
-            const generateBtn = document.getElementById('generateBtn');
-            
-            progressContainer.classList.add('active');
-            generateBtn.disabled = true;
-            generateBtn.textContent = '🎬 Generating...';
-            
-            try {
-                // Split teks menjadi paragraf
-                const paragraphs = text.split('\n\n').filter(p => p.trim());
-                
-                progressText.textContent = 'Menyiapkan canvas...';
-                progressFill.style.width = '5%';
-                
-                // Buat canvas
-                const canvas = document.createElement('canvas');
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                
-                // Buat stream
-                const canvasStream = canvas.captureStream(fps);
-                
-                // Setup audio context
-                if (!audioContext) {
-                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                await audioContext.resume();
-                
-                const audioDestination = audioContext.createMediaStreamDestination();
-                
-                // Gabungkan stream
-                const combinedStream = new MediaStream([
-                    ...canvasStream.getVideoTracks(),
-                    ...audioDestination.stream.getAudioTracks()
-                ]);
-                
-                // Setup recorder
-                const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus') 
-                    ? 'video/webm;codecs=vp9,opus' 
-                    : 'video/webm;codecs=vp8,opus';
-                
-                const recorder = new MediaRecorder(combinedStream, {
-                    mimeType: mimeType,
-                    videoBitsPerSecond: 8000000,
-                    audioBitsPerSecond: 128000
-                });
-                
-                const chunks = [];
-                recorder.ondataavailable = (e) => {
-                    if (e.data.size > 0) chunks.push(e.data);
-                };
-                
-                recorder.onstop = () => {
-                    generatedVideoBlob = new Blob(chunks, {type: mimeType});
-                    const videoUrl = URL.createObjectURL(generatedVideoBlob);
-                    
-                    document.getElementById('videoPreview').src = videoUrl;
-                    document.getElementById('previewContainer').classList.add('active');
-                    
-                    progressContainer.classList.remove('active');
-                    generateBtn.disabled = false;
-                    generateBtn.textContent = '🎬 Generate Video Animasi';
-                    
-                    toast('✅ Video animasi berhasil dibuat!', 'success');
-                };
-                
-                // Mulai rekaman
-                recorder.start(1000);
-                
-                // Render setiap paragraf sebagai scene
-                for (let i = 0; i < paragraphs.length; i++) {
-                    progressText.textContent = `Membuat animasi scene ${i + 1} dari ${paragraphs.length}...`;
-                    
-                    const paragraph = paragraphs[i];
-                    const words = paragraph.split(/\s+/).length;
-                    const duration = Math.max(3, Math.ceil(words / 2.5));
-                    const totalFrames = duration * fps;
-                    
-                    // Mulai speech
-                    const utterance = new SpeechSynthesisUtterance(paragraph);
-                    utterance.lang = voiceSelection.includes('id') ? 'id-ID' : 'en-US';
-                    utterance.rate = 0.85;
-                    utterance.volume = 1;
-                    
-                    const speechPromise = new Promise((resolve) => {
-                        utterance.onend = resolve;
-                        utterance.onerror = resolve;
-                        speechSynthesis.speak(utterance);
-                    });
-                    
-                    // Render frame dengan animasi
-                    for (let frame = 0; frame < totalFrames; frame++) {
-                        // Gambar scene dengan animasi
-                        drawScene(ctx, width, height, sceneType, frame, totalFrames, keywords);
-                        
-                        // Tambah teks di bawah
-                        drawTextOverlay(ctx, paragraph, width, height, frame, totalFrames);
-                        
-                        // Progress
-                        const progress = 10 + ((i * totalFrames + frame) / (paragraphs.length * totalFrames)) * 85;
-                        progressFill.style.width = progress + '%';
-                        
-                        await sleep(1000 / fps);
-                    }
-                    
-                    await speechPromise;
-                }
-                
-                progressText.textContent = 'Menyelesaikan video...';
-                progressFill.style.width = '95%';
-                
-                await sleep(500);
+        recorder.start(100);
+        setTimeout(function() {
+            if (recorder.state !== 'inactive') {
                 recorder.stop();
-                
-            } catch (error) {
-                console.error('Error:', error);
-                toast('❌ Gagal: ' + error.message, 'error');
-                progressContainer.classList.remove('active');
-                generateBtn.disabled = false;
-                generateBtn.textContent = '🎬 Generate Video Animasi';
             }
+        }, 1000);
+        
+    } catch(e) {
+        logProblem('Test error: ' + e.message, 'error');
+        toast('Test gagal: ' + e.message, 'error');
+    }
+}
+
+// ============================================================
+// GENERATE VIDEO (STABLE - No Audio in Video)
+// ============================================================
+function generateVideo() {
+    var text = document.getElementById('storyInput').value.trim();
+    if (!text) {
+        toast('Tulis cerita dulu!', 'error');
+        return;
+    }
+    
+    if (appState.isGenerating) {
+        toast('Masih generating!', 'warning');
+        return;
+    }
+    
+    // Reset state
+    appState.isGenerating = true;
+    appState.chunks = [];
+    
+    var style = document.getElementById('styleSelect').value;
+    var resolution = document.getElementById('resolutionSelect').value;
+    var durationPerScene = parseInt(document.getElementById('durationSelect').value) || 3;
+    var dims = resolution.split('x');
+    var width = parseInt(dims[0]);
+    var height = parseInt(dims[1]);
+    var fps = 25;
+    
+    var progressContainer = document.getElementById('progressContainer');
+    var progressFill = document.getElementById('progressFill');
+    var progressText = document.getElementById('progressText');
+    var generateBtn = document.getElementById('generateBtn');
+    
+    progressContainer.classList.add('active');
+    generateBtn.disabled = true;
+    generateBtn.textContent = 'Generating...';
+    
+    consoleLog('Generate started', 'info');
+    consoleLog('Resolution: ' + width + 'x' + height, 'info');
+    consoleLog('Duration/scene: ' + durationPerScene + 's', 'info');
+    
+    // Run auto fix first
+    var fixResult = autoFix();
+    if (!fixResult) {
+        finishGenerate(generateBtn, progressContainer);
+        return;
+    }
+    
+    // Get codec
+    var savedConfig = {};
+    try {
+        savedConfig = JSON.parse(localStorage.getItem('video_config') || '{}');
+    } catch(e) {}
+    var codec = savedConfig.codec || getSupportedCodecs()[0] || 'video/webm';
+    consoleLog('Using codec: ' + codec, 'info');
+    
+    // Create canvas
+    var canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    var ctx = canvas.getContext('2d');
+    
+    // Create stream
+    var stream = null;
+    try {
+        stream = canvas.captureStream(fps);
+        consoleLog('Stream created', 'success');
+    } catch(e) {
+        logProblem('Stream error: ' + e.message, 'error');
+        toast('Gagal membuat stream: ' + e.message, 'error');
+        finishGenerate(generateBtn, progressContainer);
+        return;
+    }
+    
+    // Create recorder
+    var recorder = null;
+    try {
+        recorder = new MediaRecorder(stream, {
+            mimeType: codec,
+            videoBitsPerSecond: 2000000
+        });
+        consoleLog('Recorder created', 'success');
+    } catch(e) {
+        logProblem('Recorder error: ' + e.message, 'error');
+        toast('Gagal membuat recorder: ' + e.message, 'error');
+        finishGenerate(generateBtn, progressContainer);
+        return;
+    }
+    
+    // Recorder events
+    recorder.ondataavailable = function(e) {
+        if (e.data && e.data.size > 0) {
+            appState.chunks.push(e.data);
+            consoleLog('Data: ' + e.data.size + ' bytes', 'info');
+        }
+    };
+    
+    recorder.onstop = function() {
+        consoleLog('Recorder stopped', 'info');
+        
+        if (appState.chunks.length === 0) {
+            logProblem('Video kosong (0 chunks)', 'error');
+            toast('Video kosong! Coba resolusi lebih kecil.', 'error');
+            finishGenerate(generateBtn, progressContainer);
+            return;
         }
         
-        function drawTextOverlay(ctx, text, width, height, frame, totalFrames) {
-            const fadeIn = Math.min(1, (frame / totalFrames) * 3);
+        var blob = new Blob(appState.chunks, { type: codec });
+        consoleLog('Video size: ' + (blob.size / 1024).toFixed(1) + ' KB', 'success');
+        
+        if (blob.size < 1000) {
+            logProblem('Video terlalu kecil: ' + blob.size + ' bytes', 'warning');
+        }
+        
+        appState.generatedBlob = blob;
+        
+        var url = URL.createObjectURL(blob);
+        var video = document.getElementById('videoPreview');
+        video.src = url;
+        video.load();
+        
+        video.onerror = function() {
+            logProblem('Video tidak bisa diputar', 'error');
+            toast('Video rusak! Coba Auto Fix.', 'error');
+        };
+        
+        video.onloadeddata = function() {
+            toast('Video berhasil dibuat!', 'success');
+        };
+        
+        // Show video info
+        var infoEl = document.getElementById('videoInfo');
+        infoEl.textContent = 'Size: ' + (blob.size / 1024).toFixed(1) + ' KB | Codec: ' + codec + ' | Duration: ~' + (paragraphs.length * durationPerScene) + 's';
+        
+        document.getElementById('videoContainer').classList.add('active');
+        
+        // Clean up
+        appState.chunks = [];
+        
+        finishGenerate(generateBtn, progressContainer);
+    };
+    
+    recorder.onerror = function(e) {
+        logProblem('Recorder error: ' + (e.error || 'Unknown'), 'error');
+        toast('Recorder error!', 'error');
+        finishGenerate(generateBtn, progressContainer);
+    };
+    
+    // Start recording
+    try {
+        recorder.start(500);
+        consoleLog('Recording started', 'success');
+    } catch(e) {
+        logProblem('Start recording error: ' + e.message, 'error');
+        toast('Gagal mulai recording: ' + e.message, 'error');
+        finishGenerate(generateBtn, progressContainer);
+        return;
+    }
+    
+    // Split text into paragraphs
+    var paragraphs = text.split('\n\n').filter(function(p) { return p.trim(); });
+    if (paragraphs.length === 0) paragraphs = [text];
+    
+    consoleLog('Scenes: ' + paragraphs.length, 'info');
+    
+    var totalFrames = paragraphs.length * durationPerScene * fps;
+    var frameCount = 0;
+    
+    // Render frames using setTimeout for better control
+    function renderNextScene(sceneIndex) {
+        if (sceneIndex >= paragraphs.length) {
+            // All scenes done
+            progressText.textContent = 'Finalizing...';
+            progressFill.style.width = '90%';
             
-            ctx.save();
-            ctx.globalAlpha = fadeIn * 0.9;
-            
-            // Background semi transparan untuk teks
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-            ctx.fillRect(0, height - 120, width, 120);
-            
-            // Teks
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 24px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            
-            // Word wrap
-            const words = text.split(' ');
-            const lines = [];
-            let line = '';
-            const maxWidth = width - 40;
-            
-            for (const word of words) {
-                const testLine = line + (line ? ' ' : '') + word;
-                if (ctx.measureText(testLine).width > maxWidth && line) {
-                    lines.push(line);
-                    line = word;
-                } else {
-                    line = testLine;
+            setTimeout(function() {
+                if (recorder.state !== 'inactive') {
+                    recorder.stop();
                 }
-            }
-            if (line) lines.push(line);
-            
-            const lineHeight = 28;
-            const startY = height - 60 - (lines.length - 1) * lineHeight / 2;
-            
-            lines.forEach((l, index) => {
-                ctx.fillText(l, width / 2, startY + index * lineHeight);
-            });
-            
-            ctx.restore();
+            }, 500);
+            return;
         }
         
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
+        progressText.textContent = 'Scene ' + (sceneIndex + 1) + '/' + paragraphs.length;
         
-        // ================================================================
-        // SAVE VIDEO
-        // ================================================================
-        async function saveVideo() {
-            if (!generatedVideoBlob) {
-                toast('❌ Belum ada video!', 'error');
+        var paragraph = paragraphs[sceneIndex];
+        var framesForScene = durationPerScene * fps;
+        var frameInScene = 0;
+        
+        function renderFrame() {
+            if (frameInScene >= framesForScene) {
+                renderNextScene(sceneIndex + 1);
                 return;
             }
             
-            const filename = 'animasi_' + Date.now() + '.webm';
+            // Draw frame
+            drawFrame(ctx, width, height, style, paragraph, sceneIndex, frameInScene, framesForScene);
             
-            switch (selectedStorage) {
-                case 'download':
-                    downloadVideo();
-                    break;
-                case 'github':
-                    await saveToGitHub(filename);
-                    break;
-                case 'drive':
-                    toast('ℹ️ Google Drive memerlukan API key', 'info');
-                    break;
-            }
+            frameCount++;
+            var progress = 10 + (frameCount / totalFrames) * 80;
+            progressFill.style.width = progress + '%';
+            
+            frameInScene++;
+            
+            // Schedule next frame
+            setTimeout(renderFrame, 1000 / fps);
         }
         
-        function downloadVideo() {
-            const url = URL.createObjectURL(generatedVideoBlob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'animasi_' + Date.now() + '.webm';
-            a.click();
+        renderFrame();
+    }
+    
+    // Start rendering
+    renderNextScene(0);
+}
+
+function finishGenerate(generateBtn, progressContainer) {
+    appState.isGenerating = false;
+    if (generateBtn) {
+        generateBtn.disabled = false;
+        generateBtn.textContent = '🎬 Generate Video';
+    }
+    if (progressContainer) {
+        progressContainer.classList.remove('active');
+    }
+}
+
+// ============================================================
+// DRAW FRAME
+// ============================================================
+function drawFrame(ctx, w, h, style, text, sceneIndex, frame, totalFrames) {
+    var progress = frame / totalFrames;
+    
+    var colors = {
+        horror: ['#0a0a0a', '#1a0a0a', '#0d0d0d'],
+        fantasy: ['#1a0533', '#3d1a6b', '#0a0a2e'],
+        adventure: ['#87CEEB', '#90EE90', '#228B22'],
+        romance: ['#FF6B6B', '#FFA07A', '#FFD700'],
+        sad: ['#4a4a4a', '#3a3a3a', '#2a2a2a']
+    };
+    var c = colors[style] || colors.horror;
+    
+    // Background gradient
+    var grad = ctx.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, c[0]);
+    grad.addColorStop(0.5, c[1]);
+    grad.addColorStop(1, c[2]);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+    
+    // Scene icon
+    var icons = { horror: '👻', fantasy: '✨', adventure: '🗺️', romance: '💕', sad: '😢' };
+    var icon = icons[style] || '🎬';
+    
+    var iconSize = Math.floor(h / 4);
+    ctx.font = iconSize + 'px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // Animated icon
+    var iconX = w / 2 + Math.sin(progress * Math.PI * 2) * 20;
+    var iconY = h / 3 + Math.cos(progress * Math.PI * 3) * 10;
+    ctx.fillText(icon, iconX, iconY);
+    
+    // Text overlay
+    var fadeIn = Math.min(1, (frame / totalFrames) * 3);
+    ctx.save();
+    ctx.globalAlpha = fadeIn * 0.85;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    var textHeight = Math.min(100, Math.floor(h / 4));
+    ctx.fillRect(0, h - textHeight, w, textHeight);
+    
+    ctx.fillStyle = '#ffffff';
+    var fontSize = Math.min(16, Math.floor(w / 50));
+    ctx.font = 'bold ' + fontSize + 'px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    var shortText = text.length > 80 ? text.substring(0, 80) + '...' : text;
+    ctx.fillText(shortText, w / 2, h - textHeight / 2);
+    ctx.restore();
+    
+    // Scene indicator
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'right';
+    ctx.fillText('Scene ' + (sceneIndex + 1), w - 10, h - 10);
+}
+
+// ============================================================
+// DOWNLOAD VIDEO
+// ============================================================
+function downloadVideo() {
+    if (!appState.generatedBlob) {
+        toast('Belum ada video!', 'error');
+        return;
+    }
+    
+    try {
+        var url = URL.createObjectURL(appState.generatedBlob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'yad_video_' + Date.now() + '.webm';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        
+        setTimeout(function() {
             URL.revokeObjectURL(url);
-            toast('✅ Video didownload!', 'success');
-        }
+        }, 5000);
         
-        async function saveToGitHub(filename) {
-            const config = JSON.parse(localStorage.getItem('github_config') || '{}');
-            
-            if (!config.token || !config.username || !config.repo) {
-                const token = prompt('GitHub Token:');
-                if (!token) return;
-                const username = prompt('Username GitHub:');
-                if (!username) return;
-                const repo = prompt('Nama Repository:');
-                if (!repo) return;
-                
-                config.token = token;
-                config.username = username;
-                config.repo = repo;
-                localStorage.setItem('github_config', JSON.stringify(config));
+        toast('Download dimulai!', 'success');
+        consoleLog('Download started', 'success');
+    } catch(e) {
+        logProblem('Download error: ' + e.message, 'error');
+        toast('Download gagal: ' + e.message, 'error');
+    }
+}
+
+// ============================================================
+// PUSH TO GITHUB
+// ============================================================
+function pushToGitHub() {
+    consoleLog('Push to GitHub...', 'info');
+    
+    var config = {};
+    try {
+        config = JSON.parse(localStorage.getItem('github_config') || '{}');
+    } catch(e) {}
+    
+    if (!config.token) {
+        config.token = prompt('GitHub Token:');
+        if (!config.token) return;
+    }
+    if (!config.username) {
+        config.username = prompt('Username GitHub:');
+        if (!config.username) return;
+    }
+    if (!config.repo) {
+        config.repo = prompt('Nama Repository:');
+        if (!config.repo) return;
+    }
+    
+    try {
+        localStorage.setItem('github_config', JSON.stringify(config));
+    } catch(e) {}
+    
+    var html = document.documentElement.outerHTML;
+    var content = btoa(unescape(encodeURIComponent(html)));
+    
+    var xhr = new XMLHttpRequest();
+    xhr.open('PUT', 'https://api.github.com/repos/' + config.username + '/' + config.repo + '/contents/index.html');
+    xhr.setRequestHeader('Authorization', 'token ' + config.token);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            var data = JSON.parse(xhr.responseText);
+            if (data.content) {
+                toast('Berhasil push ke GitHub!', 'success');
+                consoleLog('Push successful', 'success');
+            } else {
+                logProblem('Push failed: ' + (data.message || 'Unknown'), 'error');
+                toast('Push gagal: ' + (data.message || 'Error'), 'error');
             }
-            
+        } else {
+            var msg = 'Push failed: ' + xhr.status;
             try {
-                const reader = new FileReader();
-                const base64Data = await new Promise((resolve) => {
-                    reader.onload = () => resolve(reader.result.split(',')[1]);
-                    reader.readAsDataURL(generatedVideoBlob);
-                });
-                
-                const response = await fetch(`https://api.github.com/repos/${config.username}/${config.repo}/contents/videos/${filename}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': 'token ' + config.token,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        message: 'Upload animasi: ' + filename,
-                        content: base64Data
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.content) {
-                    toast('✅ Video tersimpan di GitHub!', 'success');
-                } else {
-                    toast('❌ Gagal: ' + (data.message || 'Error'), 'error');
-                }
-            } catch (error) {
-                toast('❌ Upload gagal: ' + error.message, 'error');
-            }
+                var errData = JSON.parse(xhr.responseText);
+                msg += ' - ' + errData.message;
+            } catch(e) {}
+            logProblem(msg, 'error');
+            toast(msg, 'error');
         }
-        
-        // ================================================================
-        // EVENT LISTENERS
-        // ================================================================
-        document.getElementById('storyInput').addEventListener('input', updateKeywordDisplay);
-        
-        function init() {
-            console.log('🎬 YAD Video AI - Animasi Otomatis initialized!');
-            console.log('✅ Mendeteksi kata kunci untuk gambar animasi');
-            console.log('✅ Mendukung suara narator');
-            console.log('✅ Animasi sesuai cerita');
-        }
-        
-        init();
-    </script>
+    };
+    
+    xhr.onerror = function() {
+        logProblem('Push network error', 'error');
+        toast('Push gagal: network error', 'error');
+    };
+    
+    xhr.send(JSON.stringify({
+        message: 'Update YAD Video AI v5.0',
+        content: content,
+        branch: 'main'
+    }));
+}
+
+// ============================================================
+// RESET
+// ============================================================
+function resetAll() {
+    if (!confirm('Reset semua data?')) return;
+    
+    try {
+        localStorage.clear();
+    } catch(e) {}
+    
+    appState.generatedBlob = null;
+    appState.problems = [];
+    appState.chunks = [];
+    appState.isGenerating = false;
+    
+    var videoPreview = document.getElementById('videoPreview');
+    if (videoPreview) videoPreview.src = '';
+    
+    var videoContainer = document.getElementById('videoContainer');
+    if (videoContainer) videoContainer.classList.remove('active');
+    
+    var storyInput = document.getElementById('storyInput');
+    if (storyInput) storyInput.value = '';
+    
+    updateLogPanel();
+    consoleLog('Reset complete', 'warning');
+    toast('Reset selesai!', 'info');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+    consoleLog('YAD Video AI v5.0 initialized', 'success');
+    consoleLog('Browser: ' + detectBrowser(), 'info');
+    
+    var codecs = getSupportedCodecs();
+    consoleLog('Codecs: ' + (codecs.join(', ') || 'None'), codecs.length > 0 ? 'success' : 'error');
+    
+    if (!window.MediaRecorder) {
+        logProblem('MediaRecorder tidak didukung', 'error');
+        toast('Browser tidak mendukung perekaman!', 'error');
+    }
+    
+    // Auto fix on init
+    autoFix();
+}
+
+// Start
+init();
+</script>
 </body>
 </html>

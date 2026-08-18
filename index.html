@@ -3,851 +3,2643 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YAD Video AI - Complete v12</title>
+    <title>GitHub AI Writer - Video Player & File Manager</title>
     <style>
-        :root{--bg:#0a0a14;--card:#12122a;--input:#0d0d20;--text:#e8e8f0;--dim:#9090a8;--accent:#8b5cf6;--green:#10b981;--red:#ef4444;--gold:#f59e0b;--border:#252540;--radius:14px}
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
-        
-        .header{background:rgba(10,10,20,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:10px}
-        .logo{font-size:18px;font-weight:800;background:linear-gradient(135deg,#8b5cf6,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-        .nav{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-        .btn{padding:8px 12px;border-radius:16px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;font-size:10px;font-weight:600;font-family:inherit;transition:all .2s;white-space:nowrap}
-        .btn:hover{background:#1a1a35;border-color:var(--accent)}
-        .btn-primary{background:var(--accent);color:#fff;border:none}
-        .btn-success{background:var(--green);color:#fff;border:none}
-        .btn-danger{background:var(--red);color:#fff;border:none}
-        .btn-warning{background:var(--gold);color:#000;border:none}
-        
-        .container{max-width:900px;margin:0 auto;padding:20px}
-        .card{background:var(--card);border-radius:var(--radius);padding:20px;margin-bottom:16px;border:1px solid var(--border)}
-        .card h2{font-size:16px;color:var(--accent);margin-bottom:12px}
-        textarea{width:100%;min-height:150px;padding:14px;background:var(--input);border:2px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;line-height:1.6;resize:vertical;font-family:Georgia,serif;outline:none}
-        textarea:focus{border-color:var(--accent)}
-        
-        .analysis-box{background:var(--input);padding:12px;border-radius:8px;margin:12px 0;border-left:4px solid #06b6d4;display:none}
-        .analysis-box.active{display:block}
-        .analysis-box h3{font-size:12px;color:#06b6d4;margin-bottom:8px}
-        .analysis-box p{font-size:10px;color:var(--dim);margin:4px 0}
-        
-        .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
-        .setting{background:var(--input);padding:10px;border-radius:8px;border:1px solid var(--border)}
-        .setting label{display:block;font-size:9px;color:var(--dim);margin-bottom:4px;text-transform:uppercase;font-weight:600}
-        .setting select{width:100%;padding:6px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;outline:none}
-        
-        .btn-generate{width:100%;padding:14px;background:linear-gradient(135deg,#8b5cf6,#ec4899);color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;transition:all .3s}
-        .btn-generate:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 24px rgba(139,92,246,.4)}
-        .btn-generate:disabled{opacity:.5;cursor:not-allowed}
-        
-        .progress{display:none;margin:16px 0}
-        .progress.active{display:block}
-        .progress-bar{width:100%;height:10px;background:var(--input);border-radius:5px;overflow:hidden;border:1px solid var(--border)}
-        .progress-fill{height:100%;background:linear-gradient(90deg,#8b5cf6,#ec4899,#06b6d4);width:0%;transition:width .3s}
-        .progress-text{text-align:center;font-size:10px;color:var(--dim);margin-top:6px}
-        
-        .video-container{display:none;margin-top:16px}
-        .video-container.active{display:block}
-        video{width:100%;border-radius:10px;border:2px solid var(--border);background:#000;max-height:350px}
-        .video-info{font-size:10px;color:var(--dim);text-align:center;margin:8px 0}
-        
-        .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:10px;color:#fff;font-size:12px;z-index:10000;animation:slideDown .3s;max-width:90%;text-align:center}
-        .toast.success{background:var(--green)}
-        .toast.error{background:var(--red)}
-        .toast.info{background:#06b6d4}
-        .toast.warning{background:var(--gold);color:#000}
-        @keyframes slideDown{from{opacity:0;transform:translate(-50%,-20px)}to{opacity:1;transform:translate(-50%,0)}}
-        
-        .console-panel{position:fixed;top:60px;right:10px;width:500px;max-width:95vw;max-height:75vh;background:#0a0a0a;border-radius:10px;border:2px solid #00ff00;display:none;flex-direction:column;z-index:9999;overflow:hidden}
-        .console-panel.show{display:flex}
-        .console-header{background:#0d1a0d;padding:10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1a3a1a}
-        .console-body{flex:1;overflow-y:auto;padding:10px;font-family:monospace;font-size:10px;color:#00ff00;background:#000;min-height:250px}
-        .console-line{margin:2px 0;line-height:1.4;word-break:break-word}
-        .console-line.error{color:#f44}.console-line.success{color:#4f4}.console-line.info{color:#4af}.console-line.warning{color:#fa4}.console-line.cmd{color:#fff}
-        .console-input{display:flex;padding:8px;background:#0d0d0d;border-top:1px solid #1a3a1a;gap:6px;align-items:center}
-        .console-input .prompt{color:#0f0;font-family:monospace;font-weight:bold}
-        .console-input input{flex:1;background:transparent;border:none;color:#00ff00;font-family:monospace;font-size:11px;outline:none}
-        .console-input button{padding:5px 12px;background:#0d1a0d;color:#0f0;border:1px solid #1a3a1a;border-radius:4px;cursor:pointer;font-family:monospace;font-size:10px}
-        
-        .log-panel{position:fixed;top:60px;left:10px;width:350px;max-width:95vw;max-height:70vh;background:#0a0a0a;border-radius:10px;border:2px solid #ffaa44;display:none;flex-direction:column;z-index:9999;overflow:hidden}
-        .log-panel.show{display:flex}
-        .log-header{background:#1a0d00;padding:10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #3a1a00}
-        .log-body{flex:1;overflow-y:auto;padding:10px;font-family:monospace;font-size:9px;color:#ffaa44;background:#0a0a0a;min-height:150px;white-space:pre-wrap}
-        .log-actions{display:flex;gap:6px;padding:8px;background:#0d0d0d;border-top:1px solid #3a1a00}
-        .log-actions button{flex:1;padding:6px;font-size:9px;border-radius:4px;border:1px solid #ffaa44;background:transparent;color:#ffaa44;cursor:pointer;font-family:inherit}
-        
-        .file-list-panel{position:fixed;top:60px;left:50%;transform:translateX(-50%);width:400px;max-width:95vw;max-height:60vh;background:#0a0a0a;border-radius:10px;border:2px solid #06b6d4;display:none;flex-direction:column;z-index:9998;overflow:hidden}
-        .file-list-panel.show{display:flex}
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --bg-hover: #30363d;
+            --border: #30363d;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --accent: #58a6ff;
+            --accent-hover: #79c0ff;
+            --success: #3fb950;
+            --success-hover: #56d364;
+            --danger: #f85149;
+            --danger-hover: #ff6b6b;
+            --warning: #d29922;
+            --warning-hover: #e3b341;
+            --purple: #bc8cff;
+            --pink: #ff7b72;
+            --cyan: #39d2c0;
+            --orange: #ffa657;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #161b22 0%, #1c2128 100%);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #58a6ff, #bc8cff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.connected {
+            background: var(--success);
+        }
+
+        .status-indicator.error {
+            background: var(--danger);
+        }
+
+        .status-indicator.loading {
+            background: var(--warning);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Panels */
+        .panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .panel-header {
+            background: var(--bg-tertiary);
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .panel-header h2 {
+            font-size: 18px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-body {
+            padding: 20px;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .form-group .hint {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            text-decoration: none;
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: var(--bg-hover);
+            border-color: var(--text-secondary);
+            transform: translateY(-1px);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: #238636;
+            border-color: #2ea043;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #2ea043;
+            border-color: #3fb950;
+        }
+
+        .btn-danger {
+            background: #da3633;
+            border-color: #f85149;
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: #f85149;
+            border-color: #ff6b6b;
+        }
+
+        .btn-accent {
+            background: #1f6feb;
+            border-color: #58a6ff;
+            color: white;
+        }
+
+        .btn-accent:hover:not(:disabled) {
+            background: #388bfd;
+            border-color: #79c0ff;
+        }
+
+        .btn-success {
+            background: #238636;
+            border-color: #3fb950;
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* Video Player */
+        .video-container {
+            position: relative;
+            width: 100%;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            aspect-ratio: 16/9;
+        }
+
+        #mainVideo {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.8);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .video-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .video-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 12px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+        }
+
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 6px;
+            background: var(--bg-primary);
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.1s;
+        }
+
+        .time-display {
+            font-size: 12px;
+            color: var(--text-secondary);
+            min-width: 50px;
+            text-align: center;
+        }
+
+        /* File Explorer */
+        .file-explorer {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-icon {
+            font-size: 24px;
+            width: 40px;
+            text-align: center;
+        }
+
+        .file-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-name {
+            font-size: 14px;
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        /* Code Editor */
+        .code-editor {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 16px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            min-height: 300px;
+            resize: vertical;
+            color: var(--text-primary);
+            width: 100%;
+            white-space: pre;
+            overflow: auto;
+        }
+
+        /* Log Panel */
+        .log-panel {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 16px;
+        }
+
+        .log-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .log-entry {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            padding: 6px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .log-timestamp {
+            color: var(--text-muted);
+            min-width: 100px;
+        }
+
+        .log-level {
+            font-weight: bold;
+            min-width: 60px;
+            text-transform: uppercase;
+        }
+
+        .log-level.info { color: var(--accent); }
+        .log-level.success { color: var(--success); }
+        .log-level.warning { color: var(--warning); }
+        .log-level.error { color: var(--danger); }
+        .log-level.debug { color: var(--purple); }
+
+        .log-message {
+            color: var(--text-primary);
+            flex: 1;
+            word-break: break-word;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+
+        .tab {
+            padding: 10px 16px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab:hover {
+            color: var(--text-primary);
+        }
+
+        .tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .panel-body {
+                padding: 12px;
+            }
+            
+            .btn {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+            
+            .video-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .progress-container {
+                min-width: 100%;
+            }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--text-muted);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast Notification */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            min-width: 300px;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease-out;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .toast.success { border-left: 4px solid var(--success); }
+        .toast.error { border-left: 4px solid var(--danger); }
+        .toast.warning { border-left: 4px solid var(--warning); }
+        .toast.info { border-left: 4px solid var(--accent); }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 <body>
-
-<header class="header">
-    <div class="logo">🎬 YAD Video AI v12 <span style="font-size:8px;color:#10b981">COMPLETE</span></div>
-    <div class="nav">
-        <button class="btn btn-primary" onclick="openConsole()">🖥️ Console</button>
-        <button class="btn" style="border-color:#ffaa44;color:#ffaa44" onclick="openLogPanel()">📋 Log</button>
-        <button class="btn" style="border-color:#06b6d4;color:#06b6d4" onclick="openFileList()">📁 Files</button>
-        <button class="btn btn-success" onclick="autoFixAll()">🔧 Fix All</button>
-        <button class="btn btn-warning" onclick="pushToGitHub()">📤 Push</button>
-    </div>
-</header>
-
-<div class="console-panel" id="consolePanel">
-    <div class="console-header">
-        <span style="color:#0f0;font-family:monospace;font-weight:bold">🖥️ CONSOLE</span>
-        <button onclick="closeConsole()" style="background:none;border:none;color:#f44;cursor:pointer;font-size:18px">✕</button>
-    </div>
-    <div class="console-body" id="consoleBody"></div>
-    <div class="console-input">
-        <span class="prompt">➜</span>
-        <input type="text" id="consoleInput" placeholder="help, fixaudio, githublist, push..." autocomplete="off">
-        <button onclick="execCmd()">Kirim</button>
-    </div>
-</div>
-
-<div class="log-panel" id="logPanel">
-    <div class="log-header">
-        <span style="color:#ffaa44;font-family:monospace;font-weight:bold">📋 LOG MASALAH</span>
-        <button onclick="closeLogPanel()" style="background:none;border:none;color:#f44;cursor:pointer;font-size:18px">✕</button>
-    </div>
-    <div class="log-body" id="logBody">Belum ada masalah.</div>
-    <div class="log-actions">
-        <button onclick="copyLog()">📋 Copy</button>
-        <button onclick="downloadLog()">💾 Save</button>
-        <button onclick="clearLog()">🗑️ Clear</button>
-    </div>
-</div>
-
-<div class="file-list-panel" id="fileListPanel">
-    <div class="console-header" style="background:#0d1a2a">
-        <span style="color:#06b6d4;font-family:monospace;font-weight:bold">📁 FILE GITHUB</span>
-        <button onclick="closeFileList()" style="background:none;border:none;color:#f44;cursor:pointer;font-size:18px">✕</button>
-    </div>
-    <div class="log-body" id="fileListBody" style="color:#fff;font-size:10px">
-        <p style="color:#666;text-align:center;padding:20px;">Klik untuk load file...</p>
-    </div>
-</div>
-
-<div class="container">
-    <div class="card">
-        <h2>📝 Tulis Cerita</h2>
-        <textarea id="storyInput" placeholder="Tulis cerita di sini..." oninput="analyzeText()"></textarea>
-        
-        <div class="analysis-box" id="analysisBox">
-            <h3>🔍 Analisis Otomatis</h3>
-            <p id="aGenre">Genre: -</p>
-            <p id="aDuration">Durasi: -</p>
-            <p id="aScenes">Scene: -</p>
-            <p id="aEmotion">Emosi: -</p>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🚀 GitHub AI Writer & Video Player</h1>
+            <p>Generate code dengan AI, upload langsung ke GitHub, dan streaming video dari repository</p>
         </div>
-        
-        <div class="grid">
-            <div class="setting">
-                <label>🎨 Gaya</label>
-                <select id="styleSelect">
-                    <option value="auto">🤖 Auto</option>
-                    <option value="horror">👻 Horor</option>
-                    <option value="fantasy">✨ Fantasi</option>
-                    <option value="adventure">🗺️ Petualangan</option>
-                    <option value="romance">💕 Romantis</option>
-                    <option value="sad">😢 Sedih</option>
-                    <option value="action">⚔️ Action</option>
-                </select>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-indicator" id="statusIndicator"></div>
+            <span class="status-text" id="statusText">Ready</span>
+            <span style="flex:1"></span>
+            <button class="btn btn-sm" onclick="checkGitHubConnection()">🔍 Check Connection</button>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Left Panel: GitHub Configuration & Upload -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>📁 GitHub Configuration</h2>
+                    <button class="btn btn-sm" onclick="toggleGitHubConfig()">⚙️ Configure</button>
+                </div>
+                <div class="panel-body">
+                    <!-- Tabs -->
+                    <div class="tabs">
+                        <button class="tab active" onclick="switchTab('upload')">📤 Upload</button>
+                        <button class="tab" onclick="switchTab('generate')">🤖 AI Generate</button>
+                        <button class="tab" onclick="switchTab('manage')">📂 Manage</button>
+                    </div>
+
+                    <!-- Upload Tab -->
+                    <div class="tab-content active" id="tab-upload">
+                        <div class="form-group">
+                            <label>Token GitHub</label>
+                            <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxx" autocomplete="off">
+                            <div class="hint">Personal Access Token dari GitHub Settings</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Repository</label>
+                            <input type="text" id="githubRepo" placeholder="username/repository">
+                        </div>
+                        <div class="form-group">
+                            <label>File Path</label>
+                            <input type="text" id="filePath" placeholder="videos/video-player.html">
+                        </div>
+                        <div class="form-group">
+                            <label>Commit Message</label>
+                            <input type="text" id="commitMessage" placeholder="Add video player via AI">
+                        </div>
+                        <div class="form-group">
+                            <label>File Content</label>
+                            <textarea id="fileContent" class="code-editor" placeholder="Paste your code here or use AI Generate tab..."></textarea>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="uploadToGitHub()">📤 Upload to GitHub</button>
+                            <button class="btn btn-accent" onclick="fetchFromGitHub()">📥 Fetch from GitHub</button>
+                            <button class="btn btn-danger" onclick="deleteFromGitHub()">🗑️ Delete File</button>
+                        </div>
+                    </div>
+
+                    <!-- AI Generate Tab -->
+                    <div class="tab-content" id="tab-generate">
+                        <div class="form-group">
+                            <label>AI Prompt</label>
+                            <textarea id="aiPrompt" placeholder="Describe what you want to generate...&#10;Example: Create a video player with custom controls"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Output Path</label>
+                            <input type="text" id="aiOutputPath" placeholder="generated/video-player.html">
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="generateWithAI()">🤖 Generate & Upload</button>
+                            <button class="btn" onclick="generateOnly()">📝 Generate Only</button>
+                        </div>
+                        <div class="form-group" style="margin-top:16px;">
+                            <label>Generated Code Preview</label>
+                            <textarea id="generatedCode" class="code-editor" placeholder="AI generated code will appear here..." readonly></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Manage Tab -->
+                    <div class="tab-content" id="tab-manage">
+                        <div class="form-group">
+                            <label>List Files in Repository</label>
+                            <div class="btn-group">
+                                <button class="btn btn-accent" onclick="listGitHubFiles()">📋 List Files</button>
+                                <button class="btn" onclick="createGitHubRepo()">📦 Create New Repo</button>
+                            </div>
+                        </div>
+                        <div class="file-explorer" id="fileExplorer">
+                            <p style="color: var(--text-muted); text-align: center; padding: 20px;">
+                                Click "List Files" to see repository contents
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="setting">
-                <label>📐 Resolusi</label>
-                <select id="resolutionSelect">
-                    <option value="320x240">Low</option>
-                    <option value="640x360" selected>SD</option>
-                    <option value="1280x720">HD</option>
-                </select>
-            </div>
-            <div class="setting">
-                <label>⏱️ Durasi</label>
-                <select id="durationSelect">
-                    <option value="auto">🤖 Auto</option>
-                    <option value="3" selected>3 detik</option>
-                    <option value="5">5 detik</option>
-                    <option value="7">7 detik</option>
-                </select>
+
+            <!-- Right Panel: Video Player -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>🎬 Video Player</h2>
+                    <button class="btn btn-sm" onclick="loadVideoFromGitHub()">🔄 Load from GitHub</button>
+                </div>
+                <div class="panel-body">
+                    <div class="video-container" id="videoContainer">
+                        <video id="mainVideo" playsinline controls>
+                            <source id="videoSource" src="" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div class="video-overlay" id="videoOverlay">
+                            <div style="text-align:center; color: white;">
+                                <h3>📂 No Video Loaded</h3>
+                                <p>Load video from GitHub or drop file here</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Custom Video Controls -->
+                    <div class="video-controls">
+                        <button class="btn btn-sm" onclick="togglePlay()" id="btnPlay">▶️ Play</button>
+                        <button class="btn btn-sm" onclick="stopVideo()">⏹️ Stop</button>
+                        <button class="btn btn-sm" onclick="toggleMute()" id="btnMute">🔊 Mute</button>
+                        <button class="btn btn-sm" onclick="toggleFullscreen()">🖼️ Fullscreen</button>
+                        <button class="btn btn-sm" onclick="downloadVideo()">💾 Download</button>
+                        <button class="btn btn-sm" onclick="takeScreenshot()">📸 Screenshot</button>
+                        
+                        <div class="progress-container">
+                            <span class="time-display" id="currentTime">00:00</span>
+                            <div class="progress-bar" id="progressBar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                            <span class="time-display" id="duration">00:00</span>
+                        </div>
+
+                        <select class="btn btn-sm" id="speedSelect" onchange="changeSpeed()">
+                            <option value="0.25">0.25x</option>
+                            <option value="0.5">0.5x</option>
+                            <option value="0.75">0.75x</option>
+                            <option value="1" selected>1x</option>
+                            <option value="1.25">1.25x</option>
+                            <option value="1.5">1.5x</option>
+                            <option value="2">2x</option>
+                        </select>
+                    </div>
+
+                    <!-- Video Info -->
+                    <div style="margin-top: 16px;">
+                        <h3 style="margin-bottom: 8px;">📊 Video Info</h3>
+                        <div id="videoInfo" style="color: var(--text-secondary); font-size: 14px;">
+                            No video loaded
+                        </div>
+                    </div>
+
+                    <!-- Video List -->
+                    <div style="margin-top: 16px;">
+                        <h3 style="margin-bottom: 8px;">📁 Videos in Repository</h3>
+                        <div id="videoList" class="file-explorer" style="max-height: 200px;">
+                            <p style="color: var(--text-muted); text-align: center; padding: 20px;">
+                                Click "List Files" to see available videos
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        
-        <div class="grid">
-            <div class="setting">
-                <label>🗣️ Suara</label>
-                <select id="voiceSelect">
-                    <option value="id-ID">🇮🇩 Indonesia</option>
-                    <option value="en-US">🇺🇸 English</option>
-                </select>
+
+        <!-- Log Panel -->
+        <div class="panel">
+            <div class="panel-header">
+                <h2>📋 System Logs</h2>
+                <button class="btn btn-sm" onclick="clearLogs()">🧹 Clear Logs</button>
             </div>
-            <div class="setting">
-                <label>🎵 Musik</label>
-                <select id="musicSelect">
-                    <option value="none">🔇 Tanpa</option>
-                    <option value="horror">👻 Horor</option>
-                    <option value="calm">😌 Tenang</option>
-                </select>
-            </div>
-            <div class="setting">
-                <label>🔊 Volume</label>
-                <select id="volumeSelect">
-                    <option value="0.5">50%</option>
-                    <option value="0.7">70%</option>
-                    <option value="1" selected>100%</option>
-                </select>
+            <div class="panel-body">
+                <div class="log-panel" id="logPanel">
+                    <div id="logContainer"></div>
+                </div>
             </div>
         </div>
     </div>
-    
-    <button class="btn-generate" id="generateBtn" onclick="generateVideo()">🎬 Generate Video</button>
-    
-    <div class="progress" id="progressContainer">
-        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-        <div class="progress-text" id="progressText">Memulai...</div>
-    </div>
-    
-    <div class="video-container" id="videoContainer">
-        <video id="videoPreview" controls playsinline></video>
-        <div class="video-info" id="videoInfo"></div>
-        <button class="btn-generate" style="margin-top:10px" onclick="downloadVideo()">💾 Download</button>
-    </div>
-</div>
 
-<script>
-// ========== STATE COMPLETE ==========
-var S = {
-    blob: null,
-    generating: false,
-    problems: [],
-    chunks: [],
-    audioCtx: null,
-    audioDest: null,
-    hasAudio: false,
-    analysis: null,
-    github: JSON.parse(localStorage.getItem('github_config') || '{}'),
-    githubFiles: []
-};
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
 
-// ========== TOAST ==========
-function toast(msg, type) {
-    type = type || 'info';
-    var t = document.createElement('div');
-    t.className = 'toast ' + type;
-    t.textContent = msg;
-    document.body.appendChild(t);
-    setTimeout(function() { t.remove(); }, 4000);
-}
+    <!-- Hidden File Input -->
+    <input type="file" id="fileInput" accept="video/*,image/*,audio/*,.pdf,.html,.css,.js,.txt" style="display:none;" multiple>
 
-// ========== LOG SYSTEM ==========
-function logProblem(msg, severity) {
-    severity = severity || 'warning';
-    S.problems.push({ time: new Date().toISOString(), msg: msg, severity: severity });
-    updateLogPanel();
-    consoleLog('PROBLEM: ' + msg, 'warning');
-}
-
-function openLogPanel() { document.getElementById('logPanel').classList.add('show'); updateLogPanel(); }
-function closeLogPanel() { document.getElementById('logPanel').classList.remove('show'); }
-
-function updateLogPanel() {
-    var body = document.getElementById('logBody');
-    if (!body) return;
-    if (S.problems.length === 0) { body.textContent = 'Belum ada masalah.'; return; }
-    body.textContent = S.problems.map(function(p, i) {
-        return '[' + (i+1) + '] ' + p.time + '\n' + p.severity + ': ' + p.msg + '\n---';
-    }).join('\n');
-}
-
-function copyLog() {
-    if (S.problems.length === 0) { toast('Tidak ada log', 'info'); return; }
-    var text = S.problems.map(function(p, i) { return '[' + (i+1) + '] ' + p.msg; }).join('\n');
-    if (navigator.clipboard) {
-        navigator.clipboard.writeText(text).then(function() { toast('Log disalin!', 'success'); });
-    }
-}
-
-function downloadLog() {
-    if (S.problems.length === 0) { toast('Tidak ada log', 'info'); return; }
-    var text = S.problems.map(function(p, i) { return '[' + (i+1) + '] ' + p.time + '\n' + p.msg + '\n---'; }).join('\n');
-    var blob = new Blob([text], {type: 'text/plain'});
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = 'log_' + Date.now() + '.txt';
-    a.click();
-}
-
-function clearLog() {
-    S.problems = [];
-    updateLogPanel();
-    toast('Log dibersihkan!', 'info');
-}
-
-// ========== CONSOLE ==========
-function openConsole() {
-    document.getElementById('consolePanel').classList.add('show');
-    setTimeout(function() { document.getElementById('consoleInput').focus(); }, 100);
-}
-function closeConsole() { document.getElementById('consolePanel').classList.remove('show'); }
-
-function consoleLog(msg, type) {
-    type = type || 'info';
-    var body = document.getElementById('consoleBody');
-    if (!body) return;
-    var line = document.createElement('div');
-    line.className = 'console-line ' + type;
-    line.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
-    body.appendChild(line);
-    body.scrollTop = body.scrollHeight;
-    while (body.children.length > 500) body.removeChild(body.firstChild);
-}
-
-function execCmd() {
-    var input = document.getElementById('consoleInput');
-    var cmd = input.value.trim();
-    if (!cmd) return;
-    
-    consoleLog('> ' + cmd, 'cmd');
-    input.value = '';
-    input.focus();
-    
-    var parts = cmd.split(' ');
-    var main = parts[0].toLowerCase();
-    var args = parts.slice(1);
-    
-    switch(main) {
-        case 'help':
-            consoleLog('=== PERINTAH ===', 'info');
-            consoleLog('fixaudio - Perbaiki audio', 'info');
-            consoleLog('fixall - Perbaiki semua', 'info');
-            consoleLog('testaudio - Test audio', 'info');
-            consoleLog('testvideo - Test video', 'info');
-            consoleLog('status - Cek status', 'info');
-            consoleLog('codec - Cek codec', 'info');
-            consoleLog('analyze - Analisis teks', 'info');
-            consoleLog('githubset [token] [user] [repo] - Set GitHub', 'info');
-            consoleLog('githublist - List file', 'info');
-            consoleLog('githubdelete [file] - Hapus file', 'info');
-            consoleLog('push - Push ke GitHub', 'info');
-            consoleLog('log - Tampilkan log', 'info');
-            consoleLog('clearlog - Bersihkan log', 'info');
-            consoleLog('reset - Reset semua', 'info');
-            break;
-            
-        case 'fixaudio': fixAudio(); break;
-        case 'fixall': autoFixAll(); break;
-        case 'testaudio': testAudio(); break;
-        case 'testvideo': testVideo(); break;
-        case 'analyze': analyzeText(); break;
-        
-        case 'status':
-            consoleLog('Generating: ' + (S.generating ? 'YES' : 'NO'), 'info');
-            consoleLog('Audio: ' + (S.hasAudio ? 'READY' : 'NOT READY'), S.hasAudio ? 'success' : 'error');
-            consoleLog('Video: ' + (S.blob ? (S.blob.size/1024).toFixed(1) + ' KB' : 'None'), 'info');
-            consoleLog('Problems: ' + S.problems.length, S.problems.length > 0 ? 'warning' : 'success');
-            consoleLog('GitHub: ' + (S.github.token ? S.github.username + '/' + S.github.repo : 'Not set'), S.github.token ? 'success' : 'warning');
-            break;
-            
-        case 'codec':
-            var codecs = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm;codecs=vp8', 'video/webm'];
-            codecs.forEach(function(c) {
-                var ok = MediaRecorder.isTypeSupported(c);
-                consoleLog((ok ? 'OK ' : 'NO ') + c, ok ? 'success' : 'error');
-            });
-            break;
-            
-        case 'githubset':
-            if (args.length >= 3) {
-                S.github = { token: args[0], username: args[1], repo: args[2] };
-                localStorage.setItem('github_config', JSON.stringify(S.github));
-                consoleLog('GitHub set: ' + args[1] + '/' + args[2], 'success');
-            } else {
-                consoleLog('Format: githubset [token] [username] [repo]', 'error');
-            }
-            break;
-            
-        case 'githublist': listGitHubFiles(); break;
-        case 'githubdelete': if (args[0]) deleteGitHubFile(args[0]); else consoleLog('Format: githubdelete [filename]', 'error'); break;
-        case 'push': pushToGitHub(); break;
-        case 'log': S.problems.forEach(function(p, i) { consoleLog((i+1) + '. ' + p.msg, 'warning'); }); break;
-        case 'clearlog': clearLog(); break;
-        case 'reset': resetAll(); break;
-        
-        default:
-            consoleLog('Perintah tidak dikenal: ' + cmd, 'error');
-            consoleLog('Ketik "help" untuk bantuan', 'info');
-    }
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    var input = document.getElementById('consoleInput');
-    if (input) {
-        input.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') { e.preventDefault(); execCmd(); }
-        });
-    }
-});
-
-// ========== TEXT ANALYSIS ==========
-function analyzeText() {
-    var text = document.getElementById('storyInput').value.trim();
-    if (text.length < 10) {
-        document.getElementById('analysisBox').classList.remove('active');
-        return;
-    }
-    
-    var genre = detectGenre(text);
-    var duration = Math.max(5, Math.ceil(text.split(/\s+/).length / 2.5));
-    var scenes = text.split('\n\n').filter(function(p) { return p.trim(); }).length;
-    var emotion = detectEmotion(text);
-    
-    S.analysis = { genre: genre, duration: duration, scenes: scenes, emotion: emotion };
-    
-    document.getElementById('aGenre').textContent = 'Genre: ' + genre;
-    document.getElementById('aDuration').textContent = 'Durasi: ' + duration + ' detik';
-    document.getElementById('aScenes').textContent = 'Scene: ' + scenes;
-    document.getElementById('aEmotion').textContent = 'Emosi: ' + emotion;
-    document.getElementById('analysisBox').classList.add('active');
-    
-    var styleSelect = document.getElementById('styleSelect');
-    if (styleSelect.value === 'auto') styleSelect.value = genre;
-}
-
-function detectGenre(text) {
-    var lower = text.toLowerCase();
-    var genres = {
-        horror: ['hantu', 'setan', 'malam', 'gelap', 'takut', 'seram', 'horor', 'boneka', 'menyeramkan', 'angker'],
-        fantasy: ['ajaib', 'sihir', 'naga', 'putri', 'istana', 'peri', 'penyihir', 'kastil'],
-        adventure: ['petualang', 'gunung', 'laut', 'hutan', 'pulau', 'harta', 'jelajah'],
-        romance: ['cinta', 'kasih', 'sayang', 'rindu', 'hati', 'kencan', 'bunga'],
-        sad: ['sedih', 'menangis', 'air mata', 'kehilangan', 'duka', 'pilu'],
-        action: ['bertarung', 'pedang', 'tembak', 'kejar', 'lawan', 'serang']
-    };
-    
-    var best = 'neutral';
-    var bestScore = 0;
-    for (var genre in genres) {
-        var score = 0;
-        for (var i = 0; i < genres[genre].length; i++) {
-            if (lower.indexOf(genres[genre][i]) > -1) score++;
-        }
-        if (score > bestScore) { bestScore = score; best = genre; }
-    }
-    return best;
-}
-
-function detectEmotion(text) {
-    var lower = text.toLowerCase();
-    var emotions = {
-        'Takut': ['takut', 'seram', 'ngeri', 'horor'],
-        'Sedih': ['sedih', 'menangis', 'duka'],
-        'Senang': ['senang', 'bahagia', 'gembira'],
-        'Marah': ['marah', 'kesal', 'geram']
-    };
-    for (var e in emotions) {
-        for (var i = 0; i < emotions[e].length; i++) {
-            if (lower.indexOf(emotions[e][i]) > -1) return e;
-        }
-    }
-    return 'Netral';
-}
-
-// ========== AUDIO FIX ==========
-function fixAudio() {
-    consoleLog('=== FIX AUDIO ===', 'info');
-    
-    try {
-        if (!S.audioCtx) S.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        consoleLog('AudioContext: OK', 'success');
-    } catch(e) {
-        logProblem('AudioContext gagal: ' + e.message, 'error');
-        S.hasAudio = false;
-        return false;
-    }
-    
-    if (S.audioCtx.state === 'suspended') S.audioCtx.resume();
-    
-    try {
-        S.audioDest = S.audioCtx.createMediaStreamDestination();
-        consoleLog('AudioDestination: OK', 'success');
-    } catch(e) {
-        logProblem('AudioDestination gagal', 'error');
-        S.hasAudio = false;
-        return false;
-    }
-    
-    if (!window.speechSynthesis) {
-        logProblem('Speech Synthesis tidak didukung', 'error');
-        S.hasAudio = false;
-        return false;
-    }
-    consoleLog('Speech Synthesis: OK', 'success');
-    
-    var codec = 'video/webm;codecs=vp8,opus';
-    if (!MediaRecorder.isTypeSupported(codec)) codec = 'video/webm;codecs=vp8';
-    if (!MediaRecorder.isTypeSupported(codec)) codec = 'video/webm';
-    
-    S.audioCodec = codec;
-    S.hasAudio = true;
-    consoleLog('Codec: ' + codec, 'success');
-    consoleLog('AUDIO SIAP!', 'success');
-    toast('Audio siap!', 'success');
-    return true;
-}
-
-function testAudio() {
-    try {
-        var u = new SpeechSynthesisUtterance('Tes suara berhasil');
-        u.lang = 'id-ID';
-        u.onend = function() { consoleLog('Audio OK!', 'success'); toast('Audio OK!', 'success'); };
-        u.onerror = function() { consoleLog('Audio error', 'error'); logProblem('Audio test gagal', 'error'); };
-        speechSynthesis.speak(u);
-    } catch(e) {
-        logProblem('Audio test error: ' + e.message, 'error');
-    }
-}
-
-function testVideo() {
-    try {
-        var canvas = document.createElement('canvas');
-        canvas.width = 100; canvas.height = 100;
-        var ctx = canvas.getContext('2d');
-        ctx.fillRect(0, 0, 100, 100);
-        var stream = canvas.captureStream(10);
-        var codec = 'video/webm;codecs=vp8';
-        if (!MediaRecorder.isTypeSupported(codec)) codec = 'video/webm';
-        var rec = new MediaRecorder(stream, {mimeType: codec});
-        var chunks = [];
-        rec.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
-        rec.onstop = function() {
-            var blob = new Blob(chunks, {type: codec});
-            consoleLog('Video test: ' + blob.size + ' bytes', blob.size > 0 ? 'success' : 'error');
-            if (blob.size > 0) toast('Video OK!', 'success');
-            else logProblem('Video test kosong', 'error');
+    <script>
+        // ==================== GLOBAL VARIABLES ====================
+        let githubConfig = {
+            token: localStorage.getItem('github_token') || '',
+            repo: localStorage.getItem('github_repo') || '',
+            branch: 'main'
         };
-        rec.start(100);
-        setTimeout(function() { if (rec.state !== 'inactive') rec.stop(); }, 800);
-    } catch(e) {
-        logProblem('Video test error: ' + e.message, 'error');
-    }
-}
 
-function autoFixAll() {
-    consoleLog('=== AUTO FIX ALL ===', 'info');
-    fixAudio();
-    testAudio();
-    testVideo();
-    consoleLog('=== FIX SELESAI ===', 'success');
-    toast('Semua perbaikan selesai!', 'success');
-}
+        let currentVideoFile = null;
+        let uploadedFiles = [];
+        let generatedCodeCache = '';
 
-// ========== GITHUB ==========
-function openFileList() { document.getElementById('fileListPanel').classList.add('show'); listGitHubFiles(); }
-function closeFileList() { document.getElementById('fileListPanel').classList.remove('show'); }
-
-function listGitHubFiles() {
-    if (!S.github.token) { consoleLog('GitHub belum di-set!', 'error'); return; }
-    
-    consoleLog('Loading file...', 'info');
-    
-    fetch('https://api.github.com/repos/' + S.github.username + '/' + S.github.repo + '/contents/', {
-        headers: { 'Authorization': 'token ' + S.github.token }
-    })
-    .then(function(res) { return res.json(); })
-    .then(function(files) {
-        if (!Array.isArray(files)) throw new Error(files.message || 'Gagal load');
-        S.githubFiles = files;
-        consoleLog(files.length + ' file ditemukan', 'success');
-        
-        var html = '';
-        files.forEach(function(file) {
-            html += '<div style="display:flex;justify-content:space-between;padding:8px;background:#0d0d0d;margin:4px 0;border-radius:4px">';
-            html += '<span style="color:#4af">📄 ' + file.name + ' <small style="color:#666">(' + (file.size/1024).toFixed(1) + ' KB)</small></span>';
-            html += '<button onclick="deleteGitHubFile(\'' + file.name + '\')" style="background:#f44;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:8px">🗑️</button>';
-            html += '</div>';
+        // ==================== INITIALIZATION ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeApp();
         });
-        
-        document.getElementById('fileListBody').innerHTML = html;
-    })
-    .catch(function(e) {
-        consoleLog('Error: ' + e.message, 'error');
-        document.getElementById('fileListBody').innerHTML = '<p style="color:#f44;text-align:center">' + e.message + '</p>';
-    });
-}
 
-function deleteGitHubFile(filename) {
-    if (!S.github.token) { consoleLog('GitHub belum di-set!', 'error'); return; }
-    if (!confirm('Hapus ' + filename + '?')) return;
-    
-    fetch('https://api.github.com/repos/' + S.github.username + '/' + S.github.repo + '/contents/' + filename, {
-        headers: { 'Authorization': 'token ' + S.github.token }
-    })
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-        if (!data.sha) throw new Error('File tidak ditemukan');
-        return fetch('https://api.github.com/repos/' + S.github.username + '/' + S.github.repo + '/contents/' + filename, {
-            method: 'DELETE',
-            headers: { 'Authorization': 'token ' + S.github.token, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: 'Delete ' + filename, sha: data.sha, branch: 'main' })
-        });
-    })
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-        if (data.commit) {
-            consoleLog('File dihapus: ' + filename, 'success');
-            toast('File dihapus!', 'success');
-            listGitHubFiles();
-        }
-    })
-    .catch(function(e) {
-        consoleLog('Gagal hapus: ' + e.message, 'error');
-        logProblem('Hapus file gagal: ' + e.message, 'error');
-    });
-}
-
-function pushToGitHub() {
-    if (!S.github.token) {
-        consoleLog('GitHub belum di-set!', 'error');
-        consoleLog('Gunakan: githubset [token] [username] [repo]', 'warning');
-        return;
-    }
-    
-    var html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-    var content = btoa(unescape(encodeURIComponent(html)));
-    
-    fetch('https://api.github.com/repos/' + S.github.username + '/' + S.github.repo + '/contents/index.html', {
-        headers: { 'Authorization': 'token ' + S.github.token }
-    })
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-        var body = { message: 'Update v12', content: content, branch: 'main' };
-        if (data.sha) body.sha = data.sha;
-        return fetch('https://api.github.com/repos/' + S.github.username + '/' + S.github.repo + '/contents/index.html', {
-            method: 'PUT',
-            headers: { 'Authorization': 'token ' + S.github.token, 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-    })
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-        if (data.content) { consoleLog('Push berhasil!', 'success'); toast('Push berhasil!', 'success'); }
-        else { consoleLog('Push gagal: ' + (data.message || 'Error'), 'error'); }
-    })
-    .catch(function(e) { consoleLog('Error: ' + e.message, 'error'); });
-}
-
-// ========== GENERATE VIDEO ==========
-function generateVideo() {
-    var text = document.getElementById('storyInput').value.trim();
-    if (!text) { toast('Tulis cerita dulu!', 'error'); return; }
-    if (S.generating) { toast('Masih generating!', 'warning'); return; }
-    
-    S.generating = true;
-    S.chunks = [];
-    
-    analyzeText();
-    fixAudio();
-    
-    var style = document.getElementById('styleSelect').value;
-    if (style === 'auto' && S.analysis) style = S.analysis.genre;
-    
-    var resolution = document.getElementById('resolutionSelect').value;
-    var voice = document.getElementById('voiceSelect').value;
-    var volume = parseFloat(document.getElementById('volumeSelect').value);
-    var dims = resolution.split('x');
-    var width = parseInt(dims[0]);
-    var height = parseInt(dims[1]);
-    var fps = 25;
-    var durationPerScene = 3;
-    
-    var progressContainer = document.getElementById('progressContainer');
-    var progressFill = document.getElementById('progressFill');
-    var progressText = document.getElementById('progressText');
-    var generateBtn = document.getElementById('generateBtn');
-    
-    progressContainer.classList.add('active');
-    generateBtn.disabled = true;
-    generateBtn.textContent = 'Generating...';
-    
-    consoleLog('Generate: ' + width + 'x' + height, 'info');
-    
-    var canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    var ctx = canvas.getContext('2d');
-    
-    var canvasStream = canvas.captureStream(fps);
-    var finalStream = canvasStream;
-    var codec = S.audioCodec || 'video/webm;codecs=vp8';
-    
-    if (S.hasAudio && S.audioDest) {
-        try {
-            var vt = canvasStream.getVideoTracks()[0];
-            var at = S.audioDest.stream.getAudioTracks()[0];
-            if (vt && at) {
-                finalStream = new MediaStream([vt, at]);
-                consoleLog('Audio + Video digabung', 'success');
+        function initializeApp() {
+            // Load saved config
+            if (githubConfig.token) {
+                document.getElementById('githubToken').value = githubConfig.token;
             }
-        } catch(e) {
-            finalStream = canvasStream;
-            codec = 'video/webm;codecs=vp8';
-            logProblem('Gagal gabung audio: ' + e.message);
+            if (githubConfig.repo) {
+                document.getElementById('githubRepo').value = githubConfig.repo;
+            }
+
+            // Initialize video events
+            initializeVideoEvents();
+            
+            // Initialize drag & drop
+            initializeDragAndDrop();
+            
+            // Initialize keyboard shortcuts
+            initializeKeyboardShortcuts();
+            
+            // Update status
+            updateStatus('Ready', 'connected');
+            
+            log('info', 'Application initialized successfully');
+            log('info', 'GitHub API ready');
+            
+            // Check GitHub connection if token exists
+            if (githubConfig.token && githubConfig.repo) {
+                checkGitHubConnection();
+            }
         }
-    }
-    
-    var recorder;
-    try {
-        recorder = new MediaRecorder(finalStream, {
-            mimeType: codec,
-            videoBitsPerSecond: 2000000,
-            audioBitsPerSecond: 128000
+
+        // ==================== VIDEO PLAYER FUNCTIONS ====================
+        function initializeVideoEvents() {
+            const video = document.getElementById('mainVideo');
+            
+            video.addEventListener('loadedmetadata', () => {
+                updateVideoInfo();
+                updateDuration();
+                document.getElementById('videoOverlay').classList.remove('show');
+                log('success', `Video loaded: ${video.src.split('/').pop()}`);
+            });
+            
+            video.addEventListener('timeupdate', updateProgress);
+            video.addEventListener('play', () => {
+                document.getElementById('btnPlay').textContent = '⏸️ Pause';
+                log('debug', 'Video playing');
+            });
+            video.addEventListener('pause', () => {
+                document.getElementById('btnPlay').textContent = '▶️ Play';
+                log('debug', 'Video paused');
+            });
+            video.addEventListener('error', (e) => {
+                handleVideoError(e);
+            });
+            video.addEventListener('waiting', () => {
+                log('warning', 'Video buffering...');
+            });
+            video.addEventListener('playing', () => {
+                log('info', 'Playback started');
+            });
+            video.addEventListener('ended', () => {
+                log('info', 'Video ended');
+                document.getElementById('btnPlay').textContent = '▶️ Play';
+            });
+        }
+
+        function togglePlay() {
+            const video = document.getElementById('mainVideo');
+            if (video.paused) {
+                video.play().catch(err => {
+                    log('error', `Play failed: ${err.message}`);
+                    showToast('Failed to play video', 'error');
+                });
+            } else {
+                video.pause();
+            }
+        }
+
+        function stopVideo() {
+            const video = document.getElementById('mainVideo');
+            video.pause();
+            video.currentTime = 0;
+            log('info', 'Video stopped');
+        }
+
+        function toggleMute() {
+            const video = document.getElementById('mainVideo');
+            video.muted = !video.muted;
+            document.getElementById('btnMute').textContent = video.muted ? '🔇 Unmute' : '🔊 Mute';
+            log('info', `Audio ${video.muted ? 'muted' : 'unmuted'}`);
+        }
+
+        function toggleFullscreen() {
+            const container = document.getElementById('videoContainer');
+            if (!document.fullscreenElement) {
+                container.requestFullscreen().catch(err => {
+                    log('error', `Fullscreen failed: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function downloadVideo() {
+            const video = document.getElementById('mainVideo');
+            if (video.src) {
+                const a = document.createElement('a');
+                a.href = video.src;
+                a.download = video.src.split('/').pop();
+                a.click();
+                log('info', 'Video download started');
+            }
+        }
+
+        function takeScreenshot() {
+            const video = document.getElementById('mainVideo');
+            if (!video.videoWidth) {
+                showToast('No video loaded', 'warning');
+                return;
+            }
+            
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                canvas.toBlob((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `screenshot_${Date.now()}.png`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    log('success', 'Screenshot captured');
+                    showToast('Screenshot saved!', 'success');
+                });
+            } catch (error) {
+                log('error', `Screenshot failed: ${error.message}`);
+                showToast('Screenshot failed', 'error');
+            }
+        }
+
+        function changeSpeed() {
+            const video = document.getElementById('mainVideo');
+            const speed = document.getElementById('speedSelect').value;
+            video.playbackRate = parseFloat(speed);
+            log('info', `Playback speed: ${speed}x`);
+        }
+
+        function updateProgress() {
+            const video = document.getElementById('mainVideo');
+            if (video.duration) {
+                const percentage = (video.currentTime / video.duration) * 100;
+                document.getElementById('progressFill').style.width = `${percentage}%`;
+                document.getElementById('currentTime').textContent = formatTime(video.currentTime);
+            }
+        }
+
+        function updateDuration() {
+            const video = document.getElementById('mainVideo');
+            document.getElementById('duration').textContent = formatTime(video.duration);
+        }
+
+        function updateVideoInfo() {
+            const video = document.getElementById('mainVideo');
+            const info = document.getElementById('videoInfo');
+            
+            info.innerHTML = `
+                <strong>File:</strong> ${video.src.split('/').pop()}<br>
+                <strong>Duration:</strong> ${formatTime(video.duration)}<br>
+                <strong>Resolution:</strong> ${video.videoWidth}x${video.videoHeight}<br>
+                <strong>Size:</strong> ${formatFileSize(video.src.length)}<br>
+                <strong>Type:</strong> ${video.canPlayType('video/mp4') ? 'MP4' : 'Unknown'}
+            `;
+        }
+
+        function handleVideoError(e) {
+            const video = e.target;
+            let errorMessage = 'Unknown error';
+            
+            if (video.error) {
+                switch(video.error.code) {
+                    case MediaError.MEDIA_ERR_ABORTED:
+                        errorMessage = 'Video loading aborted';
+                        break;
+                    case MediaError.MEDIA_ERR_NETWORK:
+                        errorMessage = 'Network error while loading video';
+                        break;
+                    case MediaError.MEDIA_ERR_DECODE:
+                        errorMessage = 'Video decoding failed';
+                        break;
+                    case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+                        errorMessage = 'Video format not supported';
+                        break;
+                }
+            }
+            
+            log('error', `Video error: ${errorMessage}`);
+            showToast(`Video error: ${errorMessage}`, 'error');
+            document.getElementById('videoOverlay').classList.add('show');
+        }
+
+        function loadVideoFromGitHub() {
+            const repo = document.getElementById('githubRepo').value;
+            const token = document.getElementById('githubToken').value;
+            
+            if (!repo) {
+                showToast('Please enter repository name', 'warning');
+                return;
+            }
+            
+            // Try to load from videos directory
+            listGitHubFiles('videos');
+        }
+
+        function loadVideo(url) {
+            const video = document.getElementById('mainVideo');
+            const source = document.getElementById('videoSource');
+            
+            source.src = url;
+            video.load();
+            video.play().catch(err => {
+                log('warning', 'Autoplay blocked, user interaction required');
+            });
+            
+            log('info', `Loading video: ${url}`);
+            showToast('Loading video...', 'info');
+        }
+
+        // ==================== GITHUB API FUNCTIONS ====================
+        async function uploadToGitHub() {
+            const token = document.getElementById('githubToken').value;
+            const repo = document.getElementById('githubRepo').value;
+            const path = document.getElementById('filePath').value;
+            const message = document.getElementById('commitMessage').value;
+            const content = document.getElementById('fileContent').value;
+            
+            if (!token || !repo || !path || !content) {
+                showToast('Please fill in all fields', 'warning');
+                return;
+            }
+            
+            // Save config
+            saveGitHubConfig(token, repo);
+            
+            updateStatus('Uploading to GitHub...', 'loading');
+            
+            try {
+                const result = await githubAPI.uploadFile(token, repo, path, content, message);
+                
+                updateStatus('Upload successful', 'connected');
+                log('success', `File uploaded: ${path}`);
+                showToast('File uploaded successfully!', 'success');
+                
+                // Clear content
+                document.getElementById('fileContent').value = '';
+                
+                return result;
+            } catch (error) {
+                updateStatus('Upload failed', 'error');
+                log('error', `Upload failed: ${error.message}`);
+                showToast(`Upload failed: ${error.message}`, 'error');
+                throw error;
+            }
+        }
+
+        async function fetchFromGitHub() {
+            const token = document.getElementById('githubToken').value;
+            const repo = document.getElementById('githubRepo').value;
+            const path = document.getElementById('filePath').value;
+            
+            if (!token || !repo || !path) {
+                showToast('Please fill in token, repo, and file path', 'warning');
+                return;
+            }
+            
+            updateStatus('Fetching from GitHub...', 'loading');
+            
+            try {
+                const content = await githubAPI.fetchFile(token, repo, path);
+                
+                document.getElementById('fileContent').value = content;
+                
+                updateStatus('Fetch successful', 'connected');
+                log('success', `File fetched: ${path}`);
+                showToast('File fetched successfully!', 'success');
+                
+                return content;
+            } catch (error) {
+                updateStatus('Fetch failed', 'error');
+                log('error', `Fetch failed: ${error.message}`);
+                showToast(`Fetch failed: ${error.message}`, 'error');
+                throw error;
+            }
+        }
+
+        async function deleteFromGitHub() {
+            const token = document.getElementById('githubToken').value;
+            const repo = document.getElementById('githubRepo').value;
+            const path = document.getElementById('filePath').value;
+            
+            if (!token || !repo || !path) {
+                showToast('Please fill in token, repo, and file path', 'warning');
+                return;
+            }
+            
+            if (!confirm(`Are you sure you want to delete ${path}?`)) {
+                return;
+            }
+            
+            updateStatus('Deleting from GitHub...', 'loading');
+            
+            try {
+                await githubAPI.deleteFile(token, repo, path, `Delete ${path}`);
+                
+                updateStatus('Delete successful', 'connected');
+                log('success', `File deleted: ${path}`);
+                showToast('File deleted successfully!', 'success');
+            } catch (error) {
+                updateStatus('Delete failed', 'error');
+                log('error', `Delete failed: ${error.message}`);
+                showToast(`Delete failed: ${error.message}`, 'error');
+                throw error;
+            }
+        }
+
+        async function listGitHubFiles(path = '') {
+            const token = document.getElementById('githubToken').value;
+            const repo = document.getElementById('githubRepo').value;
+            
+            if (!token || !repo) {
+                showToast('Please enter GitHub token and repository', 'warning');
+                return;
+            }
+            
+            updateStatus('Listing files...', 'loading');
+            
+            try {
+                const files = await githubAPI.listFiles(token, repo, path);
+                
+                displayFiles(files, path);
+                
+                updateStatus('Files listed', 'connected');
+                log('success', `Found ${files.length} files`);
+                showToast(`Found ${files.length} files`, 'success');
+                
+                return files;
+            } catch (error) {
+                updateStatus('Failed to list files', 'error');
+                log('error', `List files failed: ${error.message}`);
+                showToast(`Failed to list files: ${error.message}`, 'error');
+                throw error;
+            }
+        }
+
+        function displayFiles(files, path = '') {
+            const fileExplorer = document.getElementById('fileExplorer');
+            const videoList = document.getElementById('videoList');
+            
+            // Clear
+            fileExplorer.innerHTML = '';
+            videoList.innerHTML = '';
+            
+            if (files.length === 0) {
+                fileExplorer.innerHTML = '<p style="color: var(--text-muted); padding: 20px;">No files found</p>';
+                return;
+            }
+            
+            files.forEach(file => {
+                // File Explorer
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                
+                const icon = getFileIcon(file.name, file.type);
+                
+                fileItem.innerHTML = `
+                    <div class="file-icon">${icon}</div>
+                    <div class="file-info">
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-meta">
+                            ${file.type === 'dir' ? 'Directory' : formatFileSize(file.size)}
+                            ${file.type === 'file' ? ` • ${file.name.split('.').pop().toUpperCase()}` : ''}
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        ${file.type === 'dir' ? 
+                            `<button class="btn btn-sm" onclick="listGitHubFiles('${path}/${file.name}'.replace(/^\//, ''))">📂 Open</button>` :
+                            `<button class="btn btn-sm btn-accent" onclick="loadFileFromGitHub('${path}/${file.name}'.replace(/^\//, ''))">👁️ View</button>
+                             <button class="btn btn-sm" onclick="downloadFileFromGitHub('${path}/${file.name}'.replace(/^\//, ''))">💾 Download</button>`
+                        }
+                    </div>
+                `;
+                
+                fileExplorer.appendChild(fileItem);
+                
+                // Video List (only for video files)
+                if (file.type === 'file' && isVideoFile(file.name)) {
+                    const videoItem = document.createElement('div');
+                    videoItem.className = 'file-item';
+                    videoItem.innerHTML = `
+                        <div class="file-icon">🎬</div>
+                        <div class="file-info">
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-meta">${formatFileSize(file.size)}</div>
+                        </div>
+                        <div class="file-actions">
+                            <button class="btn btn-sm btn-primary" onclick="playVideoFromGitHub('${path}/${file.name}'.replace(/^\//, ''))">▶️ Play</button>
+                        </div>
+                    `;
+                    videoList.appendChild(videoItem);
+                }
+            });
+        }
+
+        async function loadFileFromGitHub(filePath) {
+            const token = document.getElementById('githubToken').value;
+            const repo = document.getElementById('githubRepo').value;
+            
+            try {
+                const content = await githubAPI.fetchFile(token, repo, filePath);
+                
+                // Set to editor
+                document.getElementById('fileContent').value = content;
+                document.getElementById('filePath').value = filePath;
+                
+                // Switch to upload tab
+                switchTab('upload');
+                
+                log('success', `File loaded: ${filePath}`);
+                showToast('File loaded to editor', 'success');
+            } catch (error) {
+                log('error', `Failed to load file: ${error.message}`);
+                showToast(`Failed to load file: ${error.message}`, 'error');
+            }
+        }
+
+        async function playVideoFromGitHub(filePath) {
+            const token = document.getElementById('githubToken').value;
+            const repo = document.getElementById('githubRepo').value;
+            
+            const [owner, repoName] = repo.split('/');
+            const videoUrl = `https://raw.githubusercontent.com/${owner}/${repoName}/${githubConfig.branch}/${filePath}`;
+            
+            loadVideo(videoUrl);
+        }
+
+        async function downloadFileFromGitHub(filePath) {
+            const token = document.getElementById('githubToken').value;
+            const repo = document.getElementById('githubRepo').value;
+            
+            try {
+                const content = await githubAPI.fetchFile(token, repo, filePath, true);
+                
+                // Create download link
+                const blob = new Blob([content]);
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filePath.split('/').pop();
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                log('success', `File downloaded: ${filePath}`);
+                showToast('File downloaded!', 'success');
+            } catch (error) {
+                log('error', `Download failed: ${error.message}`);
+                showToast(`Download failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function createGitHubRepo() {
+            const token = document.getElementById('githubToken').value;
+            const repoName = prompt('Enter new repository name:');
+            
+            if (!token || !repoName) {
+                showToast('Token and repository name required', 'warning');
+                return;
+            }
+            
+            try {
+                const result = await githubAPI.createRepo(token, repoName);
+                
+                // Update repo field
+                document.getElementById('githubRepo').value = result.full_name;
+                saveGitHubConfig(token, result.full_name);
+                
+                log('success', `Repository created: ${result.full_name}`);
+                showToast('Repository created!', 'success');
+            } catch (error) {
+                log('error', `Failed to create repo: ${error.message}`);
+                showToast(`Failed to create repo: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkGitHubConnection() {
+            const token = document.getElementById('githubToken').value;
+            
+            if (!token) {
+                updateStatus('No GitHub token provided', 'error');
+                showToast('Please enter GitHub token', 'warning');
+                return;
+            }
+            
+            updateStatus('Checking connection...', 'loading');
+            
+            try {
+                const user = await githubAPI.getUser(token);
+                updateStatus(`Connected as ${user.login}`, 'connected');
+                log('success', `GitHub connected as ${user.login}`);
+                showToast('GitHub connection successful!', 'success');
+            } catch (error) {
+                updateStatus('Connection failed', 'error');
+                log('error', `GitHub connection failed: ${error.message}`);
+                showToast('GitHub connection failed', 'error');
+            }
+        }
+
+        // ==================== AI GENERATION (Simulation) ====================
+        async function generateWithAI() {
+            const prompt = document.getElementById('aiPrompt').value;
+            const outputPath = document.getElementById('aiOutputPath').value;
+            
+            if (!prompt || !outputPath) {
+                showToast('Please enter prompt and output path', 'warning');
+                return;
+            }
+            
+            updateStatus('Generating code with AI...', 'loading');
+            
+            try {
+                const code = await generateAICode(prompt);
+                
+                document.getElementById('generatedCode').value = code;
+                document.getElementById('fileContent').value = code;
+                document.getElementById('filePath').value = outputPath;
+                
+                generatedCodeCache = code;
+                
+                updateStatus('Code generated', 'connected');
+                log('success', 'AI code generated successfully');
+                showToast('Code generated!', 'success');
+                
+                // Auto upload
+                if (confirm('Code generated. Upload to GitHub now?')) {
+                    await uploadToGitHub();
+                }
+                
+                return code;
+            } catch (error) {
+                updateStatus('Generation failed', 'error');
+                log('error', `AI generation failed: ${error.message}`);
+                showToast('Generation failed', 'error');
+                throw error;
+            }
+        }
+
+        async function generateOnly() {
+            const prompt = document.getElementById('aiPrompt').value;
+            
+            if (!prompt) {
+                showToast('Please enter prompt', 'warning');
+                return;
+            }
+            
+            updateStatus('Generating code...', 'loading');
+            
+            try {
+                const code = await generateAICode(prompt);
+                document.getElementById('generatedCode').value = code;
+                document.getElementById('fileContent').value = code;
+                
+                updateStatus('Code generated', 'connected');
+                log('success', 'Code generated');
+                showToast('Code generated!', 'success');
+            } catch (error) {
+                updateStatus('Generation failed', 'error');
+                log('error', `Generation failed: ${error.message}`);
+                showToast('Generation failed', 'error');
+            }
+        }
+
+        async function generateAICode(prompt) {
+            // Simulate AI generation
+            // In production, this would call OpenAI API or similar
+            
+            log('info', `Generating code for prompt: "${prompt}"`);
+            
+            // Simulate processing delay
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            // Template generation based on prompt keywords
+            let code = '';
+            
+            if (prompt.toLowerCase().includes('video')) {
+                code = generateVideoPlayerTemplate();
+            } else if (prompt.toLowerCase().includes('landing')) {
+                code = generateLandingPageTemplate();
+            } else if (prompt.toLowerCase().includes('dashboard')) {
+                code = generateDashboardTemplate();
+            } else if (prompt.toLowerCase().includes('api')) {
+                code = generateAPITemplate();
+            } else if (prompt.toLowerCase().includes('game')) {
+                code = generateGameTemplate();
+            } else if (prompt.toLowerCase().includes('form')) {
+                code = generateFormTemplate();
+            } else if (prompt.toLowerCase().includes('gallery')) {
+                code = generateGalleryTemplate();
+            } else {
+                code = generateGenericTemplate(prompt);
+            }
+            
+            return code;
+        }
+
+        function generateVideoPlayerTemplate() {
+            return `<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>AI Generated Video Player</title>
+            <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body {
+                    font-family: Arial, sans-serif;
+                    background: #000;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    min-height: 100vh;
+                }
+                .player {
+                    width: 100%;
+                    max-width: 800px;
+                    background: #111;
+                    border-radius: 10px;
+                    overflow: hidden;
+                }
+                video {
+                    width: 100%;
+                    display: block;
+                }
+                .controls {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 15px;
+                    background: #1a1a1a;
+                }
+                button {
+                    padding: 8px 16px;
+                    background: #333;
+                    border: none;
+                    border-radius: 5px;
+                    color: white;
+                    cursor: pointer;
+                }
+                button:hover { background: #444; }
+                .progress {
+                    flex: 1;
+                    height: 5px;
+                    background: #333;
+                    border-radius: 3px;
+                    cursor: pointer;
+                }
+                .progress-fill {
+                    height: 100%;
+                    background: #ff4444;
+                    border-radius: 3px;
+                    width: 0%;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="player">
+                <video id="video" src="your-video.mp4"></video>
+                <div class="controls">
+                    <button onclick="togglePlay()">Play/Pause</button>
+                    <div class="progress" onclick="seek(event)">
+                        <div class="progress-fill" id="progress"></div>
+                    </div>
+                    <span id="time">00:00 / 00:00</span>
+                </div>
+            </div>
+            <script>
+                const video = document.getElementById('video');
+                const progress = document.getElementById('progress');
+                const time = document.getElementById('time');
+                
+                function togglePlay() {
+                    if (video.paused) {
+                        video.play();
+                    } else {
+                        video.pause();
+                    }
+                }
+                
+                video.addEventListener('timeupdate', () => {
+                    const percent = (video.currentTime / video.duration) * 100;
+                    progress.style.width = percent + '%';
+                    time.textContent = formatTime(video.currentTime) + ' / ' + formatTime(video.duration);
+                });
+                
+                function seek(e) {
+                    const rect = e.target.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const percent = x / rect.width;
+                    video.currentTime = percent * video.duration;
+                }
+                
+                function formatTime(seconds) {
+                    const m = Math.floor(seconds / 60);
+                    const s = Math.floor(seconds % 60);
+                    return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+                }
+            <\/script>
+        </body>
+        </html>`;
+        }
+
+        function generateLandingPageTemplate() {
+            return `<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Landing Page</title>
+            <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body { font-family: Arial, sans-serif; line-height: 1.6; }
+                .hero {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    padding: 100px 20px;
+                    text-align: center;
+                }
+                .hero h1 { font-size: 3em; margin-bottom: 20px; }
+                .hero p { font-size: 1.2em; margin-bottom: 30px; }
+                .btn {
+                    padding: 15px 30px;
+                    font-size: 1.1em;
+                    background: white;
+                    color: #667eea;
+                    border: none;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    text-decoration: none;
+                    display: inline-block;
+                }
+                .features {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                    gap: 30px;
+                    padding: 50px 20px;
+                    max-width: 1200px;
+                    margin: 0 auto;
+                }
+                .feature {
+                    text-align: center;
+                    padding: 30px;
+                    background: #f8f9fa;
+                    border-radius: 10px;
+                }
+                .feature h3 { margin-bottom: 15px; color: #333; }
+                .feature p { color: #666; }
+            </style>
+        </head>
+        <body>
+            <div class="hero">
+                <h1>Welcome to Our Website</h1>
+                <p>We provide amazing solutions for your business</p>
+                <a href="#" class="btn">Get Started</a>
+            </div>
+            <div class="features">
+                <div class="feature">
+                    <h3>🚀 Fast</h3>
+                    <p>Lightning fast performance for your needs</p>
+                </div>
+                <div class="feature">
+                    <h3>💪 Reliable</h3>
+                    <p>99.9% uptime guaranteed</p>
+                </div>
+                <div class="feature">
+                    <h3>🔒 Secure</h3>
+                    <p>Your data is always protected</p>
+                </div>
+            </div>
+        </body>
+        </html>`;
+        }
+
+        function generateDashboardTemplate() {
+            return `<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Dashboard</title>
+            <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body { font-family: Arial, sans-serif; background: #f0f2f5; }
+                .sidebar {
+                    width: 250px;
+                    height: 100vh;
+                    background: #1a1a2e;
+                    color: white;
+                    position: fixed;
+                    padding: 20px;
+                }
+                .sidebar h2 { margin-bottom: 30px; }
+                .sidebar a {
+                    display: block;
+                    color: #ccc;
+                    text-decoration: none;
+                    padding: 10px;
+                    margin: 5px 0;
+                    border-radius: 5px;
+                    transition: all 0.3s;
+                }
+                .sidebar a:hover, .sidebar a.active {
+                    background: #16213e;
+                    color: white;
+                }
+                .main {
+                    margin-left: 250px;
+                    padding: 20px;
+                }
+                .header {
+                    background: white;
+                    padding: 20px;
+                    border-radius: 10px;
+                    margin-bottom: 20px;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                }
+                .stats {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 20px;
+                }
+                .stat-card {
+                    background: white;
+                    padding: 20px;
+                    border-radius: 10px;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                }
+                .stat-card h3 { color: #666; margin-bottom: 10px; }
+                .stat-card .value { font-size: 2em; font-weight: bold; color: #1a1a2e; }
+            </style>
+        </head>
+        <body>
+            <div class="sidebar">
+                <h2>📊 Dashboard</h2>
+                <a href="#" class="active">🏠 Home</a>
+                <a href="#">📈 Analytics</a>
+                <a href="#">👥 Users</a>
+                <a href="#">📦 Products</a>
+                <a href="#">⚙️ Settings</a>
+            </div>
+            <div class="main">
+                <div class="header">
+                    <h1>Dashboard Overview</h1>
+                    <p>Welcome back! Here's what's happening.</p>
+                </div>
+                <div class="stats">
+                    <div class="stat-card">
+                        <h3>Total Users</h3>
+                        <div class="value">1,234</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Revenue</h3>
+                        <div class="value">$12,345</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Orders</h3>
+                        <div class="value">456</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Conversion Rate</h3>
+                        <div class="value">3.2%</div>
+                    </div>
+                </div>
+            </div>
+        </body>
+        </html>`;
+        }
+
+        function generateAPITemplate() {
+            return `// API Server Template
+        const express = require('express');
+        const cors = require('cors');
+        const app = express();
+        const PORT = process.env.PORT || 3000;
+
+        // Middleware
+        app.use(cors());
+        app.use(express.json());
+
+        // In-memory database
+        const items = [];
+
+        // Routes
+        app.get('/', (req, res) => {
+            res.json({
+                message: 'API Server Running',
+                version: '1.0.0',
+                endpoints: [
+                    'GET /api/items',
+                    'POST /api/items',
+                    'GET /api/items/:id',
+                    'PUT /api/items/:id',
+                    'DELETE /api/items/:id'
+                ]
+            });
         });
-    } catch(e) {
-        logProblem('Recorder error: ' + e.message, 'error');
-        toast('Gagal recorder!', 'error');
-        finishGenerate();
-        return;
-    }
-    
-    recorder.ondataavailable = function(e) { if (e.data && e.data.size > 0) S.chunks.push(e.data); };
-    
-    recorder.onstop = function() {
-        if (S.chunks.length === 0) {
-            logProblem('Video kosong', 'error');
-            toast('Video kosong!', 'error');
-            finishGenerate();
-            return;
+
+        // Get all items
+        app.get('/api/items', (req, res) => {
+            res.json(items);
+        });
+
+        // Create item
+        app.post('/api/items', (req, res) => {
+            const item = {
+                id: Date.now(),
+                ...req.body,
+                createdAt: new Date().toISOString()
+            };
+            items.push(item);
+            res.status(201).json(item);
+        });
+
+        // Get single item
+        app.get('/api/items/:id', (req, res) => {
+            const item = items.find(i => i.id === Number(req.params.id));
+            if (!item) {
+                return res.status(404).json({ error: 'Item not found' });
+            }
+            res.json(item);
+        });
+
+        // Update item
+        app.put('/api/items/:id', (req, res) => {
+            const index = items.findIndex(i => i.id === Number(req.params.id));
+            if (index === -1) {
+                return res.status(404).json({ error: 'Item not found' });
+            }
+            items[index] = { ...items[index], ...req.body };
+            res.json(items[index]);
+        });
+
+        // Delete item
+        app.delete('/api/items/:id', (req, res) => {
+            const index = items.findIndex(i => i.id === Number(req.params.id));
+            if (index === -1) {
+                return res.status(404).json({ error: 'Item not found' });
+            }
+            items.splice(index, 1);
+            res.status(204).send();
+        });
+
+        // Start server
+        app.listen(PORT, () => {
+            console.log(\`Server running on http://localhost:\${PORT}\`);
+        });`;
         }
-        
-        var blob = new Blob(S.chunks, {type: codec});
-        S.blob = blob;
-        consoleLog('Video: ' + (blob.size/1024).toFixed(1) + ' KB', 'success');
-        
-        var url = URL.createObjectURL(blob);
-        var video = document.getElementById('videoPreview');
-        video.src = url;
-        video.load();
-        video.onloadeddata = function() { toast('Video berhasil!', 'success'); };
-        
-        document.getElementById('videoContainer').classList.add('active');
-        document.getElementById('videoInfo').textContent = 'Size: ' + (blob.size/1024).toFixed(1) + ' KB';
-        
-        S.chunks = [];
-        finishGenerate();
-    };
-    
-    recorder.start(500);
-    
-    var paragraphs = text.split('\n\n').filter(function(p) { return p.trim(); });
-    if (paragraphs.length === 0) paragraphs = [text];
-    
-    var totalFrames = paragraphs.length * durationPerScene * fps;
-    var frameCount = 0;
-    
-    function renderScene(sceneIndex) {
-        if (sceneIndex >= paragraphs.length) {
-            progressText.textContent = 'Finalizing...';
-            progressFill.style.width = '90%';
-            setTimeout(function() { if (recorder.state !== 'inactive') recorder.stop(); }, 500);
-            return;
+
+        function generateGameTemplate() {
+            return `<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Simple Game</title>
+            <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body {
+                    font-family: Arial, sans-serif;
+                    background: #000;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    min-height: 100vh;
+                    flex-direction: column;
+                }
+                canvas {
+                    border: 2px solid #333;
+                    background: #111;
+                }
+                .score {
+                    color: white;
+                    font-size: 24px;
+                    margin-bottom: 20px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="score">Score: <span id="score">0</span></div>
+            <canvas id="game" width="400" height="400"></canvas>
+            <script>
+                const canvas = document.getElementById('game');
+                const ctx = canvas.getContext('2d');
+                const scoreElement = document.getElementById('score');
+                
+                let score = 0;
+                let player = { x: 50, y: 200, size: 20 };
+                let obstacles = [];
+                
+                function update() {
+                    // Move player
+                    if (keys.ArrowUp) player.y -= 5;
+                    if (keys.ArrowDown) player.y += 5;
+                    if (keys.ArrowLeft) player.x -= 5;
+                    if (keys.ArrowRight) player.x += 5;
+                    
+                    // Keep player in bounds
+                    player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
+                    player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
+                    
+                    // Generate obstacles
+                    if (Math.random() < 0.02) {
+                        obstacles.push({ x: canvas.width, y: Math.random() * canvas.height, size: 15 });
+                    }
+                    
+                    // Move obstacles
+                    obstacles.forEach(obstacle => {
+                        obstacle.x -= 3;
+                    });
+                    
+                    // Remove off-screen obstacles
+                    obstacles = obstacles.filter(obstacle => obstacle.x > -obstacle.size);
+                    
+                    // Check collisions
+                    obstacles.forEach(obstacle => {
+                        if (Math.abs(player.x - obstacle.x) < (player.size + obstacle.size) / 2 &&
+                            Math.abs(player.y - obstacle.y) < (player.size + obstacle.size) / 2) {
+                            resetGame();
+                        }
+                    });
+                    
+                    // Increase score
+                    score++;
+                    scoreElement.textContent = score;
+                }
+                
+                function draw() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Draw player
+                    ctx.fillStyle = '#00ff00';
+                    ctx.fillRect(player.x, player.y, player.size, player.size);
+                    
+                    // Draw obstacles
+                    ctx.fillStyle = '#ff0000';
+                    obstacles.forEach(obstacle => {
+                        ctx.fillRect(obstacle.x, obstacle.y, obstacle.size, obstacle.size);
+                    });
+                }
+                
+                function resetGame() {
+                    score = 0;
+                    player = { x: 50, y: 200, size: 20 };
+                    obstacles = [];
+                }
+                
+                const keys = {};
+                document.addEventListener('keydown', (e) => keys[e.key] = true);
+                document.addEventListener('keyup', (e) => keys[e.key] = false);
+                
+                function gameLoop() {
+                    update();
+                    draw();
+                    requestAnimationFrame(gameLoop);
+                }
+                
+                gameLoop();
+            <\/script>
+        </body>
+        </html>`;
         }
-        
-        progressText.textContent = 'Scene ' + (sceneIndex+1) + '/' + paragraphs.length;
-        var paragraph = paragraphs[sceneIndex];
-        var framesForScene = durationPerScene * fps;
-        var frameInScene = 0;
-        
-        try {
-            var u = new SpeechSynthesisUtterance(paragraph);
-            u.lang = voice;
-            u.rate = 0.9;
-            u.volume = volume;
-            speechSynthesis.speak(u);
-        } catch(e) {}
-        
-        function renderFrame() {
-            if (frameInScene >= framesForScene) { renderScene(sceneIndex + 1); return; }
-            
-            var colors = {horror:['#0a0a0a','#1a0a0a'],fantasy:['#1a0533','#3d1a6b'],adventure:['#1a3a1a','#2a4a2a'],romance:['#3a1a1a','#4a2a2a'],sad:['#2a2a2a','#1a1a1a'],action:['#3a1a0a','#2a0a0a']};
-            var c = colors[style] || colors.horror;
-            var grad = ctx.createLinearGradient(0,0,0,height);
-            grad.addColorStop(0,c[0]);grad.addColorStop(1,c[1]);
-            ctx.fillStyle = grad;
-            ctx.fillRect(0,0,width,height);
-            
-            var icons = {horror:'👻',fantasy:'✨',adventure:'🗺️',romance:'💕',sad:'😢',action:'⚔️'};
-            ctx.font = (height/3)+'px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(icons[style]||'🎬', width/2, height/3);
-            
-            ctx.fillStyle = 'rgba(0,0,0,0.7)';
-            ctx.fillRect(0, height-80, width, 80);
-            ctx.fillStyle = '#fff';
-            ctx.font = 'bold 14px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText(paragraph.substring(0,60), width/2, height-40);
-            
-            frameCount++;
-            progressFill.style.width = (10 + (frameCount/totalFrames)*80) + '%';
-            frameInScene++;
-            setTimeout(renderFrame, 1000/fps);
+
+        function generateFormTemplate() {
+            return `<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Contact Form</title>
+            <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body {
+                    font-family: Arial, sans-serif;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    min-height: 100vh;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    padding: 20px;
+                }
+                .form-container {
+                    background: white;
+                    border-radius: 10px;
+                    padding: 40px;
+                    max-width: 500px;
+                    width: 100%;
+                    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                }
+                h2 {
+                    text-align: center;
+                    margin-bottom: 30px;
+                    color: #333;
+                }
+                .form-group {
+                    margin-bottom: 20px;
+                }
+                label {
+                    display: block;
+                    margin-bottom: 5px;
+                    color: #666;
+                    font-weight: bold;
+                }
+                input, textarea {
+                    width: 100%;
+                    padding: 10px;
+                    border: 1px solid #ddd;
+                    border-radius: 5px;
+                    font-size: 16px;
+                    transition: all 0.3s;
+                }
+                input:focus, textarea:focus {
+                    outline: none;
+                    border-color: #667eea;
+                    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+                }
+                textarea {
+                    min-height: 150px;
+                    resize: vertical;
+                }
+                button {
+                    width: 100%;
+                    padding: 12px;
+                    background: #667eea;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    font-size: 16px;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                }
+                button:hover {
+                    background: #5a67d8;
+                    transform: translateY(-2px);
+                    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+                }
+            </style>
+        </head>
+        <body>
+            <div class="form-container">
+                <h2>Contact Us</h2>
+                <form onsubmit="handleSubmit(event)">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" required placeholder="Your name">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" required placeholder="Your email">
+                    </div>
+                    <div class="form-group">
+                        <label>Message</label>
+                        <textarea required placeholder="Your message"></textarea>
+                    </div>
+                    <button type="submit">Send Message</button>
+                </form>
+            </div>
+            <script>
+                function handleSubmit(e) {
+                    e.preventDefault();
+                    alert('Form submitted! (Demo only)');
+                }
+            <\/script>
+        </body>
+        </html>`;
         }
-        renderFrame();
-    }
-    renderScene(0);
-}
 
-function finishGenerate() {
-    S.generating = false;
-    var btn = document.getElementById('generateBtn');
-    if (btn) { btn.disabled = false; btn.textContent = '🎬 Generate Video'; }
-    var progress = document.getElementById('progressContainer');
-    if (progress) progress.classList.remove('active');
-}
+        function generateGalleryTemplate() {
+            return `<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Image Gallery</title>
+            <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body {
+                    font-family: Arial, sans-serif;
+                    background: #f5f5f5;
+                    padding: 20px;
+                }
+                h1 {
+                    text-align: center;
+                    margin-bottom: 30px;
+                    color: #333;
+                }
+                .gallery {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                    gap: 20px;
+                    max-width: 1200px;
+                    margin: 0 auto;
+                }
+                .gallery-item {
+                    position: relative;
+                    overflow: hidden;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    aspect-ratio: 1;
+                }
+                .gallery-item img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    transition: transform 0.3s;
+                }
+                .gallery-item:hover img {
+                    transform: scale(1.1);
+                }
+                .gallery-item .overlay {
+                    position: absolute;
+                    bottom: 0;
+                    left: 0;
+                    right: 0;
+                    background: rgba(0,0,0,0.7);
+                    color: white;
+                    padding: 10px;
+                    transform: translateY(100%);
+                    transition: transform 0.3s;
+                }
+                .gallery-item:hover .overlay {
+                    transform: translateY(0);
+                }
+                .lightbox {
+                    display: none;
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.9);
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 1000;
+                }
+                .lightbox.active {
+                    display: flex;
+                }
+                .lightbox img {
+                    max-width: 90%;
+                    max-height: 90%;
+                    object-fit: contain;
+                }
+            </style>
+        </head>
+        <body>
+            <h1>🖼️ Image Gallery</h1>
+            <div class="gallery" id="gallery">
+                <!-- Images will be added here -->
+            </div>
+            <div class="lightbox" id="lightbox" onclick="this.classList.remove('active')">
+                <img id="lightbox-img" src="" alt="Lightbox">
+            </div>
+            <script>
+                const images = [
+                    'https://picsum.photos/400/400?random=1',
+                    'https://picsum.photos/400/400?random=2',
+                    'https://picsum.photos/400/400?random=3',
+                    'https://picsum.photos/400/400?random=4',
+                    'https://picsum.photos/400/400?random=5',
+                    'https://picsum.photos/400/400?random=6'
+                ];
+                
+                const gallery = document.getElementById('gallery');
+                
+                images.forEach((src, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'gallery-item';
+                    item.innerHTML = \`
+                        <img src="\${src}" alt="Image \${index + 1}">
+                        <div class="overlay">Image \${index + 1}</div>
+                    \`;
+                    item.onclick = () => {
+                        document.getElementById('lightbox-img').src = src;
+                        document.getElementById('lightbox').classList.add('active');
+                    };
+                    gallery.appendChild(item);
+                });
+            <\/script>
+        </body>
+        </html>`;
+        }
 
-// ========== DOWNLOAD ==========
-function downloadVideo() {
-    if (!S.blob) { toast('Belum ada video!', 'error'); return; }
-    var url = URL.createObjectURL(S.blob);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = 'yad_video_' + Date.now() + '.webm';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(function() { URL.revokeObjectURL(url); }, 5000);
-    toast('Download dimulai!', 'success');
-}
+        function generateGenericTemplate(prompt) {
+            return `<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>${prompt.slice(0, 50)}</title>
+            <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body {
+                    font-family: Arial, sans-serif;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    min-height: 100vh;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    text-align: center;
+                    padding: 20px;
+                }
+                .container {
+                    max-width: 800px;
+                }
+                h1 {
+                    font-size: 3em;
+                    margin-bottom: 20px;
+                }
+                p {
+                    font-size: 1.2em;
+                    opacity: 0.9;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>✨ Generated Page</h1>
+                <p>${prompt}</p>
+            </div>
+        </body>
+        </html>`;
+        }
 
-// ========== RESET ==========
-function resetAll() {
-    if (!confirm('Reset semua?')) return;
-    try { localStorage.clear(); } catch(e) {}
-    S.blob = null;
-    S.github = {};
-    S.hasAudio = false;
-    S.githubFiles = [];
-    S.problems = [];
-    var video = document.getElementById('videoPreview');
-    if (video) video.src = '';
-    document.getElementById('videoContainer').classList.remove('active');
-    document.getElementById('storyInput').value = '';
-    updateLogPanel();
-    consoleLog('Reset selesai', 'warning');
-    toast('Reset!', 'info');
-}
+        // ==================== GITHUB API CLIENT ====================
+        const githubAPI = {
+            baseUrl: 'https://api.github.com',
+            
+            async getUser(token) {
+                const response = await fetch(`${this.baseUrl}/user`, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`GitHub API Error: ${response.status} ${response.statusText}`);
+                }
+                
+                return await response.json();
+            },
+            
+            async uploadFile(token, repo, path, content, message = 'Upload file') {
+                const url = `${this.baseUrl}/repos/${repo}/contents/${path}`;
+                
+                // Check if file exists
+                let sha = null;
+                try {
+                    const existing = await this.getFileSHA(token, repo, path);
+                    sha = existing;
+                } catch (error) {
+                    // File doesn't exist, create new
+                }
+                
+                const body = {
+                    message: message,
+                    content: this.encodeBase64(content),
+                    branch: 'main'
+                };
+                
+                if (sha) {
+                    body.sha = sha;
+                }
+                
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/vnd.github.v3+json'
+                    },
+                    body: JSON.stringify(body)
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Upload failed');
+                }
+                
+                return await response.json();
+            },
+            
+            async fetchFile(token, repo, path, raw = false) {
+                const url = raw 
+                    ? `https://raw.githubusercontent.com/${repo}/main/${path}`
+                    : `${this.baseUrl}/repos/${repo}/contents/${path}`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`File not found: ${path}`);
+                }
+                
+                if (raw) {
+                    return await response.text();
+                }
+                
+                const data = await response.json();
+                return this.decodeBase64(data.content);
+            },
+            
+            async deleteFile(token, repo, path, message = 'Delete file') {
+                const sha = await this.getFileSHA(token, repo, path);
+                
+                if (!sha) {
+                    throw new Error('File not found');
+                }
+                
+                const url = `${this.baseUrl}/repos/${repo}/contents/${path}`;
+                
+                const response = await fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/vnd.github.v3+json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        sha: sha,
+                        branch: 'main'
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Delete failed');
+                }
+                
+                return await response.json();
+            },
+            
+            async listFiles(token, repo, path = '') {
+                const url = `${this.baseUrl}/repos/${repo}/contents/${path}`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to list files: ${response.status}`);
+                }
+                
+                return await response.json();
+            },
+            
+            async getFileSHA(token, repo, path) {
+                const url = `${this.baseUrl}/repos/${repo}/contents/${path}`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.sha;
+                }
+                
+                return null;
+            },
+            
+            async createRepo(token, name, description = 'Created via GitHub AI Writer') {
+                const url = `${this.baseUrl}/user/repos`;
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/vnd.github.v3+json'
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        description: description,
+                        private: false,
+                        auto_init: true
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to create repo');
+                }
+                
+                return await response.json();
+            },
+            
+            encodeBase64(text) {
+                return btoa(unescape(encodeURIComponent(text)));
+            },
+            
+            decodeBase64(base64) {
+                return decodeURIComponent(escape(atob(base64)));
+            }
+        };
 
-// ========== INIT ==========
-function init() {
-    consoleLog('YAD Video AI v12 initialized', 'success');
-    consoleLog('Semua fitur aktif', 'success');
-    consoleLog('Ketik "help" untuk perintah', 'info');
-    fixAudio();
-}
+        // ==================== UTILITY FUNCTIONS ====================
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '00:00';
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = Math.floor(seconds % 60);
+            
+            if (h > 0) {
+                return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            }
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
 
-init();
-</script>
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function getFileIcon(name, type) {
+            if (type === 'dir') return '📁';
+            
+            const ext = name.split('.').pop().toLowerCase();
+            
+            const icons = {
+                'mp4': '🎬',
+                'webm': '🎬',
+                'avi': '🎬',
+                'mkv': '🎬',
+                'jpg': '🖼️',
+                'jpeg': '🖼️',
+                'png': '🖼️',
+                'gif': '🖼️',
+                'svg': '🖼️',
+                'mp3': '🎵',
+                'wav': '🎵',
+                'ogg': '🎵',
+                'html': '📄',
+                'css': '🎨',
+                'js': '⚡',
+                'ts': '⚡',
+                'json': '📋',
+                'md': '📝',
+                'txt': '📝',
+                'pdf': '📕',
+                'zip': '📦',
+                'rar': '📦',
+                'tar': '📦',
+                'gz': '📦'
+            };
+            
+            return icons[ext] || '📄';
+        }
+
+        function isVideoFile(name) {
+            const videoExtensions = ['mp4', 'webm', 'ogg', 'avi', 'mkv', 'mov'];
+            const ext = name.split('.').pop().toLowerCase();
+            return videoExtensions.includes(ext);
+        }
+
+        function saveGitHubConfig(token, repo) {
+            githubConfig.token = token;
+            githubConfig.repo = repo;
+            
+            localStorage.setItem('github_token', token);
+            localStorage.setItem('github_repo', repo);
+        }
+
+        function updateStatus(text, status) {
+            const indicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            
+            statusText.textContent = text;
+            indicator.className = 'status-indicator';
+            
+            switch(status) {
+                case 'connected':
+                    indicator.classList.add('connected');
+                    break;
+                case 'error':
+                    indicator.classList.add('error');
+                    break;
+                case 'loading':
+                    indicator.classList.add('loading');
+                    break;
+            }
+        }
+
+        function log(level, message) {
+            const timestamp = new Date().toLocaleTimeString('en-US', { 
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            
+            const logContainer = document.getElementById('logContainer');
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            
+            logEntry.innerHTML = `
+                <span class="log-timestamp">${timestamp}</span>
+                <span class="log-level ${level}">[${level.toUpperCase()}]</span>
+                <span class="log-message">${message}</span>
+            `;
+            
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            // Console logging
+            const consoleMethod = level === 'error' ? 'error' : level === 'warning' ? 'warn' : level === 'debug' ? 'debug' : 'log';
+            console[consoleMethod](`[${timestamp}] [${level.toUpperCase()}] ${message}`);
+        }
+
+        function clearLogs() {
+            document.getElementById('logContainer').innerHTML = '';
+            log('info', 'Logs cleared');
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: '✅',
+                error: '❌',
+                warning: '⚠️',
+                info: 'ℹ️'
+            };
+            
+            toast.innerHTML = `
+                <span>${icons[type]}</span>
+                <span>${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active from all tab buttons
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            
+            // Set active tab button
+            event.target.classList.add('active');
+        }
+
+        function toggleGitHubConfig() {
+            // Toggle config visibility
+            const configPanel = document.querySelector('.panel-body');
+            if (configPanel.style.display === 'none') {
+                configPanel.style.display = 'block';
+            } else {
+                configPanel.style.display = 'none';
+            }
+        }
+
+        function initializeDragAndDrop() {
+            const videoContainer = document.getElementById('videoContainer');
+            
+            videoContainer.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                videoContainer.style.border = '2px solid #58a6ff';
+            });
+            
+            videoContainer.addEventListener('dragleave', () => {
+                videoContainer.style.border = 'none';
+            });
+            
+            videoContainer.addEventListener('drop', (e) => {
+                e.preventDefault();
+                videoContainer.style.border = 'none';
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0 && files[0].type.startsWith('video/')) {
+                    const url = URL.createObjectURL(files[0]);
+                    loadVideo(url);
+                    log('info', `Video loaded from drop: ${files[0].name}`);
+                }
+            });
+        }
+
+        function initializeKeyboardShortcuts() {
+            document.addEventListener('keydown', (e) => {
+                // Don't trigger when typing in inputs
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                    return;
+                }
+                
+                switch(e.key.toLowerCase()) {
+                    case ' ':
+                        e.preventDefault();
+                        togglePlay();
+                        break;
+                    case 'm':
+                        toggleMute();
+                        break;
+                    case 'f':
+                        toggleFullscreen();
+                        break;
+                    case 'arrowright':
+                        const video = document.getElementById('mainVideo');
+                        video.currentTime += 5;
+                        log('debug', 'Skipped forward 5 seconds');
+                        break;
+                    case 'arrowleft':
+                        document.getElementById('mainVideo').currentTime -= 5;
+                        log('debug', 'Skipped backward 5 seconds');
+                        break;
+                }
+            });
+        }
+
+        // Export functions for console use
+        window.GitHubAI = {
+            upload: uploadToGitHub,
+            fetch: fetchFromGitHub,
+            delete: deleteFromGitHub,
+            list: listGitHubFiles,
+            generate: generateWithAI,
+            checkConnection: checkGitHubConnection,
+            createRepo: createGitHubRepo,
+            loadVideo: loadVideo,
+            playVideo: loadVideoFromGitHub
+        };
+
+        // Console help
+        console.log('%c🚀 GitHub AI Writer Loaded!', 'font-size: 20px; font-weight: bold; color: #58a6ff;');
+        console.log('%cAvailable Console Commands:', 'font-size: 14px; font-weight: bold; color: #3fb950;');
+        console.log('- GitHubAI.upload() - Upload file to GitHub');
+        console.log('- GitHubAI.fetch() - Fetch file from GitHub');
+        console.log('- GitHubAI.delete() - Delete file from GitHub');
+        console.log('- GitHubAI.list() - List files in repository');
+        console.log('- GitHubAI.generate() - Generate code with AI');
+        console.log('- GitHubAI.checkConnection() - Check GitHub connection');
+        console.log('- GitHubAI.createRepo() - Create new repository');
+    </script>
 </body>
 </html>

@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html lang="id">
-<head>
+<html lang="id"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>YAD Store - Top Up Game & Pulsa Termurah</title>
+    <title>YAD Store - Top Up Game &amp; Pulsa Termurah</title>
     <meta name="description" content="YAD Store - Top up game, pulsa, paket data, token listrik, voucher, dan e-wallet termurah.">
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://apis.google.com/_/scs/abc-static/_/js/k=gapi.lb.id.7RMuFFQRkIM.O/m=gapi_iframes/rt=j/sv=1/d=1/ed=1/rs=AHpOoo96vPTUmorjAxUToerDK1wIZ_D9cg/cb=gapi.loaded_0?le=scs" async=""></script><script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
@@ -176,7 +175,7 @@
         .github-fm-editor-body input,.github-fm-editor-body textarea{width:100%;padding:10px;background:#0d0d20;border:1px solid #252540;border-radius:8px;color:#e8e8f0;font-size:13px;outline:none;font-family:monospace;margin-bottom:12px}
         .github-fm-editor-body textarea{min-height:300px;resize:vertical}
     </style>
-</head>
+<script src="https://apis.google.com/js/api.js?onload=__iframefcb678911" type="text/javascript" charset="UTF-8" gapi_processed="true"></script></head>
 <body>
 <header class="header">
     <div class="logo">🎮 YAD Store</div>
@@ -185,9 +184,9 @@
         <button class="btn" onclick="showSection('order')">🛒 Order</button>
         <button class="btn" onclick="showSection('status')">📋 Cek Pesanan</button>
         <button class="btn" onclick="openNovelReader()">📚 Novel</button>
-        <button class="btn fit-btn" id="fitMenuBtn" onclick="toggleFitMenu()">✨ Fitur ▾</button>
+        <button class="btn fit-btn" id="fitMenuBtn" onclick="toggleFitMenu()" style="display: inline-flex;">✨ Fitur ▾</button>
         <button class="btn" onclick="openProfile()" id="profileNavBtn">👤 Profil</button>
-        <button class="btn" onclick="handleLogin()" id="loginBtn">🔑 Login</button>
+        <button class="btn" onclick="handleLogin()" id="loginBtn" style="display: none;">🔑 Login</button>
     </div>
 </header>
 <div class="fit-dropdown" id="fitDropdown">
@@ -201,9 +200,9 @@
     </div>
 </div>
 <div class="activity-bar">
-    <span><span class="dot-live"></span> <b id="onlineCount">87</b> online</span>
-    <span>🎮 <b id="todayOrders">11</b> pesanan</span>
-    <span>💰 <b id="todayRevenue">Rp 150.000</b></span>
+    <span><span class="dot-live"></span> <b id="onlineCount">70</b> online</span>
+    <span>🎮 <b id="todayOrders">0</b> pesanan</span>
+    <span>💰 <b id="todayRevenue">Rp 0</b></span>
     <span>⭐ 4.9 rating</span>
     <span id="githubStatus" style="color:var(--accent2)">📤 Ready ✅</span>
 </div>
@@ -213,7 +212,7 @@
     <div class="ai-chat-header" onclick="toggleAIChat()"><span>🧠 YAD AI</span><span id="aiChatToggle">▼</span></div>
     <div class="ai-chat-body" id="aiChatBody">
         <div class="ai-chat-messages" id="aiChatMsgs"><div class="ai-msg system">🤖 Ketik "help" untuk bantuan.</div></div>
-        <div class="quick-edit-bar" id="quickEditBar">
+        <div class="quick-edit-bar" id="quickEditBar" style="display: block;">
             <div class="edit-title">🎨 Quick Admin Tools</div>
             <button class="quick-edit-btn" onclick="quickEdit('judul')">📝 Judul</button>
             <button class="quick-edit-btn" onclick="quickEdit('warna')">🎨 Warna</button>
@@ -251,7 +250,7 @@
 </div>
 <div class="novel-reader-panel" id="novelReaderPanel">
     <div class="novel-header">
-        <button class="btn write-novel-btn" onclick="openNovelEditor()" id="writeNovelBtn">✍️ Tulis</button>
+        <button class="btn write-novel-btn" onclick="openNovelEditor()" id="writeNovelBtn" style="display: inline-block;">✍️ Tulis</button>
         <span id="novelTitle">📚 Novel Reader</span>
         <span onclick="closeNovelReader()" style="cursor:pointer;font-size:18px">✕</span>
     </div>
@@ -259,7 +258,7 @@
     <div class="novel-content" id="novelContent" style="display:none"><p style="color:var(--text-dim);text-align:center">Pilih novel</p></div>
     <div class="novel-controls" id="novelControls" style="display:none">
         <button onclick="novelPrevPage()">◀</button>
-        <select id="novelFontSize" onchange="changeFontSize()"><option value="12">12px</option><option value="14" selected>14px</option><option value="16">16px</option><option value="18">18px</option></select>
+        <select id="novelFontSize" onchange="changeFontSize()"><option value="12">12px</option><option value="14" selected="">14px</option><option value="16">16px</option><option value="18">18px</option></select>
         <span id="novelPageInfo">1/1</span>
         <button onclick="novelNextPage()">▶</button>
         <button onclick="toggleNovelSpeech()" id="speechBtn">🔊 Baca</button>
@@ -361,11 +360,11 @@
         <button class="cat-tab" onclick="filterCategory('voucher',event)">🎬 Voucher</button>
         <button class="cat-tab" onclick="filterCategory('ewallet',event)">💳 E-Wallet</button>
     </div>
-    <div id="homeSection"><div class="game-grid" id="gameGrid"></div><div class="live-feed"><b>🔴 Live Activity</b><div id="liveFeed"></div></div></div>
-    <div id="orderSection" class="hidden"><div class="order-section"><h3>🛒 Order</h3><div class="form-group"><label>Kategori</label><select id="orderCategory" onchange="updateOrderGame()"><option value="game">Game</option><option value="pulsa">Pulsa</option><option value="data">Data</option><option value="token">Token</option><option value="voucher">Voucher</option><option value="ewallet">E-Wallet</option></select></div><div class="form-group"><label>Produk</label><select id="orderGame" onchange="updateOrderItems()"><option value="">Pilih Produk</option></select></div><div class="form-group"><label>Item</label><select id="orderItem" onchange="updateTotalPrice()"></select></div><div class="form-row"><div class="form-group"><label>ID/No HP</label><input type="text" id="orderUID" placeholder="Masukkan ID/No HP"></div><div class="form-group"><label>Server (opsional)</label><input type="text" id="orderServer" placeholder="Server"></div></div><div class="form-group"><label>Email</label><input type="email" id="orderEmail" placeholder="email@anda.com"></div><h4 style="color:var(--gold)">💳 Pembayaran</h4><div class="payment-grid" id="paymentGrid"></div><div class="form-group"><label>Bukti Transfer</label><input type="file" id="paymentProof" onchange="previewProof()" accept="image/*"></div><div id="proofPreview"></div><div style="background:var(--bg-input);padding:12px;border-radius:8px;margin:12px 0"><b>Total:</b> <span style="color:var(--gold);font-size:18px" id="totalPrice">Rp 0</span></div><button class="btn btn-primary" onclick="submitOrder()" style="width:100%;padding:12px">🛒 Pesan Sekarang</button></div></div>
+    <div id="homeSection"><div class="game-grid" id="gameGrid"><div class="game-card" onclick="selectProduct('all','ml')"><div class="game-header"><img src="https://play-lh.googleusercontent.com/4JjBHFKcTjHmFp3nJ9wXyG5nXhWv8r5Xv8iP8qJ8wY8wX8qJ8wY8wX8qJ8wY8w=w240-h480-rw" style="width: 50px; height: 50px; border-radius: 10px; object-fit: cover; background: var(--bg-hover); display: none;" onerror="this.style.display='none';"><div><div class="game-name">Mobile Legends</div><div class="game-developer">Moonton</div></div></div><div class="item-list"><div class="item-row" onclick="event.stopPropagation();quickOrder('Mobile Legends','3 Diamonds','1500')"><span>3 Diamonds</span><span class="item-price">Rp 1.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Mobile Legends','5 Diamonds','2000')"><span>5 Diamonds</span><span class="item-price">Rp 2.400</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Mobile Legends','11 Diamonds','3500')"><span>11 Diamonds</span><span class="item-price">Rp 4.200</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Mobile Legends','22 Diamonds','6500')"><span>22 Diamonds</span><span class="item-price">Rp 7.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Mobile Legends','56 Diamonds','13000')"><span>56 Diamonds</span><span class="item-price">Rp 15.600</span></div><div style="text-align:center;padding:6px;font-size:10px;color:var(--text-dim)">+14 item lainnya</div></div></div><div class="game-card" onclick="selectProduct('all','ff')"><div class="game-header"><img src="https://play-lh.googleusercontent.com/5h4nY5Y5Y5Y5Y5Y5Y5Y5Y5Y5Y5Y5Y5Y5Y5Y5Y5Y5Y5Y5Y5Y5Y5Y5Y5Y5Y5Y5Y5Y=s360-rw" style="width: 50px; height: 50px; border-radius: 10px; object-fit: cover; background: var(--bg-hover); display: none;" onerror="this.style.display='none';"><div><div class="game-name">Free Fire</div><div class="game-developer">Garena</div></div></div><div class="item-list"><div class="item-row" onclick="event.stopPropagation();quickOrder('Free Fire','5 Diamonds','1500')"><span>5 Diamonds</span><span class="item-price">Rp 1.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Free Fire','12 Diamonds','3000')"><span>12 Diamonds</span><span class="item-price">Rp 3.600</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Free Fire','50 Diamonds','8500')"><span>50 Diamonds</span><span class="item-price">Rp 10.200</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Free Fire','70 Diamonds','12000')"><span>70 Diamonds</span><span class="item-price">Rp 14.400</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Free Fire','140 Diamonds','23000')"><span>140 Diamonds</span><span class="item-price">Rp 27.600</span></div><div style="text-align:center;padding:6px;font-size:10px;color:var(--text-dim)">+6 item lainnya</div></div></div><div class="game-card" onclick="selectProduct('all','pubg')"><div class="game-header"><img src="https://play-lh.googleusercontent.com/6Q6Q6Q6Q6Q6Q6Q6Q6Q6Q6Q6Q6Q6Q6Q6Q6Q6Q6Q6Q6Q6Q6Q6Q6Q6Q6Q6Q6Q=s360-rw" style="width: 50px; height: 50px; border-radius: 10px; object-fit: cover; background: var(--bg-hover); display: none;" onerror="this.style.display='none';"><div><div class="game-name">PUBG Mobile</div><div class="game-developer">Tencent</div></div></div><div class="item-list"><div class="item-row" onclick="event.stopPropagation();quickOrder('PUBG Mobile','30 UC','8000')"><span>30 UC</span><span class="item-price">Rp 9.600</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('PUBG Mobile','60 UC','15000')"><span>60 UC</span><span class="item-price">Rp 18.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('PUBG Mobile','120 UC','29000')"><span>120 UC</span><span class="item-price">Rp 34.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('PUBG Mobile','180 UC','43000')"><span>180 UC</span><span class="item-price">Rp 51.600</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('PUBG Mobile','300 UC','70000')"><span>300 UC</span><span class="item-price">Rp 84.000</span></div><div style="text-align:center;padding:6px;font-size:10px;color:var(--text-dim)">+4 item lainnya</div></div></div><div class="game-card" onclick="selectProduct('all','gi')"><div class="game-header"><img src="https://play-lh.googleusercontent.com/7Q7Q7Q7Q7Q7Q7Q7Q7Q7Q7Q7Q7Q7Q7Q7Q7Q7Q7Q7Q7Q7Q7Q7Q7Q7Q7Q7Q=s360-rw" style="width: 50px; height: 50px; border-radius: 10px; object-fit: cover; background: var(--bg-hover); display: none;" onerror="this.style.display='none';"><div><div class="game-name">Genshin Impact</div><div class="game-developer">HoYoverse</div></div></div><div class="item-list"><div class="item-row" onclick="event.stopPropagation();quickOrder('Genshin Impact','60 GC','15000')"><span>60 GC</span><span class="item-price">Rp 18.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Genshin Impact','300 GC','70000')"><span>300 GC</span><span class="item-price">Rp 84.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Genshin Impact','980 GC','220000')"><span>980 GC</span><span class="item-price">Rp 264.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Genshin Impact','1980 GC','420000')"><span>1980 GC</span><span class="item-price">Rp 504.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Genshin Impact','3280 GC','680000')"><span>3280 GC</span><span class="item-price">Rp 816.000</span></div><div style="text-align:center;padding:6px;font-size:10px;color:var(--text-dim)">+1 item lainnya</div></div></div><div class="game-card" onclick="selectProduct('all','valo')"><div class="game-header"><img src="https://cdn.iconscout.com/icon/free/png-256/valorant-3251602-2724646.png" style="width:50px;height:50px;border-radius:10px;object-fit:cover;background:var(--bg-hover);" onerror="this.style.display='none';"><div><div class="game-name">Valorant</div><div class="game-developer">Riot</div></div></div><div class="item-list"><div class="item-row" onclick="event.stopPropagation();quickOrder('Valorant','125 VP','22000')"><span>125 VP</span><span class="item-price">Rp 26.400</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Valorant','420 VP','62000')"><span>420 VP</span><span class="item-price">Rp 74.400</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Valorant','475 VP','70000')"><span>475 VP</span><span class="item-price">Rp 84.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Valorant','1000 VP','140000')"><span>1000 VP</span><span class="item-price">Rp 168.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Valorant','2050 VP','280000')"><span>2050 VP</span><span class="item-price">Rp 336.000</span></div><div style="text-align:center;padding:6px;font-size:10px;color:var(--text-dim)">+2 item lainnya</div></div></div><div class="game-card" onclick="selectProduct('all','codm')"><div class="game-header"><img src="https://play-lh.googleusercontent.com/8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q=s360-rw" style="width: 50px; height: 50px; border-radius: 10px; object-fit: cover; background: var(--bg-hover); display: none;" onerror="this.style.display='none';"><div><div class="game-name">Call of Duty Mobile</div><div class="game-developer">Activision</div></div></div><div class="item-list"><div class="item-row" onclick="event.stopPropagation();quickOrder('Call of Duty Mobile','80 CP','15000')"><span>80 CP</span><span class="item-price">Rp 18.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Call of Duty Mobile','400 CP','70000')"><span>400 CP</span><span class="item-price">Rp 84.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Call of Duty Mobile','800 CP','140000')"><span>800 CP</span><span class="item-price">Rp 168.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Call of Duty Mobile','2000 CP','340000')"><span>2000 CP</span><span class="item-price">Rp 408.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Call of Duty Mobile','4000 CP','670000')"><span>4000 CP</span><span class="item-price">Rp 804.000</span></div><div style="text-align:center;padding:6px;font-size:10px;color:var(--text-dim)">+1 item lainnya</div></div></div><div class="game-card" onclick="selectProduct('all','hok')"><div class="game-header"><img src="https://play-lh.googleusercontent.com/9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q=s360-rw" style="width: 50px; height: 50px; border-radius: 10px; object-fit: cover; background: var(--bg-hover); display: none;" onerror="this.style.display='none';"><div><div class="game-name">Honor of Kings</div><div class="game-developer">Tencent</div></div></div><div class="item-list"><div class="item-row" onclick="event.stopPropagation();quickOrder('Honor of Kings','60 Token','12000')"><span>60 Token</span><span class="item-price">Rp 14.400</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Honor of Kings','250 Token','45000')"><span>250 Token</span><span class="item-price">Rp 54.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Honor of Kings','500 Token','88000')"><span>500 Token</span><span class="item-price">Rp 105.600</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Honor of Kings','1000 Token','175000')"><span>1000 Token</span><span class="item-price">Rp 210.000</span></div></div></div><div class="game-card" onclick="selectProduct('all','telkomsel')"><div class="game-header"><span style="font-size:40px;">📱</span><div><div class="game-name">Telkomsel</div><div class="game-developer">Pulsa</div></div></div><div class="item-list"><div class="item-row" onclick="event.stopPropagation();quickOrder('Telkomsel','5000','6500')"><span>5000</span><span class="item-price">Rp 7.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Telkomsel','10000','11500')"><span>10000</span><span class="item-price">Rp 13.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Telkomsel','20000','21500')"><span>20000</span><span class="item-price">Rp 25.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Telkomsel','25000','26500')"><span>25000</span><span class="item-price">Rp 31.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Telkomsel','50000','51500')"><span>50000</span><span class="item-price">Rp 61.800</span></div><div style="text-align:center;padding:6px;font-size:10px;color:var(--text-dim)">+1 item lainnya</div></div></div><div class="game-card" onclick="selectProduct('all','xl')"><div class="game-header"><span style="font-size:40px;">📱</span><div><div class="game-name">XL/Axis</div><div class="game-developer">Pulsa</div></div></div><div class="item-list"><div class="item-row" onclick="event.stopPropagation();quickOrder('XL/Axis','5000','6500')"><span>5000</span><span class="item-price">Rp 7.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('XL/Axis','10000','11500')"><span>10000</span><span class="item-price">Rp 13.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('XL/Axis','20000','21500')"><span>20000</span><span class="item-price">Rp 25.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('XL/Axis','25000','26500')"><span>25000</span><span class="item-price">Rp 31.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('XL/Axis','50000','51500')"><span>50000</span><span class="item-price">Rp 61.800</span></div><div style="text-align:center;padding:6px;font-size:10px;color:var(--text-dim)">+1 item lainnya</div></div></div><div class="game-card" onclick="selectProduct('all','indosat')"><div class="game-header"><span style="font-size:40px;">📱</span><div><div class="game-name">Indosat/IM3</div><div class="game-developer">Pulsa</div></div></div><div class="item-list"><div class="item-row" onclick="event.stopPropagation();quickOrder('Indosat/IM3','5000','6500')"><span>5000</span><span class="item-price">Rp 7.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Indosat/IM3','10000','11500')"><span>10000</span><span class="item-price">Rp 13.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Indosat/IM3','20000','21500')"><span>20000</span><span class="item-price">Rp 25.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Indosat/IM3','25000','26500')"><span>25000</span><span class="item-price">Rp 31.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Indosat/IM3','50000','51500')"><span>50000</span><span class="item-price">Rp 61.800</span></div><div style="text-align:center;padding:6px;font-size:10px;color:var(--text-dim)">+1 item lainnya</div></div></div><div class="game-card" onclick="selectProduct('all','tri')"><div class="game-header"><span style="font-size:40px;">📱</span><div><div class="game-name">Tri (3)</div><div class="game-developer">Pulsa</div></div></div><div class="item-list"><div class="item-row" onclick="event.stopPropagation();quickOrder('Tri (3)','5000','6500')"><span>5000</span><span class="item-price">Rp 7.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Tri (3)','10000','11500')"><span>10000</span><span class="item-price">Rp 13.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Tri (3)','20000','21500')"><span>20000</span><span class="item-price">Rp 25.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Tri (3)','50000','51500')"><span>50000</span><span class="item-price">Rp 61.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Tri (3)','100000','101500')"><span>100000</span><span class="item-price">Rp 121.800</span></div></div></div><div class="game-card" onclick="selectProduct('all','smartfren')"><div class="game-header"><span style="font-size:40px;">📱</span><div><div class="game-name">Smartfren</div><div class="game-developer">Pulsa</div></div></div><div class="item-list"><div class="item-row" onclick="event.stopPropagation();quickOrder('Smartfren','5000','6500')"><span>5000</span><span class="item-price">Rp 7.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Smartfren','10000','11500')"><span>10000</span><span class="item-price">Rp 13.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Smartfren','20000','21500')"><span>20000</span><span class="item-price">Rp 25.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Smartfren','50000','51500')"><span>50000</span><span class="item-price">Rp 61.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Smartfren','100000','101500')"><span>100000</span><span class="item-price">Rp 121.800</span></div></div></div><div class="game-card" onclick="selectProduct('all','telkomsel-data')"><div class="game-header"><span style="font-size:40px;">📶</span><div><div class="game-name">Telkomsel Data</div><div class="game-developer">Data</div></div></div><div class="item-list"><div class="item-row" onclick="event.stopPropagation();quickOrder('Telkomsel Data','1GB/30hr','12000')"><span>1GB/30hr</span><span class="item-price">Rp 14.400</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Telkomsel Data','3GB/30hr','32000')"><span>3GB/30hr</span><span class="item-price">Rp 38.400</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Telkomsel Data','5GB/30hr','50000')"><span>5GB/30hr</span><span class="item-price">Rp 60.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Telkomsel Data','10GB/30hr','95000')"><span>10GB/30hr</span><span class="item-price">Rp 114.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Telkomsel Data','15GB/30hr','135000')"><span>15GB/30hr</span><span class="item-price">Rp 162.000</span></div><div style="text-align:center;padding:6px;font-size:10px;color:var(--text-dim)">+2 item lainnya</div></div></div><div class="game-card" onclick="selectProduct('all','xl-data')"><div class="game-header"><span style="font-size:40px;">📶</span><div><div class="game-name">XL Data</div><div class="game-developer">Data</div></div></div><div class="item-list"><div class="item-row" onclick="event.stopPropagation();quickOrder('XL Data','1GB/30hr','10000')"><span>1GB/30hr</span><span class="item-price">Rp 12.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('XL Data','3GB/30hr','28000')"><span>3GB/30hr</span><span class="item-price">Rp 33.600</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('XL Data','5GB/30hr','45000')"><span>5GB/30hr</span><span class="item-price">Rp 54.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('XL Data','10GB/30hr','85000')"><span>10GB/30hr</span><span class="item-price">Rp 102.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('XL Data','20GB/30hr','160000')"><span>20GB/30hr</span><span class="item-price">Rp 192.000</span></div></div></div><div class="game-card" onclick="selectProduct('all','indosat-data')"><div class="game-header"><span style="font-size:40px;">📶</span><div><div class="game-name">Indosat Data</div><div class="game-developer">Data</div></div></div><div class="item-list"><div class="item-row" onclick="event.stopPropagation();quickOrder('Indosat Data','1GB/30hr','10000')"><span>1GB/30hr</span><span class="item-price">Rp 12.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Indosat Data','3GB/30hr','28000')"><span>3GB/30hr</span><span class="item-price">Rp 33.600</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Indosat Data','5GB/30hr','45000')"><span>5GB/30hr</span><span class="item-price">Rp 54.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Indosat Data','10GB/30hr','85000')"><span>10GB/30hr</span><span class="item-price">Rp 102.000</span></div></div></div><div class="game-card" onclick="selectProduct('all','pln')"><div class="game-header"><span style="font-size:40px;">⚡</span><div><div class="game-name">Token PLN</div><div class="game-developer">PLN</div></div></div><div class="item-list"><div class="item-row" onclick="event.stopPropagation();quickOrder('Token PLN','20000','22000')"><span>20000</span><span class="item-price">Rp 26.400</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Token PLN','50000','52000')"><span>50000</span><span class="item-price">Rp 62.400</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Token PLN','100000','102000')"><span>100000</span><span class="item-price">Rp 122.400</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Token PLN','200000','202000')"><span>200000</span><span class="item-price">Rp 242.400</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Token PLN','500000','502000')"><span>500000</span><span class="item-price">Rp 602.400</span></div><div style="text-align:center;padding:6px;font-size:10px;color:var(--text-dim)">+1 item lainnya</div></div></div><div class="game-card" onclick="selectProduct('all','steam')"><div class="game-header"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Steam_icon_logo.svg/1200px-Steam_icon_logo.svg.png" style="width: 50px; height: 50px; border-radius: 10px; object-fit: cover; background: var(--bg-hover); display: none;" onerror="this.style.display='none';"><div><div class="game-name">Steam Wallet</div><div class="game-developer">Valve</div></div></div><div class="item-list"><div class="item-row" onclick="event.stopPropagation();quickOrder('Steam Wallet','30000','35000')"><span>30000</span><span class="item-price">Rp 42.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Steam Wallet','60000','67000')"><span>60000</span><span class="item-price">Rp 80.400</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Steam Wallet','120000','132000')"><span>120000</span><span class="item-price">Rp 158.400</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Steam Wallet','240000','262000')"><span>240000</span><span class="item-price">Rp 314.400</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Steam Wallet','600000','652000')"><span>600000</span><span class="item-price">Rp 782.400</span></div></div></div><div class="game-card" onclick="selectProduct('all','google')"><div class="game-header"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_Play_2022_logo.svg/1200px-Google_Play_2022_logo.svg.png" style="width: 50px; height: 50px; border-radius: 10px; object-fit: cover; background: var(--bg-hover); display: none;" onerror="this.style.display='none';"><div><div class="game-name">Google Play</div><div class="game-developer">Google</div></div></div><div class="item-list"><div class="item-row" onclick="event.stopPropagation();quickOrder('Google Play','50000','55000')"><span>50000</span><span class="item-price">Rp 66.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Google Play','100000','105000')"><span>100000</span><span class="item-price">Rp 126.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Google Play','150000','157000')"><span>150000</span><span class="item-price">Rp 188.400</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Google Play','200000','208000')"><span>200000</span><span class="item-price">Rp 249.600</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Google Play','300000','312000')"><span>300000</span><span class="item-price">Rp 374.400</span></div><div style="text-align:center;padding:6px;font-size:10px;color:var(--text-dim)">+1 item lainnya</div></div></div><div class="game-card" onclick="selectProduct('all','apple')"><div class="game-header"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/1200px-Apple_logo_black.svg.png" style="width: 50px; height: 50px; border-radius: 10px; object-fit: cover; background: var(--bg-hover); display: none;" onerror="this.style.display='none';"><div><div class="game-name">Apple Gift Card</div><div class="game-developer">Apple</div></div></div><div class="item-list"><div class="item-row" onclick="event.stopPropagation();quickOrder('Apple Gift Card','50000','55000')"><span>50000</span><span class="item-price">Rp 66.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Apple Gift Card','100000','105000')"><span>100000</span><span class="item-price">Rp 126.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Apple Gift Card','200000','208000')"><span>200000</span><span class="item-price">Rp 249.600</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Apple Gift Card','500000','518000')"><span>500000</span><span class="item-price">Rp 621.600</span></div></div></div><div class="game-card" onclick="selectProduct('all','netflix')"><div class="game-header"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Netflix_2015_logo.svg/1200px-Netflix_2015_logo.svg.png" style="width: 50px; height: 50px; border-radius: 10px; object-fit: cover; background: var(--bg-hover); display: none;" onerror="this.style.display='none';"><div><div class="game-name">Netflix</div><div class="game-developer">Netflix</div></div></div><div class="item-list"><div class="item-row" onclick="event.stopPropagation();quickOrder('Netflix','Basic (1bln)','45000')"><span>Basic (1bln)</span><span class="item-price">Rp 54.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Netflix','Standard (1bln)','65000')"><span>Standard (1bln)</span><span class="item-price">Rp 78.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Netflix','Premium (1bln)','85000')"><span>Premium (1bln)</span><span class="item-price">Rp 102.000</span></div></div></div><div class="game-card" onclick="selectProduct('all','disney')"><div class="game-header"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Disney%2B_logo.svg/1200px-Disney%2B_logo.svg.png" style="width: 50px; height: 50px; border-radius: 10px; object-fit: cover; background: var(--bg-hover); display: none;" onerror="this.style.display='none';"><div><div class="game-name">Disney+</div><div class="game-developer">Disney</div></div></div><div class="item-list"><div class="item-row" onclick="event.stopPropagation();quickOrder('Disney+','1bln','30000')"><span>1bln</span><span class="item-price">Rp 36.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Disney+','3bln','85000')"><span>3bln</span><span class="item-price">Rp 102.000</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('Disney+','1thn','300000')"><span>1thn</span><span class="item-price">Rp 360.000</span></div></div></div><div class="game-card" onclick="selectProduct('all','gopay')"><div class="game-header"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Gopay_logo.svg/1200px-Gopay_logo.svg.png" style="width: 50px; height: 50px; border-radius: 10px; object-fit: cover; background: var(--bg-hover); display: none;" onerror="this.style.display='none';"><div><div class="game-name">GoPay</div><div class="game-developer">Gojek</div></div></div><div class="item-list"><div class="item-row" onclick="event.stopPropagation();quickOrder('GoPay','10000','11500')"><span>10000</span><span class="item-price">Rp 13.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('GoPay','20000','21500')"><span>20000</span><span class="item-price">Rp 25.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('GoPay','50000','51500')"><span>50000</span><span class="item-price">Rp 61.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('GoPay','100000','101500')"><span>100000</span><span class="item-price">Rp 121.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('GoPay','200000','201500')"><span>200000</span><span class="item-price">Rp 241.800</span></div></div></div><div class="game-card" onclick="selectProduct('all','dana')"><div class="game-header"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Logo_DANA_Blue.svg/1200px-Logo_DANA_Blue.svg.png" style="width: 50px; height: 50px; border-radius: 10px; object-fit: cover; background: var(--bg-hover); display: none;" onerror="this.style.display='none';"><div><div class="game-name">DANA</div><div class="game-developer">DANA</div></div></div><div class="item-list"><div class="item-row" onclick="event.stopPropagation();quickOrder('DANA','10000','11500')"><span>10000</span><span class="item-price">Rp 13.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('DANA','20000','21500')"><span>20000</span><span class="item-price">Rp 25.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('DANA','50000','51500')"><span>50000</span><span class="item-price">Rp 61.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('DANA','100000','101500')"><span>100000</span><span class="item-price">Rp 121.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('DANA','200000','201500')"><span>200000</span><span class="item-price">Rp 241.800</span></div></div></div><div class="game-card" onclick="selectProduct('all','ovo')"><div class="game-header"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/OVO_logo.svg/1200px-OVO_logo.svg.png" style="width: 50px; height: 50px; border-radius: 10px; object-fit: cover; background: var(--bg-hover); display: none;" onerror="this.style.display='none';"><div><div class="game-name">OVO</div><div class="game-developer">OVO</div></div></div><div class="item-list"><div class="item-row" onclick="event.stopPropagation();quickOrder('OVO','10000','11500')"><span>10000</span><span class="item-price">Rp 13.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('OVO','20000','21500')"><span>20000</span><span class="item-price">Rp 25.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('OVO','50000','51500')"><span>50000</span><span class="item-price">Rp 61.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('OVO','100000','101500')"><span>100000</span><span class="item-price">Rp 121.800</span></div></div></div><div class="game-card" onclick="selectProduct('all','shopeepay')"><div class="game-header"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/ShopeePay_logo.svg/1200px-ShopeePay_logo.svg.png" style="width: 50px; height: 50px; border-radius: 10px; object-fit: cover; background: var(--bg-hover); display: none;" onerror="this.style.display='none';"><div><div class="game-name">ShopeePay</div><div class="game-developer">Shopee</div></div></div><div class="item-list"><div class="item-row" onclick="event.stopPropagation();quickOrder('ShopeePay','10000','11500')"><span>10000</span><span class="item-price">Rp 13.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('ShopeePay','20000','21500')"><span>20000</span><span class="item-price">Rp 25.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('ShopeePay','50000','51500')"><span>50000</span><span class="item-price">Rp 61.800</span></div><div class="item-row" onclick="event.stopPropagation();quickOrder('ShopeePay','100000','101500')"><span>100000</span><span class="item-price">Rp 121.800</span></div></div></div></div><div class="live-feed"><b>🔴 Live Activity</b><div id="liveFeed"><div class="live-item">[21.01.10] ✅ 📱 Pulsa 10K oleh C***</div><div class="live-item">[21.00.55] ✅ 🎮 ML 86 Diamonds oleh E***</div><div class="live-item">[21.00.40] ✅ 🎮 ML 86 Diamonds oleh C***</div><div class="live-item">[21.00.25] 🛒 Sistem online</div></div></div></div>
+    <div id="orderSection" class="hidden"><div class="order-section"><h3>🛒 Order</h3><div class="form-group"><label>Kategori</label><select id="orderCategory" onchange="updateOrderGame()"><option value="game">Game</option><option value="pulsa">Pulsa</option><option value="data">Data</option><option value="token">Token</option><option value="voucher">Voucher</option><option value="ewallet">E-Wallet</option></select></div><div class="form-group"><label>Produk</label><select id="orderGame" onchange="updateOrderItems()"><option value="">Pilih Produk</option></select></div><div class="form-group"><label>Item</label><select id="orderItem" onchange="updateTotalPrice()"></select></div><div class="form-row"><div class="form-group"><label>ID/No HP</label><input type="text" id="orderUID" placeholder="Masukkan ID/No HP"></div><div class="form-group"><label>Server (opsional)</label><input type="text" id="orderServer" placeholder="Server"></div></div><div class="form-group"><label>Email</label><input type="email" id="orderEmail" placeholder="email@anda.com"></div><h4 style="color:var(--gold)">💳 Pembayaran</h4><div class="payment-grid" id="paymentGrid"><div class="payment-card" onclick="selectPayment(0)" id="payCard0"><div style="font-size:24px">🏦</div><b>DANA</b><br><small>083170617054</small><br><small style="color:var(--text-dim)">YAD Store</small></div><div class="payment-card" onclick="selectPayment(1)" id="payCard1"><div style="font-size:24px">🏦</div><b>GoPay</b><br><small>083170617054</small><br><small style="color:var(--text-dim)">YAD Store</small></div><div class="payment-card" onclick="selectPayment(2)" id="payCard2"><div style="font-size:24px">🏦</div><b>OVO</b><br><small>083170617054</small><br><small style="color:var(--text-dim)">YAD Store</small></div></div><div class="form-group"><label>Bukti Transfer</label><input type="file" id="paymentProof" onchange="previewProof()" accept="image/*"></div><div id="proofPreview"></div><div style="background:var(--bg-input);padding:12px;border-radius:8px;margin:12px 0"><b>Total:</b> <span style="color:var(--gold);font-size:18px" id="totalPrice">Rp 0</span></div><button class="btn btn-primary" onclick="submitOrder()" style="width:100%;padding:12px">🛒 Pesan Sekarang</button></div></div>
     <div id="statusSection" class="hidden"><div class="order-section"><h3>📋 Cek Pesanan</h3><div class="form-group"><label>Order ID</label><input type="text" id="checkOrderID" placeholder="Contoh: YAD-XXXXXXXX"></div><button class="btn btn-primary" onclick="checkOrder()">🔍 Cek</button><div id="orderResult"></div><h3 style="margin-top:20px">📋 Riwayat</h3><div class="form-group"><label>Email</label><input type="email" id="historyEmail" placeholder="email@anda.com" onchange="loadUserHistory()"></div><div id="userOrderHistory"></div></div></div>
 </div>
-<div class="toast-container" id="toastContainer"></div>
+<div class="toast-container" id="toastContainer"><div class="toast success">✅ Fitur "Debug panel" ditambahkan!</div><div class="toast info">📤 Auto-push ke GitHub...</div></div>
 
 <script>
 // ================================================================
@@ -597,5 +596,361 @@ function savePayment(){var n=document.getElementById('payName').value.trim(),num
 // ================================================================
 (function init(){renderGames('all');renderPayments();updateActivityStats();addLive('🛒 Sistem online');setInterval(updateActivityStats,30000);setInterval(function(){var actions=['📱 Pulsa 10K','🎮 ML 86 Diamonds','📶 Data 5GB','⚡ Token 50K','💳 DANA 50K'];var action=actions[Math.floor(Math.random()*actions.length)];var names=['A***','B***','C***','D***','E***'];var name=names[Math.floor(Math.random()*names.length)];addLive('✅ '+action+' oleh '+name);},15000);})();
 </script>
-</body>
-</html>
+
+<iframe ng-non-bindable="" frameborder="0" hspace="0" marginheight="0" marginwidth="0" scrolling="no" tabindex="-1" vspace="0" width="100%" aria-hidden="true" id="I0_1787061625913" name="I0_1787061625913" src="https://yadstores.firebaseapp.com/__/auth/iframe?apiKey=AIzaSyAvfHxcAT2syVbrf6-TU0JBRXtNLI0AIkc&amp;appName=%5BDEFAULT%5D&amp;v=9.22.0&amp;eid=p&amp;usegapi=1&amp;jsh=m%3B%2F_%2Fscs%2Fabc-static%2F_%2Fjs%2Fk%3Dgapi.lb.id.7RMuFFQRkIM.O%2Fd%3D1%2Frs%3DAHpOoo96vPTUmorjAxUToerDK1wIZ_D9cg%2Fm%3D__features__#id=I0_1787061625913&amp;_gfid=I0_1787061625913&amp;parent=https%3A%2F%2Fyadstores.web.app&amp;pfname=&amp;rpctoken=74837324" style="position: absolute; top: -100px; width: 1px; height: 1px;"></iframe><div id="fitPanel" class="fit-panel"><div class="fit-panel-dialog"><div class="fit-panel-header"><h3 style="color:#fff;font-size:16px;margin:0" id="fitPanelTitle">➕ Tambah Fitur</h3><span onclick="closeFitPanel()" style="cursor:pointer;font-size:22px;color:#9090a8">×</span></div><div class="fit-panel-body" id="fitPanelBody"><label>📝 Nama Fitur</label><input id="fitName" placeholder="com.yadstore.feature.nama"><label>🏷️ Label</label><input id="fitLabel" placeholder="Nama tampilan"><label>📌 Versi</label><input id="fitVersion" value="1.0.0"><label>💻 Kode HTML/JS</label><textarea id="fitCode" style="min-height:150px;font-family:monospace;" placeholder="<button onclick=&quot;alert('Hello')&quot;>Klik</button>"></textarea></div><div class="fit-panel-footer" id="fitPanelFooter" style="padding:12px 20px;background:#0d0d20;border-top:1px solid #252540;display:flex;gap:8px;justify-content:flex-end"><button onclick="closeFitPanel()" style="padding:8px 16px;background:#252540;color:#e8e8f0;border:none;border-radius:8px;cursor:pointer">Batal</button><button onclick="saveFitFromPanel()" style="padding:8px 16px;background:#10b981;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600">✅ Simpan</button></div></div></div><div data-feature-manifest="com.yadstore.feature.debug" style="display: none;"><style>
+.debug-panel-fixed{position:fixed;bottom:90px;right:20px;width:600px;max-width:95vw;z-index:99999;background:#0a0a14;border-radius:14px;border:2px solid #f59e0b;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.9);display:none;flex-direction:column;height:500px}
+.debug-panel-fixed.show{display:flex}
+.debug-header-fixed{background:#2d1a0e;display:flex;border-bottom:1px solid #f59e0b;padding:8px}
+.debug-tab-fixed{padding:8px 12px;cursor:pointer;font-size:10px;font-weight:700;color:#9090a8;border:none;background:transparent;font-family:inherit;border-radius:4px}
+.debug-tab-fixed:hover{color:#fff;background:rgba(245,158,11,0.1)}
+.debug-tab-fixed.active{color:#f59e0b;background:rgba(245,158,11,0.2);border-bottom:2px solid #f59e0b}
+.debug-content-fixed{flex:1;overflow-y:auto;padding:10px;font-family:monospace;font-size:10px;color:#e8e8f0}
+.debug-line-fixed{margin:2px 0;padding:4px 8px;border-radius:4px;word-break:break-word;border-left:3px solid #555}
+.debug-line-fixed.info{border-left-color:#44aaff;background:rgba(68,170,255,0.05)}
+.debug-line-fixed.success{border-left-color:#44ff44;background:rgba(68,255,68,0.05)}
+.debug-line-fixed.warn{border-left-color:#ffaa44;background:rgba(255,170,68,0.05)}
+.debug-line-fixed.error{border-left-color:#ff4444;background:rgba(255,68,68,0.05)}
+.debug-line-fixed.network{border-left-color:#ff44ff;background:rgba(255,68,255,0.05)}
+.debug-line-fixed.storage{border-left-color:#44ffff;background:rgba(68,255,255,0.05)}
+.debug-line-fixed.dom{border-left-color:#ffff44;background:rgba(255,255,68,0.05)}
+.debug-line-fixed.firebase{border-left-color:#ff8844;background:rgba(255,136,68,0.05)}
+.debug-line-fixed.github{border-left-color:#8844ff;background:rgba(136,68,255,0.05)}
+.debug-input-area-fixed{display:flex;align-items:center;padding:8px;background:#111;border-top:1px solid #f59e0b}
+.debug-prompt-fixed{color:#f59e0b;font-weight:bold;margin-right:6px;font-size:12px}
+.debug-input-fixed{flex:1;background:transparent;border:none;color:#fff;font-family:monospace;font-size:12px;outline:none}
+.debug-toggle-btn-fixed{position:fixed;bottom:24px;right:156px;width:56px;height:56px;background:#1a1a0e;color:#f59e0b;border:2px solid #f59e0b;border-radius:50%;cursor:pointer;font-size:20px;z-index:99998;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(245,158,11,0.3)}
+.debug-toggle-btn-fixed:hover{background:#2d1a0e;box-shadow:0 8px 24px rgba(245,158,11,0.5)}
+.debug-stats-bar{display:flex;gap:8px;padding:6px 10px;background:#0d0d15;border-bottom:1px solid #333;flex-wrap:wrap}
+.debug-stat-item{font-size:9px;color:#9090a8;padding:2px 8px;background:#111;border-radius:10px;border:1px solid #333}
+.debug-stat-item b{color:#f59e0b}
+.debug-filter-bar{padding:6px 10px;background:#0d0d15;border-bottom:1px solid #333;display:flex;gap:4px;flex-wrap:wrap}
+.debug-filter-btn{padding:3px 8px;font-size:9px;border-radius:10px;border:1px solid #333;background:transparent;color:#9090a8;cursor:pointer;font-family:inherit}
+.debug-filter-btn:hover{background:#222;color:#fff}
+.debug-filter-btn.active{background:#f59e0b;color:#000;border-color:#f59e0b}
+</style>
+
+<div class="debug-panel-fixed" id="debugPanelFixed">
+    <div class="debug-header-fixed">
+        <button class="debug-tab-fixed active" onclick="switchDebugTabFixed('all')">📋 All</button>
+        <button class="debug-tab-fixed" onclick="switchDebugTabFixed('console')">🖥️ Console</button>
+        <button class="debug-tab-fixed" onclick="switchDebugTabFixed('network')">🌐 Network</button>
+        <button class="debug-tab-fixed" onclick="switchDebugTabFixed('storage')">💾 Storage</button>
+        <button class="debug-tab-fixed" onclick="switchDebugTabFixed('dom')">🏗️ DOM</button>
+        <button class="debug-tab-fixed" onclick="switchDebugTabFixed('firebase')">🔥 Firebase</button>
+        <button class="debug-tab-fixed" onclick="switchDebugTabFixed('github')">📤 GitHub</button>
+        <span onclick="closeDebugPanelFixed()" style="cursor:pointer;color:#ff4444;font-size:18px;margin-left:auto;padding:4px 12px;">✕</span>
+    </div>
+    <div class="debug-stats-bar" id="debugStatsBar">
+        <span class="debug-stat-item">📊 Logs: <b id="debugLogCount">0</b></span>
+        <span class="debug-stat-item">⚠️ Errors: <b id="debugErrorCount">0</b></span>
+        <span class="debug-stat-item">⚠️ Warnings: <b id="debugWarnCount">0</b></span>
+        <span class="debug-stat-item">💾 Storage: <b id="debugStorageSize">0 KB</b></span>
+        <span class="debug-stat-item">🏗️ DOM: <b id="debugDomCount">0</b></span>
+    </div>
+    <div class="debug-filter-bar" id="debugFilterBar">
+        <button class="debug-filter-btn active" onclick="filterDebugLogs('all',this)">Semua</button>
+        <button class="debug-filter-btn" onclick="filterDebugLogs('info',this)">Info</button>
+        <button class="debug-filter-btn" onclick="filterDebugLogs('success',this)">Success</button>
+        <button class="debug-filter-btn" onclick="filterDebugLogs('warn',this)">Warning</button>
+        <button class="debug-filter-btn" onclick="filterDebugLogs('error',this)">Error</button>
+        <button class="debug-filter-btn" onclick="filterDebugLogs('network',this)">Network</button>
+        <button class="debug-filter-btn" onclick="filterDebugLogs('storage',this)">Storage</button>
+        <button class="debug-filter-btn" onclick="filterDebugLogs('dom',this)">DOM</button>
+        <button class="debug-filter-btn" onclick="clearDebugLogs()">🗑️ Clear</button>
+    </div>
+    <div class="debug-content-fixed" id="debugContentFixed">
+        <div class="debug-line-fixed info">🔍 Debug Panel siap. Menunggu aktivitas...</div>
+    </div>
+    <div class="debug-input-area-fixed">
+        <span class="debug-prompt-fixed">🔍</span>
+        <input type="text" class="debug-input-fixed" id="debugInputFixed" placeholder="Filter log atau ketik perintah debug..." onkeydown="if(event.key==='Enter')executeDebugCommand()">
+    </div>
+</div>
+
+<button class="debug-toggle-btn-fixed" id="debugToggleBtnFixed" onclick="toggleDebugPanelFixed()" title="Debug Panel">
+    🔍
+</button>
+
+<script>
+// Debug Panel State
+let currentDebugTabFixed = 'all';
+let currentDebugFilter = 'all';
+let debugLogsFixed = [];
+let debugLogCount = 0;
+
+// Toggle Debug Panel
+function toggleDebugPanelFixed() {
+    const panel = document.getElementById('debugPanelFixed');
+    if (panel) {
+        panel.classList.toggle('show');
+        if (panel.classList.contains('show')) {
+            document.getElementById('debugInputFixed').focus();
+            updateDebugStats();
+        }
+    }
+}
+
+// Close Debug Panel
+function closeDebugPanelFixed() {
+    const panel = document.getElementById('debugPanelFixed');
+    if (panel) panel.classList.remove('show');
+}
+
+// Switch Debug Tab
+function switchDebugTabFixed(tab) {
+    currentDebugTabFixed = tab;
+    document.querySelectorAll('.debug-tab-fixed').forEach(function(t) {
+        t.classList.remove('active');
+    });
+    event.currentTarget.classList.add('active');
+    renderDebugLogs();
+}
+
+// Filter Debug Logs
+function filterDebugLogs(type, btn) {
+    currentDebugFilter = type;
+    document.querySelectorAll('.debug-filter-btn').forEach(function(b) {
+        b.classList.remove('active');
+    });
+    if (btn) btn.classList.add('active');
+    renderDebugLogs();
+}
+
+// Add Debug Log
+function addDebugLog(message, type) {
+    type = type || 'info';
+    const log = {
+        id: ++debugLogCount,
+        message: message,
+        type: type,
+        timestamp: new Date().toISOString(),
+        tab: currentDebugTabFixed
+    };
+    debugLogsFixed.unshift(log);
+    
+    // Keep only last 500 logs
+    if (debugLogsFixed.length > 500) {
+        debugLogsFixed = debugLogsFixed.slice(0, 500);
+    }
+    
+    renderDebugLogs();
+    updateDebugStats();
+}
+
+// Render Debug Logs
+function renderDebugLogs() {
+    const content = document.getElementById('debugContentFixed');
+    let logs = debugLogsFixed;
+    
+    // Filter by tab
+    if (currentDebugTabFixed !== 'all') {
+        logs = logs.filter(function(l) { return l.tab === currentDebugTabFixed; });
+    }
+    
+    // Filter by type
+    if (currentDebugFilter !== 'all') {
+        logs = logs.filter(function(l) { return l.type === currentDebugFilter; });
+    }
+    
+    if (logs.length === 0) {
+        content.innerHTML = '<div class="debug-line-fixed info">📭 Tidak ada log untuk filter ini</div>';
+    } else {
+        content.innerHTML = logs.slice(0, 100).map(function(l) {
+            const time = new Date(l.timestamp).toLocaleTimeString('id-ID');
+            return '<div class="debug-line-fixed ' + l.type + '">[' + time + '] ' + l.message + '</div>';
+        }).join('');
+    }
+    content.scrollTop = 0;
+}
+
+// Update Debug Stats
+function updateDebugStats() {
+    const totalLogs = debugLogsFixed.length;
+    const errors = debugLogsFixed.filter(function(l) { return l.type === 'error'; }).length;
+    const warns = debugLogsFixed.filter(function(l) { return l.type === 'warn'; }).length;
+    
+    document.getElementById('debugLogCount').textContent = totalLogs;
+    document.getElementById('debugErrorCount').textContent = errors;
+    document.getElementById('debugWarnCount').textContent = warns;
+    
+    // Storage size
+    let totalSize = 0;
+    Object.keys(localStorage).forEach(function(k) {
+        totalSize += (localStorage.getItem(k) || '').length;
+    });
+    document.getElementById('debugStorageSize').textContent = (totalSize / 1024).toFixed(1) + ' KB';
+    
+    // DOM count
+    document.getElementById('debugDomCount').textContent = document.getElementsByTagName('*').length;
+}
+
+// Clear Debug Logs
+function clearDebugLogs() {
+    debugLogsFixed = [];
+    debugLogCount = 0;
+    renderDebugLogs();
+    updateDebugStats();
+    addDebugLog('🗑️ Logs dibersihkan', 'info');
+}
+
+// Execute Debug Command
+function executeDebugCommand() {
+    const input = document.getElementById('debugInputFixed');
+    const command = input.value.trim();
+    if (!command) return;
+    
+    addDebugLog('🔍 Command: ' + command, 'info');
+    input.value = '';
+    
+    const parts = command.split(' ');
+    const cmd = parts[0].toLowerCase();
+    
+    switch(cmd) {
+        case 'help':
+            addDebugLog('📋 Debug Commands:', 'info');
+            addDebugLog('• help - Tampilkan bantuan', 'info');
+            addDebugLog('• clear - Bersihkan log', 'info');
+            addDebugLog('• storage - Detail localStorage', 'storage');
+            addDebugLog('• dom - Detail DOM', 'dom');
+            addDebugLog('• network - Test network', 'network');
+            addDebugLog('• firebase - Info Firebase', 'firebase');
+            addDebugLog('• github - Info GitHub', 'github');
+            addDebugLog('• performance - Cek performa', 'info');
+            addDebugLog('• errors - Lihat semua error', 'error');
+            addDebugLog('• warnings - Lihat semua warning', 'warn');
+            break;
+            
+        case 'clear':
+            clearDebugLogs();
+            break;
+            
+        case 'storage':
+            let totalSize = 0;
+            Object.keys(localStorage).forEach(function(k) {
+                const size = (localStorage.getItem(k) || '').length;
+                totalSize += size;
+                addDebugLog('📦 ' + k + ': ' + (size / 1024).toFixed(1) + ' KB', 'storage');
+            });
+            addDebugLog('💾 Total localStorage: ' + (totalSize / 1024).toFixed(1) + ' KB', 'storage');
+            break;
+            
+        case 'dom':
+            const allElements = document.getElementsByTagName('*');
+            const divs = document.getElementsByTagName('div').length;
+            const buttons = document.getElementsByTagName('button').length;
+            const inputs = document.getElementsByTagName('input').length;
+            const images = document.getElementsByTagName('img').length;
+            const scripts = document.getElementsByTagName('script').length;
+            addDebugLog('🏗️ Total DOM: ' + allElements.length, 'dom');
+            addDebugLog('📦 Div: ' + divs, 'dom');
+            addDebugLog('🔘 Buttons: ' + buttons, 'dom');
+            addDebugLog('📝 Inputs: ' + inputs, 'dom');
+            addDebugLog('🖼️ Images: ' + images, 'dom');
+            addDebugLog('📜 Scripts: ' + scripts, 'dom');
+            break;
+            
+        case 'network':
+            addDebugLog('🌐 Testing network...', 'network');
+            fetch('https://api.github.com')
+                .then(function(r) {
+                    addDebugLog('✅ GitHub API: ' + r.status + ' ' + r.statusText, 'network');
+                })
+                .catch(function(e) {
+                    addDebugLog('❌ Network error: ' + e.message, 'network');
+                });
+            break;
+            
+        case 'firebase':
+            if (typeof firebase !== 'undefined') {
+                addDebugLog('✅ Firebase initialized', 'firebase');
+                addDebugLog('📦 Project: ' + firebase.app().options.projectId, 'firebase');
+                if (auth && auth.currentUser) {
+                    addDebugLog('👤 User: ' + auth.currentUser.email, 'firebase');
+                } else {
+                    addDebugLog('👤 Belum login', 'firebase');
+                }
+            } else {
+                addDebugLog('❌ Firebase tidak tersedia', 'firebase');
+            }
+            break;
+            
+        case 'github':
+            const ghConfig = JSON.parse(localStorage.getItem('github_config') || '{"enabled":false}');
+            if (ghConfig.enabled) {
+                addDebugLog('✅ GitHub Connected', 'github');
+                addDebugLog('👤 Owner: ' + ghConfig.owner, 'github');
+                addDebugLog('📦 Repo: ' + ghConfig.repo, 'github');
+                addDebugLog('🌿 Branch: ' + ghConfig.branch, 'github');
+            } else {
+                addDebugLog('❌ GitHub Not Configured', 'github');
+            }
+            break;
+            
+        case 'performance':
+            const loadTime = performance.now();
+            const memory = performance.memory;
+            addDebugLog('⚡ Load time: ' + Math.round(loadTime) + 'ms', 'info');
+            if (memory) {
+                addDebugLog('🧠 Memory used: ' + (memory.usedJSHeapSize / 1048576).toFixed(1) + ' MB', 'info');
+                addDebugLog('🧠 Memory limit: ' + (memory.jsHeapSizeLimit / 1048576).toFixed(1) + ' MB', 'info');
+            }
+            break;
+            
+        case 'errors':
+            const errorLogs = debugLogsFixed.filter(function(l) { return l.type === 'error'; });
+            addDebugLog('⚠️ Total Errors: ' + errorLogs.length, 'error');
+            errorLogs.slice(0, 10).forEach(function(l) {
+                addDebugLog('❌ ' + l.message, 'error');
+            });
+            break;
+            
+        case 'warnings':
+            const warnLogs = debugLogsFixed.filter(function(l) { return l.type === 'warn'; });
+            addDebugLog('⚠️ Total Warnings: ' + warnLogs.length, 'warn');
+            warnLogs.slice(0, 10).forEach(function(l) {
+                addDebugLog('⚠️ ' + l.message, 'warn');
+            });
+            break;
+            
+        default:
+            addDebugLog('❌ Tidak dikenal: ' + cmd, 'error');
+            addDebugLog('💡 Ketik "help" untuk daftar perintah', 'info');
+    }
+}
+
+// Auto-capture console errors
+window.addEventListener('error', function(e) {
+    addDebugLog('❌ Error: ' + e.message + ' at ' + e.filename + ':' + e.lineno, 'error');
+});
+
+// Auto-capture unhandled promises
+window.addEventListener('unhandledrejection', function(e) {
+    addDebugLog('⚠️ Unhandled Promise: ' + e.reason, 'warn');
+});
+
+// Auto-capture network requests
+const originalFetch = window.fetch;
+window.fetch = function(...args) {
+    const url = typeof args[0] === 'string' ? args[0] : args[0].url;
+    addDebugLog('🌐 Fetch: ' + url, 'network');
+    return originalFetch.apply(this, args).then(function(response) {
+        addDebugLog('✅ Response: ' + response.status + ' ' + url, 'network');
+        return response;
+    }).catch(function(error) {
+        addDebugLog('❌ Network Error: ' + error.message + ' ' + url, 'network');
+        throw error;
+    });
+};
+
+// Auto-capture localStorage changes
+const originalSetItem = localStorage.setItem;
+localStorage.setItem = function(key, value) {
+    addDebugLog('💾 Storage Set: ' + key + ' (' + (value.length / 1024).toFixed(1) + ' KB)', 'storage');
+    return originalSetItem.apply(this, arguments);
+};
+
+// Initialize
+addDebugLog('🔍 Debug Panel initialized', 'info');
+addDebugLog('📊 Monitoring aktif', 'success');
+console.log('[DEBUG PANEL] Ready');
+</script></div></body></html>

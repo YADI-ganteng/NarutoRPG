@@ -110,10 +110,21 @@
         .github-fm-editor-body{padding:20px;overflow-y:auto}
         .github-fm-editor-body input,.github-fm-editor-body textarea{width:100%;padding:10px;background:#0d0d20;border:1px solid #252540;border-radius:8px;color:#e8e8f0;font-size:13px;outline:none;font-family:monospace;margin-bottom:12px}
         .github-fm-editor-body textarea{min-height:300px;resize:vertical}
+        /* NEW: Search & Replace Styles */
+        .search-replace-bar{display:flex;gap:8px;padding:10px;background:var(--bg-input);border-bottom:1px solid var(--border);flex-wrap:wrap;align-items:center}
+        .search-replace-bar input{flex:1;min-width:150px;padding:6px 10px;background:#0d0d20;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;outline:none;font-family:monospace}
+        .search-replace-bar button{padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg-hover);color:var(--text);cursor:pointer;font-size:11px;font-family:inherit;transition:all 0.2s}
+        .search-replace-bar button:hover{background:var(--accent);color:white;border-color:var(--accent)}
+        .search-replace-bar button.active{background:var(--accent);color:white;border-color:var(--accent)}
+        .search-highlight{background:#f59e0b;color:#000;padding:0 2px;border-radius:2px}
+        .search-count{font-size:10px;color:var(--text-dim);padding:4px 8px;background:var(--bg-hover);border-radius:4px}
+        .find-replace-tools{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
         /* Feature Manifest Styles */
         .feature-manifest-view{background:#0d0d20;border-radius:8px;padding:15px;margin:10px 0;font-family:monospace;font-size:11px;color:#00ff00;border:1px solid #252540;white-space:pre-wrap;word-break:break-all}
         .feature-permission-tag{display:inline-block;padding:3px 8px;border-radius:4px;font-size:9px;margin:2px;background:var(--bg-hover);border:1px solid var(--border)}
         .feature-component-tag{display:inline-block;padding:3px 8px;border-radius:4px;font-size:9px;margin:2px;background:#1f2f3d;border:1px solid #06b6d4;color:#06b6d4}
+        .console-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:95vw;max-width:800px;max-height:85vh;background:#0d0d15;border-radius:16px;border:2px solid #00ff00;z-index:999998;display:none;flex-direction:column;overflow:hidden}
+        .console-panel.show{display:flex}
     </style>
 </head>
 <body>
@@ -204,6 +215,25 @@
 </div>
 <div class="toast-container" id="toastContainer"></div>
 
+<!-- Console Panel -->
+<div class="console-panel" id="consolePanel">
+    <div style="padding:14px 20px;background:#000;border-bottom:1px solid #00ff00;display:flex;justify-content:space-between;align-items:center">
+        <h3 style="color:#00ff00;font-size:16px;margin:0">🖥️ Console</h3>
+        <span onclick="closeConsole()" style="cursor:pointer;font-size:22px;color:#00ff00">×</span>
+    </div>
+    <div style="display:flex;gap:4px;padding:8px;background:#0d0d15;border-bottom:1px solid #252540">
+        <button class="btn console-tab active" id="tabTerminal" onclick="switchConsoleTab('terminal')" style="color:#00ff00;border-color:#00ff00">Terminal</button>
+        <button class="btn console-tab" id="tabDebug" onclick="switchConsoleTab('debug')">Debug</button>
+        <button class="btn console-tab" id="tabFirebase" onclick="switchConsoleTab('firebase')">Firebase</button>
+        <button class="btn console-tab" id="tabGithub" onclick="switchConsoleTab('github')">GitHub</button>
+    </div>
+    <div id="consoleContent" style="flex:1;overflow-y:auto;padding:12px;font-family:monospace;font-size:12px;color:#00ff00;background:#000;min-height:300px;max-height:400px"></div>
+    <div style="padding:8px;background:#0d0d15;border-top:1px solid #252540;display:flex;gap:6px">
+        <input type="text" id="consoleInput" placeholder="Ketik perintah..." style="flex:1;padding:8px 12px;background:#000;border:1px solid #00ff00;border-radius:6px;color:#00ff00;font-size:12px;font-family:monospace;outline:none" onkeydown="if(event.key==='Enter')executeConsole()">
+        <button onclick="executeConsole()" style="padding:8px 16px;background:#00ff00;color:#000;border:none;border-radius:6px;cursor:pointer;font-weight:bold">RUN</button>
+    </div>
+</div>
+
 <script>
 // ================================================================
 // CORE CONFIG
@@ -218,8 +248,10 @@ const GITHUB_CONFIG=JSON.parse(localStorage.getItem('github_config')||'{"token":
 // ================================================================
 function toast(m,t){t=t||'info';var c=document.getElementById('toastContainer');if(c){var d=document.createElement('div');d.className='toast '+t;d.textContent=m;c.appendChild(d);setTimeout(function(){d.style.opacity='0';setTimeout(function(){d.remove();},300);},3000);}}
 function escapeHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function debugLog(m,t){console.log('[YAD]',m);}
+function unescapeHtml(s){return String(s||'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"');}
+function debugLog(m,t){console.log('[YAD]',m);if(t&&S.admin){consolePrint(m,t);}}
 function generateOrderId(){return 'YAD-'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).substring(2,5).toUpperCase();}
+function safeEval(code){try{return new Function(code)();}catch(e){console.error('Eval error:',e);return null;}}
 
 // ================================================================
 // STATE
@@ -250,10 +282,10 @@ function showSection(s){['homeSection','orderSection','statusSection'].forEach(f
 // ================================================================
 // ORDERS
 // ================================================================
-async function submitOrder(){var g=document.getElementById('orderGame').value,iv=document.getElementById('orderItem').value,uid=document.getElementById('orderUID').value.trim(),email=document.getElementById('orderEmail').value.trim();if(!g||!iv||!uid)return toast('❌ Lengkapi data!','error');if(!S.selectedPayment)return toast('❌ Pilih metode pembayaran!','error');var parts=iv.split('|');var t=calcPrice(parseInt(parts[1]));var o={id:generateOrderId(),game:g,item:parts[0],price:t,uid:uid,email:email,payment:S.selectedPayment,status:'pending',time:new Date().toISOString()};S.orders.unshift(o);localStorage.setItem('store_orders',JSON.stringify(S.orders));toast('✅ Pesanan berhasil!','success');addLive('🛒 '+g+' - '+parts[0]+' | '+o.id);alert('✅ PESANAN BERHASIL!\n\nOrder ID: '+o.id+'\nTotal: Rp '+t.toLocaleString('id-ID'));}
+async function submitOrder(){try{var g=document.getElementById('orderGame').value,iv=document.getElementById('orderItem').value,uid=document.getElementById('orderUID').value.trim(),email=document.getElementById('orderEmail').value.trim();if(!g||!iv||!uid)return toast('❌ Lengkapi data!','error');if(!S.selectedPayment)return toast('❌ Pilih metode pembayaran!','error');var parts=iv.split('|');var t=calcPrice(parseInt(parts[1]));var o={id:generateOrderId(),game:g,item:parts[0],price:t,uid:uid,email:email,payment:S.selectedPayment,status:'pending',time:new Date().toISOString()};S.orders.unshift(o);localStorage.setItem('store_orders',JSON.stringify(S.orders));toast('✅ Pesanan berhasil!','success');addLive('🛒 '+g+' - '+parts[0]+' | '+o.id);alert('✅ PESANAN BERHASIL!\n\nOrder ID: '+o.id+'\nTotal: Rp '+t.toLocaleString('id-ID'));}catch(e){toast('❌ Error: '+e.message,'error');}}
 function previewProof(){var f=document.getElementById('paymentProof').files[0];if(!f)return;var r=new FileReader();r.onload=function(e){document.getElementById('proofPreview').innerHTML='<img src="'+e.target.result+'" style="max-width:200px;border-radius:8px">';};r.readAsDataURL(f);}
-function checkOrder(){var id=document.getElementById('checkOrderID').value.trim();if(!id)return;var o=S.orders.find(function(o){return o.id===id;});document.getElementById('orderResult').innerHTML=o?'<div style="background:var(--bg-input);padding:12px;border-radius:8px"><b>'+escapeHtml(o.id)+'</b><br>'+o.game+' - '+o.item+'<br>Rp '+o.price.toLocaleString('id-ID')+'<br>'+o.status.toUpperCase()+'</div>':'<p style="color:var(--red)">❌ Tidak ditemukan</p>';}
-function loadUserHistory(){var e=document.getElementById('historyEmail').value.trim().toLowerCase();if(!e)return;var oo=S.orders.filter(function(o){return o.email&&o.email.toLowerCase().includes(e);});document.getElementById('userOrderHistory').innerHTML=oo.length?oo.slice(0,10).map(function(o){return '<div style="background:var(--bg-input);padding:10px;margin:6px 0;border-radius:8px"><b>'+escapeHtml(o.id)+'</b> - '+o.status+'<br>'+o.game+'<br>Rp '+o.price.toLocaleString('id-ID')+'</div>';}).join(''):'<p style="color:var(--text-dim)">Tidak ada</p>';}
+function checkOrder(){try{var id=document.getElementById('checkOrderID').value.trim();if(!id)return;var o=S.orders.find(function(o){return o.id===id;});document.getElementById('orderResult').innerHTML=o?'<div style="background:var(--bg-input);padding:12px;border-radius:8px"><b>'+escapeHtml(o.id)+'</b><br>'+o.game+' - '+o.item+'<br>Rp '+o.price.toLocaleString('id-ID')+'<br>'+o.status.toUpperCase()+'</div>':'<p style="color:var(--red)">❌ Tidak ditemukan</p>';}catch(e){toast('❌ Error: '+e.message,'error');}}
+function loadUserHistory(){try{var e=document.getElementById('historyEmail').value.trim().toLowerCase();if(!e)return;var oo=S.orders.filter(function(o){return o.email&&o.email.toLowerCase().includes(e);});document.getElementById('userOrderHistory').innerHTML=oo.length?oo.slice(0,10).map(function(o){return '<div style="background:var(--bg-input);padding:10px;margin:6px 0;border-radius:8px"><b>'+escapeHtml(o.id)+'</b> - '+o.status+'<br>'+o.game+'<br>Rp '+o.price.toLocaleString('id-ID')+'</div>';}).join(''):'<p style="color:var(--text-dim)">Tidak ada</p>';}catch(e){toast('❌ Error: '+e.message,'error');}}
 function addLive(m){var f=document.getElementById('liveFeed');if(!f)return;var d=document.createElement('div');d.className='live-item';d.textContent='['+new Date().toLocaleTimeString('id-ID')+'] '+m;f.insertBefore(d,f.firstChild);if(f.children.length>15)f.removeChild(f.lastChild);}
 
 // ================================================================
@@ -261,50 +293,514 @@ function addLive(m){var f=document.getElementById('liveFeed');if(!f)return;var d
 // ================================================================
 var NOVELS_KEY='yad_novels_v1',NOVEL_PROGRESS_KEY='yad_novel_progress_v1';
 var novels=JSON.parse(localStorage.getItem(NOVELS_KEY)||'[]'),readingProgress=JSON.parse(localStorage.getItem(NOVEL_PROGRESS_KEY)||'{}'),currentNovel=null,currentPage=0;
-function openNovelReader(){var panel=document.getElementById('novelReaderPanel');if(panel)panel.classList.add('show');}
+function openNovelReader(){var panel=document.getElementById('novelReaderPanel');if(!panel){panel=document.createElement('div');panel.id='novelReaderPanel';panel.className='fit-panel';panel.innerHTML='<div class="fit-panel-dialog"><div class="fit-panel-header"><h3 style="color:#fff;font-size:16px;margin:0">📚 Novel Reader</h3><span onclick="closeNovelReader()" style="cursor:pointer;font-size:22px;color:#9090a8">×</span></div><div class="fit-panel-body" id="novelReaderBody">'+renderNovelList()+'</div></div>';document.body.appendChild(panel);}else{document.getElementById('novelReaderBody').innerHTML=renderNovelList();}panel.classList.add('show');}
 function closeNovelReader(){var panel=document.getElementById('novelReaderPanel');if(panel)panel.classList.remove('show');}
-function openNovelEditor(){if(!S.admin)return toast('❌ Admin only!','error');var panel=document.getElementById('novelEditorPanel');if(panel)panel.classList.add('show');}
+function renderNovelList(){if(!novels.length)return '<p style="color:#9090a8;text-align:center;padding:20px;">📭 Belum ada novel</p>';return novels.map(function(n,i){return '<div style="padding:12px;background:#0d0d20;border-radius:8px;margin-bottom:8px;cursor:pointer;border:1px solid #252540" onclick="openNovelContent('+i+')"><b>'+escapeHtml(n.title)+'</b><br><small style="color:#9090a8">'+n.pages.length+' halaman</small></div>';}).join('');}
+function openNovelContent(idx){var n=novels[idx];if(!n)return;var body=document.getElementById('novelReaderBody');body.innerHTML='<button class="btn" onclick="openNovelReader()" style="margin-bottom:12px">⬅ Kembali</button><h3 style="margin:12px 0">'+escapeHtml(n.title)+'</h3><div style="background:#0d0d20;padding:16px;border-radius:8px;white-space:pre-wrap;line-height:1.6">'+escapeHtml(n.pages[0]||'')+'</div>';}
+function openNovelEditor(){if(!S.admin)return toast('❌ Admin only!','error');var panel=document.getElementById('novelEditorPanel');if(!panel){panel=document.createElement('div');panel.id='novelEditorPanel';panel.className='fit-panel';panel.innerHTML='<div class="fit-panel-dialog"><div class="fit-panel-header"><h3 style="color:#fff;font-size:16px;margin:0">📝 Tambah Novel</h3><span onclick="closeNovelEditor()" style="cursor:pointer;font-size:22px;color:#9090a8">×</span></div><div class="fit-panel-body"><label>Judul</label><input id="novelTitleInput" placeholder="Judul novel"><label>Konten</label><textarea id="novelContentInput" style="min-height:200px" placeholder="Tulis konten..."></textarea></div><div style="padding:12px;background:#0d0d20;border-top:1px solid #252540;display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="closeNovelEditor()">Batal</button><button class="btn btn-primary" onclick="saveNovel()">💾 Simpan</button></div></div>';document.body.appendChild(panel);}panel.classList.add('show');}
 function closeNovelEditor(){var panel=document.getElementById('novelEditorPanel');if(panel)panel.classList.remove('show');}
-function saveNovel(){var title=document.getElementById('novelTitleInput').value.trim(),content=document.getElementById('novelContentInput').value.trim();if(!title||!content)return toast('❌ Lengkapi!','error');novels.push({id:'novel_'+Date.now(),title:title,content:content,pages:[content],bookmarks:[]});localStorage.setItem(NOVELS_KEY,JSON.stringify(novels));closeNovelEditor();toast('✅ Novel tersimpan!','success');}
+function saveNovel(){try{var title=document.getElementById('novelTitleInput').value.trim(),content=document.getElementById('novelContentInput').value.trim();if(!title||!content)return toast('❌ Lengkapi!','error');novels.push({id:'novel_'+Date.now(),title:title,content:content,pages:[content],bookmarks:[]});localStorage.setItem(NOVELS_KEY,JSON.stringify(novels));closeNovelEditor();toast('✅ Novel tersimpan!','success');}catch(e){toast('❌ Error: '+e.message,'error');}}
 
 // ================================================================
 // PROFILE
 // ================================================================
 var profileData=JSON.parse(localStorage.getItem('yad_profile')||'{"name":"","memberSince":"","points":0}');
-function openProfile(){var panel=document.getElementById('profilePanel');if(panel)panel.classList.add('show');updateProfileUI();}
+function openProfile(){var panel=document.getElementById('profilePanel');if(!panel){panel=document.createElement('div');panel.id='profilePanel';panel.className='fit-panel';panel.innerHTML='<div class="fit-panel-dialog"><div class="fit-panel-header"><h3 style="color:#fff;font-size:16px;margin:0">👤 Profil</h3><span onclick="closeProfile()" style="cursor:pointer;font-size:22px;color:#9090a8">×</span></div><div class="fit-panel-body"><div style="text-align:center;margin-bottom:20px"><div style="font-size:48px">👤</div><h3 id="profileName" style="color:#fff">Pengguna</h3><p id="profileEmail" style="color:#9090a8;font-size:12px"></p><span id="profileRole" style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:bold;background:#8b5cf6;color:#fff">👤 USER</span></div><div id="profileEditForm" style="display:none"><label>Nama</label><input id="editName" placeholder="Nama anda"><button class="btn btn-primary" onclick="saveProfile()" style="width:100%;margin-top:8px">💾 Simpan</button></div><button class="btn" onclick="toggleEditProfile()" style="width:100%;margin-top:12px">✏️ Edit Profil</button>'+(S.user?'<button class="btn" onclick="handleLogout()" style="width:100%;margin-top:8px;color:var(--red)">🚪 Logout</button>':'')+'</div></div>';document.body.appendChild(panel);}updateProfileUI();panel.classList.add('show');}
 function closeProfile(){var panel=document.getElementById('profilePanel');if(panel)panel.classList.remove('show');}
-function updateProfileUI(){if(S.user){document.getElementById('profileName').textContent=profileData.name||S.user.displayName||S.user.email.split('@')[0];document.getElementById('profileEmail').textContent=S.user.email;document.getElementById('profileRole').textContent=S.admin?'👑 ADMIN':'👤 USER';document.getElementById('profileRole').style.background=S.admin?'linear-gradient(135deg,#f59e0b,#d97706)':'#8b5cf6';}else{document.getElementById('profileName').textContent='Pengguna';}}
-function toggleEditProfile(){document.getElementById('profileEditForm').classList.toggle('show');}
-function saveProfile(){var n=document.getElementById('editName').value.trim();if(!n)return;profileData.name=n;localStorage.setItem('yad_profile',JSON.stringify(profileData));updateProfileUI();toggleEditProfile();}
-async function handleLogin(){try{var r=await auth.signInWithPopup(googleProvider);S.user=r.user;S.admin=r.user.email==='ynuraini686@gmail.com';updateUI();updateProfileUI();}catch(e){if(e.code==='auth/popup-blocked')await auth.signInWithRedirect(googleProvider);}}
-async function handleLogout(){if(confirm('Logout?')){await auth.signOut();S.user=null;S.admin=false;updateUI();closeProfile();}}
+function updateProfileUI(){if(S.user){document.getElementById('profileName').textContent=profileData.name||S.user.displayName||S.user.email.split('@')[0];document.getElementById('profileEmail').textContent=S.user.email;document.getElementById('profileRole').textContent=S.admin?'👑 ADMIN':'👤 USER';document.getElementById('profileRole').style.background=S.admin?'linear-gradient(135deg,#f59e0b,#d97706)':'#8b5cf6';}else{document.getElementById('profileName').textContent='Pengguna';document.getElementById('profileEmail').textContent='';document.getElementById('profileRole').textContent='👤 USER';document.getElementById('profileRole').style.background='#8b5cf6';}}
+function toggleEditProfile(){document.getElementById('profileEditForm').style.display=document.getElementById('profileEditForm').style.display==='none'?'block':'none';}
+function saveProfile(){try{var n=document.getElementById('editName').value.trim();if(!n)return;profileData.name=n;localStorage.setItem('yad_profile',JSON.stringify(profileData));updateProfileUI();toggleEditProfile();toast('✅ Profil disimpan!','success');}catch(e){toast('❌ Error: '+e.message,'error');}}
+async function handleLogin(){try{var r=await auth.signInWithPopup(googleProvider);S.user=r.user;S.admin=r.user.email==='ynuraini686@gmail.com';updateUI();updateProfileUI();toast('✅ Login berhasil!','success');}catch(e){if(e.code==='auth/popup-blocked'){await auth.signInWithRedirect(googleProvider);}else{toast('❌ Login gagal: '+e.message,'error');}}}
+async function handleLogout(){if(confirm('Logout?')){try{await auth.signOut();S.user=null;S.admin=false;updateUI();closeProfile();toast('✅ Logout berhasil!','success');}catch(e){toast('❌ Error: '+e.message,'error');}}}
 
 // ================================================================
 // GITHUB
 // ================================================================
-async function testGitHubConnection(){if(!GITHUB_CONFIG.enabled){toast('❌ GitHub belum dikonfigurasi','error');return;}try{var r=await fetch('https://api.github.com/user',{headers:{'Authorization':'token '+GITHUB_CONFIG.token}});if(r.ok){toast('✅ GitHub OK','success');document.getElementById('githubStatus').textContent='📤 Ready ✅';}}catch(e){toast('❌ '+e.message,'error');}}
-async function pushToGithub(msg){msg=msg||'Auto-update';if(!GITHUB_CONFIG.enabled){toast('❌ GitHub belum dikonfigurasi','error');return{success:false};}try{var html='<!DOCTYPE html>\n'+document.documentElement.outerHTML;var b64=btoa(unescape(encodeURIComponent(html)));var H={'Authorization':'token '+GITHUB_CONFIG.token,'Content-Type':'application/json'};var api='https://api.github.com/repos/'+GITHUB_CONFIG.owner+'/'+GITHUB_CONFIG.repo+'/contents/index.html';var sha=null;try{var gr=await fetch(api+'?ref='+GITHUB_CONFIG.branch,{headers:H});if(gr.ok){var d=await gr.json();sha=d.sha;}}catch(e){}var body={message:msg,content:b64,branch:GITHUB_CONFIG.branch};if(sha)body.sha=sha;var pr=await fetch(api,{method:'PUT',headers:H,body:JSON.stringify(body)});if(pr.ok){toast('✅ Push BERHASIL!','success');return{success:true};}else{toast('❌ Push gagal','error');return{success:false};}}catch(e){toast('❌ Error: '+e.message,'error');return{success:false};}}
+async function testGitHubConnection(){if(!GITHUB_CONFIG.enabled){toast('❌ GitHub belum dikonfigurasi','error');return;}try{var r=await fetch('https://api.github.com/user',{headers:{'Authorization':'token '+GITHUB_CONFIG.token}});if(r.ok){toast('✅ GitHub OK','success');document.getElementById('githubStatus').textContent='📤 Ready ✅';}else{toast('❌ GitHub auth failed','error');}}catch(e){toast('❌ '+e.message,'error');}}
+async function pushToGithub(msg){msg=msg||'Auto-update';if(!GITHUB_CONFIG.enabled){toast('❌ GitHub belum dikonfigurasi','error');return{success:false};}try{var html='<!DOCTYPE html>\n'+document.documentElement.outerHTML;var b64=btoa(unescape(encodeURIComponent(html)));var H={'Authorization':'token '+GITHUB_CONFIG.token,'Content-Type':'application/json'};var api='https://api.github.com/repos/'+GITHUB_CONFIG.owner+'/'+GITHUB_CONFIG.repo+'/contents/index.html';var sha=null;try{var gr=await fetch(api+'?ref='+GITHUB_CONFIG.branch,{headers:H});if(gr.ok){var d=await gr.json();sha=d.sha;}}catch(e){}var body={message:msg,content:b64,branch:GITHUB_CONFIG.branch};if(sha)body.sha=sha;var pr=await fetch(api,{method:'PUT',headers:H,body:JSON.stringify(body)});if(pr.ok){toast('✅ Push BERHASIL!','success');return{success:true};}else{var err=await pr.json();toast('❌ Push gagal: '+err.message,'error');return{success:false};}}catch(e){toast('❌ Error: '+e.message,'error');return{success:false};}}
 
 // ================================================================
-// GITHUB FILE MANAGER
+// GITHUB FILE MANAGER (IMPROVED WITH SEARCH & REPLACE)
 // ================================================================
 let githubFmCurrentPath='';
+let githubFmSearchState={query:'',replaceText:'',matches:[],currentMatch:-1,caseSensitive:false,wholeWord:false,regex:false};
+let githubFmEditorInstance=null;
+
 function openGitHubFileManager(){if(!S.admin){toast('🔒 Admin only!','error');return;}if(!GITHUB_CONFIG.enabled){toast('❌ GitHub belum dikonfigurasi!','error');return;}closeFitMenu();let panel=document.getElementById('githubFileManagerPanel');if(!panel){panel=document.createElement('div');panel.id='githubFileManagerPanel';panel.className='github-file-manager-panel';panel.innerHTML='<div class="github-fm-header"><div><h3 style="color:#fff;font-size:16px;margin:0">📁 GitHub File Manager</h3><small style="color:#9090a8;font-size:10px" id="githubFMPath">/'+GITHUB_CONFIG.owner+'/'+GITHUB_CONFIG.repo+'</small></div><span onclick="closeGitHubFileManager()" style="cursor:pointer;font-size:22px;color:#9090a8">×</span></div><div class="github-fm-toolbar"><button class="btn" onclick="githubFmBack()" id="githubFmBackBtn" disabled>⬅ Back</button><button class="btn" onclick="githubFmRefresh()">🔄 Refresh</button><button class="btn btn-primary" onclick="githubFmNewFile()">📄 New File</button><button class="btn btn-primary" onclick="githubFmNewFolder()">📁 New Folder</button><button class="btn" onclick="githubFmUpload()">📤 Upload</button></div><div class="github-fm-body" id="githubFmBody"><div style="text-align:center;padding:40px;color:var(--text-dim)"><span class="loading-spinner"></span><p>Loading...</p></div></div><div class="github-fm-footer"><button class="btn" onclick="closeGitHubFileManager()" style="width:100%">✕ Tutup</button></div>';document.body.appendChild(panel);}panel.classList.add('show');githubFmCurrentPath='';githubFmLoadFiles();}
 function closeGitHubFileManager(){var panel=document.getElementById('githubFileManagerPanel');if(panel)panel.classList.remove('show');}
-async function githubFmLoadFiles(){var body=document.getElementById('githubFmBody');var pathLabel=document.getElementById('githubFMPath');if(pathLabel)pathLabel.textContent='/'+GITHUB_CONFIG.owner+'/'+GITHUB_CONFIG.repo+'/'+githubFmCurrentPath;var backBtn=document.getElementById('githubFmBackBtn');if(backBtn)backBtn.disabled=!githubFmCurrentPath;body.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-dim)"><span class="loading-spinner"></span><p>Loading...</p></div>';try{var api='https://api.github.com/repos/'+GITHUB_CONFIG.owner+'/'+GITHUB_CONFIG.repo+'/contents/'+githubFmCurrentPath;var response=await fetch(api,{headers:{'Authorization':'token '+GITHUB_CONFIG.token,'Accept':'application/vnd.github.v3+json'}});if(!response.ok)throw new Error('API error: '+response.status);var data=await response.json();if(Array.isArray(data)){if(data.length===0){body.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-dim)">📭 Folder kosong</div>';return;}data.sort(function(a,b){if(a.type==='dir'&&b.type!=='dir')return -1;if(a.type!=='dir'&&b.type==='dir')return 1;return a.name.localeCompare(b.name);});body.innerHTML=data.map(function(item){var isFolder=item.type==='dir';var icon=isFolder?'📁':getFileIcon(item.name);var size=isFolder?'':formatFileSize(item.size||0);return '<div class="github-fm-item '+(isFolder?'folder':'file')+'" onclick="'+(isFolder?'githubFmOpenFolder(\''+item.name+'\')':'githubFmViewFile(\''+item.path+'\')')+'"><div class="github-fm-item-icon">'+icon+'</div><div class="github-fm-item-info"><div class="github-fm-item-name">'+escapeHtml(item.name)+'</div><div class="github-fm-item-size">'+size+'</div></div><div class="github-fm-item-actions" onclick="event.stopPropagation()">'+(isFolder?'':'<button class="github-fm-action-btn view" onclick="githubFmViewFile(\''+item.path+'\')">👁</button><button class="github-fm-action-btn" onclick="githubFmEditFile(\''+item.path+'\')">✏️</button>')+'<button class="github-fm-action-btn delete" onclick="githubFmDeleteFile(\''+item.path+'\',\''+(isFolder?'dir':'file')+'\')">🗑</button></div></div>';}).join('');}}catch(error){body.innerHTML='<div style="text-align:center;padding:40px;color:var(--red)">❌ Error: '+escapeHtml(error.message)+'</div>';}}
+
+async function githubFmLoadFiles(){var body=document.getElementById('githubFmBody');var pathLabel=document.getElementById('githubFMPath');if(pathLabel)pathLabel.textContent='/'+GITHUB_CONFIG.owner+'/'+GITHUB_CONFIG.repo+'/'+githubFmCurrentPath;var backBtn=document.getElementById('githubFmBackBtn');if(backBtn)backBtn.disabled=!githubFmCurrentPath;body.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-dim)"><span class="loading-spinner"></span><p>Loading...</p></div>';try{var api='https://api.github.com/repos/'+GITHUB_CONFIG.owner+'/'+GITHUB_CONFIG.repo+'/contents/'+githubFmCurrentPath;var response=await fetch(api,{headers:{'Authorization':'token '+GITHUB_CONFIG.token,'Accept':'application/vnd.github.v3+json'}});if(!response.ok)throw new Error('API error: '+response.status+' '+(await response.json()).message);var data=await response.json();if(Array.isArray(data)){if(data.length===0){body.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-dim)">📭 Folder kosong</div>';return;}data.sort(function(a,b){if(a.type==='dir'&&b.type!=='dir')return -1;if(a.type!=='dir'&&b.type==='dir')return 1;return a.name.localeCompare(b.name);});body.innerHTML=data.map(function(item){var isFolder=item.type==='dir';var icon=isFolder?'📁':getFileIcon(item.name);var size=isFolder?'':formatFileSize(item.size||0);return '<div class="github-fm-item '+(isFolder?'folder':'file')+'" onclick="'+(isFolder?'githubFmOpenFolder(\''+item.name+'\')':'githubFmViewFile(\''+item.path+'\')')+'"><div class="github-fm-item-icon">'+icon+'</div><div class="github-fm-item-info"><div class="github-fm-item-name">'+escapeHtml(item.name)+'</div><div class="github-fm-item-size">'+size+'</div></div><div class="github-fm-item-actions" onclick="event.stopPropagation()">'+(isFolder?'':'<button class="github-fm-action-btn view" onclick="githubFmViewFile(\''+item.path+'\')">👁</button><button class="github-fm-action-btn" onclick="githubFmEditFile(\''+item.path+'\')">✏️</button>')+'<button class="github-fm-action-btn delete" onclick="githubFmDeleteFile(\''+item.path+'\',\''+(isFolder?'dir':'file')+'\')">🗑</button></div></div>';}).join('');}}catch(error){body.innerHTML='<div style="text-align:center;padding:40px;color:var(--red)">❌ Error: '+escapeHtml(error.message)+'</div>';}}
 function githubFmOpenFolder(folderName){githubFmCurrentPath=githubFmCurrentPath?githubFmCurrentPath+'/'+folderName:folderName;githubFmLoadFiles();}
 function githubFmBack(){if(!githubFmCurrentPath)return;var parts=githubFmCurrentPath.split('/');parts.pop();githubFmCurrentPath=parts.join('/');githubFmLoadFiles();}
 function githubFmRefresh(){githubFmLoadFiles();}
 function getFileIcon(filename){var ext=filename.split('.').pop().toLowerCase();var icons={'html':'🌐','css':'🎨','js':'📜','json':'📋','md':'📝','txt':'📄','png':'🖼️','jpg':'🖼️','pdf':'📕','zip':'📦'};return icons[ext]||'📄';}
 function formatFileSize(bytes){if(bytes===0)return '0 B';var k=1024;var sizes=['B','KB','MB','GB'];var i=Math.floor(Math.log(bytes)/Math.log(k));return parseFloat((bytes/Math.pow(k,i)).toFixed(1))+' '+sizes[i];}
+
 async function githubFmViewFile(path){try{var api='https://api.github.com/repos/'+GITHUB_CONFIG.owner+'/'+GITHUB_CONFIG.repo+'/contents/'+path;var response=await fetch(api,{headers:{'Authorization':'token '+GITHUB_CONFIG.token}});if(!response.ok)throw new Error('Error: '+response.status);var data=await response.json();var content=atob(data.content.replace(/\n/g,''));var viewer=document.getElementById('githubFmViewer');if(!viewer){viewer=document.createElement('div');viewer.id='githubFmViewer';viewer.className='github-fm-editor';document.body.appendChild(viewer);}viewer.innerHTML='<div class="github-fm-editor-header"><h3 style="color:#fff;font-size:14px;margin:0">👁 View: '+escapeHtml(path)+'</h3><span onclick="this.parentElement.parentElement.classList.remove(\'show\')" style="cursor:pointer;font-size:22px;color:#9090a8">×</span></div><div class="github-fm-editor-body"><pre style="background:#0d0d20;padding:15px;border-radius:8px;color:#e8e8f0;font-size:12px;overflow:auto;max-height:400px">'+escapeHtml(content)+'</pre></div>';viewer.classList.add('show');}catch(error){toast('❌ Error: '+error.message,'error');}}
-async function githubFmEditFile(path){try{var api='https://api.github.com/repos/'+GITHUB_CONFIG.owner+'/'+GITHUB_CONFIG.repo+'/contents/'+path;var response=await fetch(api,{headers:{'Authorization':'token '+GITHUB_CONFIG.token}});if(!response.ok)throw new Error('Error: '+response.status);var data=await response.json();var content=atob(data.content.replace(/\n/g,''));var editor=document.getElementById('githubFmEditor');if(!editor){editor=document.createElement('div');editor.id='githubFmEditor';editor.className='github-fm-editor';document.body.appendChild(editor);}editor.innerHTML='<div class="github-fm-editor-header"><h3 style="color:#fff;font-size:14px;margin:0">✏️ Edit: '+escapeHtml(path)+'</h3><span onclick="this.parentElement.parentElement.classList.remove(\'show\')" style="cursor:pointer;font-size:22px;color:#9090a8">×</span></div><div class="github-fm-editor-body"><label style="color:#9090a8;font-size:11px">📝 CONTENT</label><textarea id="githubFmEditContent" style="min-height:300px">'+escapeHtml(content)+'</textarea><label style="color:#9090a8;font-size:11px">💬 COMMIT</label><input id="githubFmEditCommit" value="Update '+path+'"></div><div style="padding:12px;background:#0d0d20;border-top:1px solid #252540;display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="this.closest(\'.github-fm-editor\').classList.remove(\'show\')">Batal</button><button class="btn btn-primary" onclick="githubFmSaveFile(\''+path+'\',\''+data.sha+'\')">💾 Simpan</button></div>';editor.classList.add('show');}catch(error){toast('❌ Error: '+error.message,'error');}}
-async function githubFmSaveFile(path,sha){var content=document.getElementById('githubFmEditContent').value;var commitMsg=document.getElementById('githubFmEditCommit').value||'Update '+path;try{var b64=btoa(unescape(encodeURIComponent(content)));var api='https://api.github.com/repos/'+GITHUB_CONFIG.owner+'/'+GITHUB_CONFIG.repo+'/contents/'+path;var response=await fetch(api,{method:'PUT',headers:{'Authorization':'token '+GITHUB_CONFIG.token,'Content-Type':'application/json'},body:JSON.stringify({message:commitMsg,content:b64,sha:sha,branch:GITHUB_CONFIG.branch})});if(!response.ok)throw new Error('Failed to save');toast('✅ File saved!','success');document.getElementById('githubFmEditor').classList.remove('show');githubFmLoadFiles();}catch(error){toast('❌ Error: '+error.message,'error');}}
-async function githubFmDeleteFile(path,type){var confirmMsg=type==='dir'?'Hapus folder "'+path+'" ?':'Hapus file "'+path+'" ?';if(!confirm(confirmMsg))return;try{var api='https://api.github.com/repos/'+GITHUB_CONFIG.owner+'/'+GITHUB_CONFIG.repo+'/contents/'+path;var response=await fetch(api,{headers:{'Authorization':'token '+GITHUB_CONFIG.token}});if(!response.ok)throw new Error('Error: '+response.status);var data=await response.json();var deleteResponse=await fetch(api,{method:'DELETE',headers:{'Authorization':'token '+GITHUB_CONFIG.token,'Content-Type':'application/json'},body:JSON.stringify({message:'Delete '+path,sha:data.sha,branch:GITHUB_CONFIG.branch})});if(!deleteResponse.ok)throw new Error('Failed to delete');toast('✅ File deleted!','success');githubFmLoadFiles();}catch(error){toast('❌ Error: '+error.message,'error');}}
-function githubFmNewFile(){var fileName=prompt('📄 Nama file baru:');if(!fileName)return;var fullPath=githubFmCurrentPath?githubFmCurrentPath+'/'+fileName:fileName;var editor=document.getElementById('githubFmEditor');if(!editor){editor=document.createElement('div');editor.id='githubFmEditor';editor.className='github-fm-editor';document.body.appendChild(editor);}editor.innerHTML='<div class="github-fm-editor-header"><h3 style="color:#fff;font-size:14px;margin:0">📄 New: '+escapeHtml(fullPath)+'</h3><span onclick="this.parentElement.parentElement.classList.remove(\'show\')" style="cursor:pointer;font-size:22px;color:#9090a8">×</span></div><div class="github-fm-editor-body"><label style="color:#9090a8;font-size:11px">📝 CONTENT</label><textarea id="githubFmEditContent" style="min-height:300px"></textarea><label style="color:#9090a8;font-size:11px">💬 COMMIT</label><input id="githubFmEditCommit" value="Create '+fullPath+'"></div><div style="padding:12px;background:#0d0d20;border-top:1px solid #252540;display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="this.closest(\'.github-fm-editor\').classList.remove(\'show\')">Batal</button><button class="btn btn-primary" onclick="githubFmCreateFile(\''+fullPath+'\')">💾 Create</button></div>';editor.classList.add('show');}
-async function githubFmCreateFile(path){var content=document.getElementById('githubFmEditContent').value;var commitMsg=document.getElementById('githubFmEditCommit').value||'Create '+path;if(!content){toast('❌ Content kosong!','error');return;}try{var b64=btoa(unescape(encodeURIComponent(content)));var api='https://api.github.com/repos/'+GITHUB_CONFIG.owner+'/'+GITHUB_CONFIG.repo+'/contents/'+path;var response=await fetch(api,{method:'PUT',headers:{'Authorization':'token '+GITHUB_CONFIG.token,'Content-Type':'application/json'},body:JSON.stringify({message:commitMsg,content:b64,branch:GITHUB_CONFIG.branch})});if(!response.ok)throw new Error('Failed to create');toast('✅ File created!','success');document.getElementById('githubFmEditor').classList.remove('show');githubFmLoadFiles();}catch(error){toast('❌ Error: '+error.message,'error');}}
-async function githubFmNewFolder(){var folderName=prompt('📁 Nama folder baru:');if(!folderName)return;var fullPath=githubFmCurrentPath?githubFmCurrentPath+'/'+folderName:folderName;var placeholderFile=fullPath+'/.gitkeep';try{var api='https://api.github.com/repos/'+GITHUB_CONFIG.owner+'/'+GITHUB_CONFIG.repo+'/contents/'+placeholderFile;var response=await fetch(api,{method:'PUT',headers:{'Authorization':'token '+GITHUB_CONFIG.token,'Content-Type':'application/json'},body:JSON.stringify({message:'Create folder '+folderName,content:btoa(''),branch:GITHUB_CONFIG.branch})});if(!response.ok)throw new Error('Failed to create folder');toast('✅ Folder created!','success');githubFmLoadFiles();}catch(error){toast('❌ Error: '+error.message,'error');}}
-function githubFmUpload(){var input=document.createElement('input');input.type='file';input.onchange=async function(e){var file=e.target.files[0];if(!file)return;var fullPath=githubFmCurrentPath?githubFmCurrentPath+'/'+file.name:file.name;try{var reader=new FileReader();reader.onload=async function(e){var content=e.target.result;var b64=btoa(unescape(encodeURIComponent(content)));var api='https://api.github.com/repos/'+GITHUB_CONFIG.owner+'/'+GITHUB_CONFIG.repo+'/contents/'+fullPath;var response=await fetch(api,{method:'PUT',headers:{'Authorization':'token '+GITHUB_CONFIG.token,'Content-Type':'application/json'},body:JSON.stringify({message:'Upload '+file.name,content:b64,branch:GITHUB_CONFIG.branch})});if(!response.ok)throw new Error('Failed to upload');toast('✅ File uploaded!','success');githubFmLoadFiles();};reader.readAsText(file);}catch(error){toast('❌ Error: '+error.message,'error');}};input.click();}
+
+// Improved Edit with Search & Replace
+async function githubFmEditFile(path){try{
+    var api='https://api.github.com/repos/'+GITHUB_CONFIG.owner+'/'+GITHUB_CONFIG.repo+'/contents/'+path;
+    var response=await fetch(api,{headers:{'Authorization':'token '+GITHUB_CONFIG.token}});
+    if(!response.ok)throw new Error('Error: '+response.status);
+    var data=await response.json();
+    var content=atob(data.content.replace(/\n/g,''));
+    
+    githubFmEditorInstance=document.getElementById('githubFmEditor');
+    if(!githubFmEditorInstance){
+        githubFmEditorInstance=document.createElement('div');
+        githubFmEditorInstance.id='githubFmEditor';
+        githubFmEditorInstance.className='github-fm-editor';
+        document.body.appendChild(githubFmEditorInstance);
+    }
+    
+    // Reset search state
+    githubFmSearchState={query:'',replaceText:'',matches:[],currentMatch:-1,caseSensitive:false,wholeWord:false,regex:false};
+    
+    githubFmEditorInstance.innerHTML=`
+    <div class="github-fm-editor-header">
+        <h3 style="color:#fff;font-size:14px;margin:0">✏️ Edit: ${escapeHtml(path)}</h3>
+        <span onclick="this.parentElement.parentElement.classList.remove('show')" style="cursor:pointer;font-size:22px;color:#9090a8">×</span>
+    </div>
+    <div class="search-replace-bar">
+        <input type="text" id="githubFmSearchInput" placeholder="🔍 Cari..." oninput="githubFmSearch()" onkeydown="if(event.key==='Enter'&&event.shiftKey){githubFmFindPrev()}else if(event.key==='Enter'){githubFmFindNext()}">
+        <input type="text" id="githubFmReplaceInput" placeholder="🔄 Ganti dengan..." onkeydown="if(event.key==='Enter'){githubFmReplaceCurrent()}">
+        <div class="find-replace-tools">
+            <button onclick="githubFmFindNext()" title="Cari berikutnya">⬇</button>
+            <button onclick="githubFmFindPrev()" title="Cari sebelumnya">⬆</button>
+            <button onclick="githubFmReplaceCurrent()" title="Ganti">🔄</button>
+            <button onclick="githubFmReplaceAll()" title="Ganti semua">⏩</button>
+            <button onclick="toggleSearchOption('caseSensitive')" class="search-option" id="optCaseSensitive" title="Case sensitive">Aa</button>
+            <button onclick="toggleSearchOption('wholeWord')" class="search-option" id="optWholeWord" title="Whole word">W</button>
+            <button onclick="toggleSearchOption('regex')" class="search-option" id="optRegex" title="Regex">.*</button>
+            <span class="search-count" id="githubFmSearchCount">0/0</span>
+        </div>
+    </div>
+    <div class="github-fm-editor-body">
+        <textarea id="githubFmEditContent" style="min-height:300px;font-family:monospace;font-size:13px;line-height:1.5">${escapeHtml(content)}</textarea>
+        <label style="color:#9090a8;font-size:11px">💬 COMMIT</label>
+        <input id="githubFmEditCommit" value="Update ${path}">
+    </div>
+    <div style="padding:12px;background:#0d0d20;border-top:1px solid #252540;display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn" onclick="this.closest('.github-fm-editor').classList.remove('show')">Batal</button>
+        <button class="btn" onclick="githubFmUndoEdit()">↩️ Undo</button>
+        <button class="btn btn-primary" onclick="githubFmSaveFile('${path}','${data.sha}')">💾 Simpan</button>
+    </div>`;
+    
+    githubFmEditorInstance.classList.add('show');
+    githubFmEditorInstance.setAttribute('data-original-content', content);
+    githubFmEditorInstance.setAttribute('data-current-path', path);
+    githubFmEditorInstance.setAttribute('data-file-sha', data.sha);
+    
+    // Focus on search input
+    setTimeout(function(){document.getElementById('githubFmSearchInput').focus();},100);
+    
+}catch(error){
+    toast('❌ Error: '+error.message,'error');
+}}
+
+// Search functionality
+function githubFmSearch(){
+    var textarea=document.getElementById('githubFmEditContent');
+    var searchInput=document.getElementById('githubFmSearchInput');
+    var countDisplay=document.getElementById('githubFmSearchCount');
+    if(!textarea||!searchInput)return;
+    
+    var content=textarea.value;
+    var query=searchInput.value;
+    githubFmSearchState.query=query;
+    githubFmSearchState.matches=[];
+    githubFmSearchState.currentMatch=-1;
+    
+    if(!query){
+        countDisplay.textContent='0/0';
+        // Remove highlights
+        textarea.value=content;
+        return;
+    }
+    
+    try{
+        var flags='g';
+        if(!githubFmSearchState.caseSensitive)flags+='i';
+        var pattern=githubFmSearchState.regex?new RegExp(query,flags):new RegExp(escapeRegex(query),flags);
+        var match;
+        while((match=pattern.exec(content))!==null){
+            githubFmSearchState.matches.push({start:match.index,end:match.index+match[0].length,text:match[0]});
+            if(githubFmSearchState.matches.length>1000)break; // Limit matches
+        }
+        countDisplay.textContent=githubFmSearchState.matches.length+' ditemukan';
+        
+        if(githubFmSearchState.matches.length>0){
+            githubFmSearchState.currentMatch=0;
+            highlightCurrentMatch();
+        }
+    }catch(e){
+        countDisplay.textContent='Invalid regex';
+    }
+}
+
+function escapeRegex(str){return str.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+
+function highlightCurrentMatch(){
+    var textarea=document.getElementById('githubFmEditContent');
+    if(!textarea||!githubFmSearchState.matches.length)return;
+    
+    var match=githubFmSearchState.matches[githubFmSearchState.currentMatch];
+    textarea.focus();
+    textarea.setSelectionRange(match.start,match.end);
+    
+    // Scroll to selection
+    var lineHeight=parseInt(getComputedStyle(textarea).lineHeight)||20;
+    var lines=textarea.value.substring(0,match.start).split('\n').length;
+    textarea.scrollTop=(lines-5)*lineHeight;
+    
+    updateSearchCount();
+}
+
+function updateSearchCount(){
+    var countDisplay=document.getElementById('githubFmSearchCount');
+    if(countDisplay&&githubFmSearchState.matches.length){
+        countDisplay.textContent=(githubFmSearchState.currentMatch+1)+'/'+githubFmSearchState.matches.length;
+    }
+}
+
+function githubFmFindNext(){
+    if(!githubFmSearchState.matches.length){
+        githubFmSearch();
+        return;
+    }
+    githubFmSearchState.currentMatch=(githubFmSearchState.currentMatch+1)%githubFmSearchState.matches.length;
+    highlightCurrentMatch();
+}
+
+function githubFmFindPrev(){
+    if(!githubFmSearchState.matches.length){
+        githubFmSearch();
+        return;
+    }
+    githubFmSearchState.currentMatch=(githubFmSearchState.currentMatch-1+githubFmSearchState.matches.length)%githubFmSearchState.matches.length;
+    highlightCurrentMatch();
+}
+
+function githubFmReplaceCurrent(){
+    var textarea=document.getElementById('githubFmEditContent');
+    var replaceInput=document.getElementById('githubFmReplaceInput');
+    if(!textarea||!replaceInput)return;
+    
+    if(!githubFmSearchState.matches.length){
+        githubFmSearch();
+        if(!githubFmSearchState.matches.length)return;
+    }
+    
+    var match=githubFmSearchState.matches[githubFmSearchState.currentMatch];
+    var replacement=replaceInput.value;
+    
+    // Apply replacement
+    var content=textarea.value;
+    content=content.substring(0,match.start)+replacement+content.substring(match.end);
+    textarea.value=content;
+    
+    // Update matches
+    var lengthDiff=replacement.length-match.text.length;
+    githubFmSearchState.matches.splice(githubFmSearchState.currentMatch,1);
+    
+    // Adjust subsequent match positions
+    for(var i=githubFmSearchState.currentMatch;i<githubFmSearchState.matches.length;i++){
+        githubFmSearchState.matches[i].start+=lengthDiff;
+        githubFmSearchState.matches[i].end+=lengthDiff;
+    }
+    
+    if(githubFmSearchState.matches.length){
+        githubFmSearchState.currentMatch=Math.min(githubFmSearchState.currentMatch,githubFmSearchState.matches.length-1);
+        highlightCurrentMatch();
+    }else{
+        updateSearchCount();
+        toast('✅ Semua match diganti','success');
+    }
+}
+
+function githubFmReplaceAll(){
+    var textarea=document.getElementById('githubFmEditContent');
+    var searchInput=document.getElementById('githubFmSearchInput');
+    var replaceInput=document.getElementById('githubFmReplaceInput');
+    if(!textarea||!searchInput||!replaceInput)return;
+    
+    var query=searchInput.value;
+    var replacement=replaceInput.value;
+    if(!query)return;
+    
+    if(!confirm('Ganti semua "'+query+'" dengan "'+replacement+'"?'))return;
+    
+    var content=textarea.value;
+    try{
+        var flags='g';
+        if(!githubFmSearchState.caseSensitive)flags+='i';
+        var pattern=githubFmSearchState.regex?new RegExp(query,flags):new RegExp(escapeRegex(query),flags);
+        var count=(content.match(pattern)||[]).length;
+        content=content.replace(pattern,replacement);
+        textarea.value=content;
+        toast('✅ '+count+' replacement berhasil','success');
+        githubFmSearch();
+    }catch(e){
+        toast('❌ Regex error: '+e.message,'error');
+    }
+}
+
+function toggleSearchOption(option){
+    githubFmSearchState[option]=!githubFmSearchState[option];
+    var btn=document.getElementById('opt'+option.charAt(0).toUpperCase()+option.slice(1));
+    if(btn)btn.classList.toggle('active');
+    githubFmSearch();
+}
+
+function githubFmUndoEdit(){
+    var editor=document.getElementById('githubFmEditor');
+    var original=editor.getAttribute('data-original-content');
+    var textarea=document.getElementById('githubFmEditContent');
+    if(textarea&&original){
+        textarea.value=original;
+        githubFmSearch();
+        toast('↩️ Dikembalikan ke versi asli','info');
+    }
+}
+
+async function githubFmSaveFile(path,sha){
+    try{
+        var textarea=document.getElementById('githubFmEditContent');
+        var commitInput=document.getElementById('githubFmEditCommit');
+        var content=textarea.value;
+        var commitMsg=commitInput?commitInput.value:'Update '+path;
+        
+        if(!content.trim()){toast('❌ Content kosong!','error');return;}
+        
+        // Validate content
+        try{
+            JSON.stringify(content);
+        }catch(e){
+            toast('❌ Content tidak valid','error');
+            return;
+        }
+        
+        var b64=btoa(unescape(encodeURIComponent(content)));
+        var api='https://api.github.com/repos/'+GITHUB_CONFIG.owner+'/'+GITHUB_CONFIG.repo+'/contents/'+path;
+        var response=await fetch(api,{
+            method:'PUT',
+            headers:{
+                'Authorization':'token '+GITHUB_CONFIG.token,
+                'Content-Type':'application/json'
+            },
+            body:JSON.stringify({
+                message:commitMsg,
+                content:b64,
+                sha:sha,
+                branch:GITHUB_CONFIG.branch
+            })
+        });
+        
+        if(!response.ok){
+            var error=await response.json();
+            throw new Error(error.message||'Failed to save');
+        }
+        
+        toast('✅ File saved!','success');
+        document.getElementById('githubFmEditor').classList.remove('show');
+        githubFmLoadFiles();
+    }catch(error){
+        toast('❌ Error: '+error.message,'error');
+    }
+}
+
+async function githubFmDeleteFile(path,type){
+    var confirmMsg=type==='dir'?'Hapus folder "'+path+'" ?':'Hapus file "'+path+'" ?';
+    if(!confirm(confirmMsg))return;
+    try{
+        var api='https://api.github.com/repos/'+GITHUB_CONFIG.owner+'/'+GITHUB_CONFIG.repo+'/contents/'+path;
+        var response=await fetch(api,{headers:{'Authorization':'token '+GITHUB_CONFIG.token}});
+        if(!response.ok)throw new Error('Error: '+response.status);
+        var data=await response.json();
+        var deleteResponse=await fetch(api,{
+            method:'DELETE',
+            headers:{
+                'Authorization':'token '+GITHUB_CONFIG.token,
+                'Content-Type':'application/json'
+            },
+            body:JSON.stringify({
+                message:'Delete '+path,
+                sha:data.sha,
+                branch:GITHUB_CONFIG.branch
+            })
+        });
+        if(!deleteResponse.ok)throw new Error('Failed to delete');
+        toast('✅ File deleted!','success');
+        githubFmLoadFiles();
+    }catch(error){
+        toast('❌ Error: '+error.message,'error');
+    }
+}
+
+function githubFmNewFile(){
+    var fileName=prompt('📄 Nama file baru:');
+    if(!fileName)return;
+    if(!/^[a-zA-Z0-9._-]+$/.test(fileName)){
+        toast('❌ Nama file tidak valid!','error');
+        return;
+    }
+    var fullPath=githubFmCurrentPath?githubFmCurrentPath+'/'+fileName:fileName;
+    var editor=document.getElementById('githubFmEditor');
+    if(!editor){
+        editor=document.createElement('div');
+        editor.id='githubFmEditor';
+        editor.className='github-fm-editor';
+        document.body.appendChild(editor);
+    }
+    editor.innerHTML=`
+    <div class="github-fm-editor-header">
+        <h3 style="color:#fff;font-size:14px;margin:0">📄 New: ${escapeHtml(fullPath)}</h3>
+        <span onclick="this.parentElement.parentElement.classList.remove('show')" style="cursor:pointer;font-size:22px;color:#9090a8">×</span>
+    </div>
+    <div class="github-fm-editor-body">
+        <label style="color:#9090a8;font-size:11px">📝 CONTENT</label>
+        <textarea id="githubFmEditContent" style="min-height:300px"></textarea>
+        <label style="color:#9090a8;font-size:11px">💬 COMMIT</label>
+        <input id="githubFmEditCommit" value="Create ${fullPath}">
+    </div>
+    <div style="padding:12px;background:#0d0d20;border-top:1px solid #252540;display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn" onclick="this.closest('.github-fm-editor').classList.remove('show')">Batal</button>
+        <button class="btn btn-primary" onclick="githubFmCreateFile('${fullPath}')">💾 Create</button>
+    </div>`;
+    editor.classList.add('show');
+}
+
+async function githubFmCreateFile(path){
+    try{
+        var content=document.getElementById('githubFmEditContent').value;
+        var commitMsg=document.getElementById('githubFmEditCommit').value||'Create '+path;
+        if(!content){toast('❌ Content kosong!','error');return;}
+        
+        var b64=btoa(unescape(encodeURIComponent(content)));
+        var api='https://api.github.com/repos/'+GITHUB_CONFIG.owner+'/'+GITHUB_CONFIG.repo+'/contents/'+path;
+        var response=await fetch(api,{
+            method:'PUT',
+            headers:{
+                'Authorization':'token '+GITHUB_CONFIG.token,
+                'Content-Type':'application/json'
+            },
+            body:JSON.stringify({
+                message:commitMsg,
+                content:b64,
+                branch:GITHUB_CONFIG.branch
+            })
+        });
+        if(!response.ok){
+            var error=await response.json();
+            throw new Error(error.message||'Failed to create');
+        }
+        toast('✅ File created!','success');
+        document.getElementById('githubFmEditor').classList.remove('show');
+        githubFmLoadFiles();
+    }catch(error){
+        toast('❌ Error: '+error.message,'error');
+    }
+}
+
+async function githubFmNewFolder(){
+    var folderName=prompt('📁 Nama folder baru:');
+    if(!folderName)return;
+    if(!/^[a-zA-Z0-9._-]+$/.test(folderName)){
+        toast('❌ Nama folder tidak valid!','error');
+        return;
+    }
+    var fullPath=githubFmCurrentPath?githubFmCurrentPath+'/'+folderName:folderName;
+    var placeholderFile=fullPath+'/.gitkeep';
+    try{
+        var api='https://api.github.com/repos/'+GITHUB_CONFIG.owner+'/'+GITHUB_CONFIG.repo+'/contents/'+placeholderFile;
+        var response=await fetch(api,{
+            method:'PUT',
+            headers:{
+                'Authorization':'token '+GITHUB_CONFIG.token,
+                'Content-Type':'application/json'
+            },
+            body:JSON.stringify({
+                message:'Create folder '+folderName,
+                content:btoa(''),
+                branch:GITHUB_CONFIG.branch
+            })
+        });
+        if(!response.ok)throw new Error('Failed to create folder');
+        toast('✅ Folder created!','success');
+        githubFmLoadFiles();
+    }catch(error){
+        toast('❌ Error: '+error.message,'error');
+    }
+}
+
+function githubFmUpload(){
+    if(!S.admin)return;
+    var input=document.createElement('input');
+    input.type='file';
+    input.onchange=async function(e){
+        var file=e.target.files[0];
+        if(!file)return;
+        if(file.size>1024*1024){
+            toast('❌ File terlalu besar (max 1MB)','error');
+            return;
+        }
+        var fullPath=githubFmCurrentPath?githubFmCurrentPath+'/'+file.name:file.name;
+        try{
+            var reader=new FileReader();
+            reader.onload=async function(e){
+                try{
+                    var content=e.target.result;
+                    // For text files, read as text; for binary, use base64
+                    var b64;
+                    if(file.type.startsWith('text/')||['.html','.css','.js','.json','.txt','.md'].some(function(ext){return file.name.endsWith(ext);})){
+                        b64=btoa(unescape(encodeURIComponent(content)));
+                    }else{
+                        // Binary file - use array buffer
+                        var arrayBuffer=await file.arrayBuffer();
+                        var bytes=new Uint8Array(arrayBuffer);
+                        var binary='';
+                        for(var i=0;i<bytes.length;i++){
+                            binary+=String.fromCharCode(bytes[i]);
+                        }
+                        b64=btoa(binary);
+                    }
+                    
+                    var api='https://api.github.com/repos/'+GITHUB_CONFIG.owner+'/'+GITHUB_CONFIG.repo+'/contents/'+fullPath;
+                    var response=await fetch(api,{
+                        method:'PUT',
+                        headers:{
+                            'Authorization':'token '+GITHUB_CONFIG.token,
+                            'Content-Type':'application/json'
+                        },
+                        body:JSON.stringify({
+                            message:'Upload '+file.name,
+                            content:b64,
+                            branch:GITHUB_CONFIG.branch
+                        })
+                    });
+                    if(!response.ok){
+                        var error=await response.json();
+                        throw new Error(error.message||'Failed to upload');
+                    }
+                    toast('✅ File uploaded!','success');
+                    githubFmLoadFiles();
+                }catch(error){
+                    toast('❌ Error: '+error.message,'error');
+                }
+            };
+            
+            if(file.type.startsWith('text/')||['.html','.css','.js','.json','.txt','.md'].some(function(ext){return file.name.endsWith(ext);})){
+                reader.readAsText(file);
+            }else{
+                reader.readAsArrayBuffer(file);
+            }
+        }catch(error){
+            toast('❌ Error: '+error.message,'error');
+        }
+    };
+    input.click();
+}
 
 // ================================================================
 // AI CHAT
@@ -312,109 +808,555 @@ function githubFmUpload(){var input=document.createElement('input');input.type='
 function toggleAIChat(){var b=document.getElementById('aiChatBody');b.classList.toggle('hidden');document.getElementById('aiChatToggle').textContent=b.classList.contains('hidden')?'▶':'▼';}
 function openAIChat(){var w=document.getElementById('aiChatWidget');w.classList.toggle('show');if(w.classList.contains('show')){document.getElementById('aiChatBody').classList.remove('hidden');document.getElementById('aiChatToggle').textContent='▼';}}
 async function sendAIMsg(){var i=document.getElementById('aiChatInput'),t=i.value.trim();if(!t)return;var m=document.getElementById('aiChatMsgs');m.innerHTML+='<div class="ai-msg user">'+escapeHtml(t)+'</div>';i.value='';m.scrollTop=m.scrollHeight;var x=t.toLowerCase(),r='';
+
 if(t==='console'){openConsole();r='🖥️ Console dibuka!';}
 else if(t==='file manager'||t==='github file manager'){openGitHubFileManager();r='📁 File Manager dibuka!';}
 else if(['hai','halo','hi','hello'].some(function(g){return x.includes(g);}))r='Halo! 😊';
-else if(x==='help')r='📚 BANTUAN:\n💬 hai, kabar\n🎮 harga, game\n🛒 cara pesan\n📋 cek pesanan [ID]\n📚 novel, profil\n📁 file manager\n'+(S.admin?'\n👑 ADMIN:\n🔸 konfirmasi [ID], tolak [ID]\n🔸 tambah fitur, daftar fitur\n🔸 markup [0-100]\n🔸 github setup TOKEN|USER|REPO\n🔸 push github, console':'');
+else if(x==='help')r='📚 BANTUAN:\n💬 hai, kabar\n🎮 harga, game\n🛒 cara pesan\n📋 cek pesanan [ID]\n📚 novel, profil\n📁 file manager\n🔍 cari & replace di file editor\n'+(S.admin?'\n👑 ADMIN:\n🔸 konfirmasi [ID], tolak [ID]\n🔸 tambah fitur, daftar fitur\n🔸 markup [0-100]\n🔸 github setup TOKEN|USER|REPO\n🔸 push github, console':'');
 else if(x.startsWith('github setup ')){if(!S.admin)r='🔒 Admin only!';else{var p=t.replace(/github setup\s+/i,'').split('|');if(p.length>=3){GITHUB_CONFIG.token=p[0].trim();GITHUB_CONFIG.owner=p[1].trim();GITHUB_CONFIG.repo=p[2].trim();GITHUB_CONFIG.branch=(p[3]||'').trim()||'main';GITHUB_CONFIG.enabled=true;localStorage.setItem('github_config',JSON.stringify(GITHUB_CONFIG));r='✅ GitHub configured!';}}}
 else if(x==='push github'||x==='push'){if(!S.admin)r='🔒 Admin only!';else{r='📤 Mendorong...';setTimeout(async function(){await pushToGithub();},300);}}
 else if(x==='daftar fitur'){r='📦 FITUR ('+S.features.length+'):\n'+S.features.map(function(f,i){return(i+1)+'. '+f.name+' v'+f.version+' ['+f.status+']';}).join('\n');}
 else if(x==='tambah fitur'){openFitPanel('add');r='📝 Form tambah fitur dibuka!';}
+else if(x.includes('cari')&&x.includes('replace')){openGitHubFileManager();r='📁 Buka file editor untuk cari & replace';}
 else r='❓ Ketik "help" untuk bantuan.';
+
 setTimeout(function(){m.innerHTML+='<div class="ai-msg">'+r.replace(/\n/g,'<br>')+'</div>';m.scrollTop=m.scrollHeight;},300);}
+
 var isListening=false,recognition=null;
 function toggleVoice(){if(isListening){stopVoice();}else{startVoice();}}
-function startVoice(){var SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return;recognition=new SR();recognition.lang='id-ID';recognition.interimResults=true;recognition.onstart=function(){isListening=true;var b=document.getElementById('voiceBtn');if(b){b.textContent='🔴';b.classList.add('listening');}};recognition.onresult=function(e){var transcript='';for(var i=e.resultIndex;i<e.results.length;i++){transcript+=e.results[i][0].transcript;}var input=document.getElementById('aiChatInput');if(input&&transcript){input.value=transcript;input.focus();}};recognition.onend=function(){stopVoice();};recognition.onerror=function(){stopVoice();};recognition.start();}
+function startVoice(){
+    var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){toast('❌ Browser tidak mendukung voice recognition','error');return;}
+    recognition=new SR();
+    recognition.lang='id-ID';
+    recognition.interimResults=true;
+    recognition.onstart=function(){isListening=true;var b=document.getElementById('voiceBtn');if(b){b.textContent='🔴';b.classList.add('listening');}};
+    recognition.onresult=function(e){var transcript='';for(var i=e.resultIndex;i<e.results.length;i++){transcript+=e.results[i][0].transcript;}var input=document.getElementById('aiChatInput');if(input&&transcript){input.value=transcript;input.focus();}};
+    recognition.onend=function(){stopVoice();};
+    recognition.onerror=function(e){stopVoice();if(e.error==='not-allowed'){toast('❌ Izin mikrofon ditolak','error');}};
+    recognition.start();
+}
 function stopVoice(){if(recognition){try{recognition.stop();}catch(e){}}isListening=false;var b=document.getElementById('voiceBtn');if(b){b.textContent='🎤';b.classList.remove('listening');}}
-var currentConsoleTab='terminal';var consoleLogs={terminal:[],debug:[],firebase:[],github:[]};
-function openConsole(){if(!S.admin){toast('🔒 Admin only!','error');return;}var panel=document.getElementById('consolePanel');if(panel)panel.classList.add('show');}
-function closeConsole(){var panel=document.getElementById('consolePanel');if(panel)panel.classList.remove('show');}
-function switchConsoleTab(tab){currentConsoleTab=tab;document.querySelectorAll('.console-tab').forEach(function(t){t.classList.remove('active');});document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');}
-function consolePrint(message,type){type=type||'info';consoleLogs[currentConsoleTab]=consoleLogs[currentConsoleTab]||[];consoleLogs[currentConsoleTab].push({message:message,type:type});var content=document.getElementById('consoleContent');content.innerHTML=consoleLogs[currentConsoleTab].map(function(l){return '<div class="console-line '+l.type+'">'+l.message+'</div>';}).join('');content.scrollTop=content.scrollHeight;}
-async function executeConsole(){var input=document.getElementById('consoleInput');var command=input.value.trim();if(!command)return;consolePrint('➜ '+command,'cmd');input.value='';var parts=command.split(' ');var cmd=parts[0].toLowerCase();switch(cmd){case'help':consolePrint('📋 help, clear, exit, reload, fb stats, gh push, gf list');break;case'clear':consoleLogs[currentConsoleTab]=[];document.getElementById('consoleContent').innerHTML='';break;case'exit':closeConsole();break;case'reload':location.reload();break;default:consolePrint('❌ Tidak dikenal: '+cmd,'error');}}
-async function runAutoFix(){var fixed=0;document.querySelectorAll('[data-feature]').forEach(function(el){var name=el.getAttribute('data-feature');var exists=S.features.find(function(f){return f.name===name;});if(!exists){el.remove();fixed++;}});toast('🔧 AutoFix: '+fixed+' item','success');return{fixed:fixed,issues:fixed};}
-async function runOptimize(){var cleaned=0;var seen={};S.features=S.features.filter(function(f){if(seen[f.name]){cleaned++;return false;}seen[f.name]=true;return true;});localStorage.setItem('yad_features_manifest',JSON.stringify(S.features));toast('🔧 Optimize: '+cleaned+' item','success');return{cleaned:cleaned};}
-function updateUI(){var qb=document.getElementById('quickEditBar'),fit=document.getElementById('fitMenuBtn'),cb=document.getElementById('consoleBtn'),lb=document.getElementById('loginBtn');if(qb)qb.style.display=S.admin?'block':'none';if(fit)fit.style.display=S.admin?'inline-flex':'none';if(cb)cb.style.display=S.admin?'inline-block':'none';if(lb)lb.style.display=S.user?'none':'inline-block';}
-auth.onAuthStateChanged(function(u){S.user=u||null;S.admin=(u&&u.email==='ynuraini686@gmail.com')||false;updateUI();});
-function quickEdit(type){if(!S.admin)return;switch(type){case'judul':var v=prompt('Judul:');if(v){document.querySelector('.logo').textContent=v;document.title=v;}break;case'warna':var v=prompt('Warna:');if(v)document.documentElement.style.setProperty('--accent',v);break;case'bg':var v=prompt('Background:');if(v)document.documentElement.style.setProperty('--bg',v);break;case'wa':var v=prompt('No WA:');if(v)document.querySelector('.whatsapp-float').href='https://wa.me/62'+v.replace(/^0/,'');break;case'toko':var v=prompt('Nama toko:');if(v)document.querySelector('.logo').textContent='🎮 '+v;break;case'analisis':openAnalysis();break;case'push':if(confirm('Push?'))pushToGithub();break;case'testgithub':testGitHubConnection();break;case'reload':if(confirm('Reload?'))location.reload();break;case'novel':openNovelReader();break;}}
-function openAnalysis(){var panel=document.getElementById('analysisPanel');if(panel)panel.classList.add('show');var body=document.getElementById('analysisBody');var html=document.documentElement.outerHTML;body.innerHTML='<div class="analysis-section"><h3>📏 Statistik</h3><table><tr><th>Metrik</th><th>Nilai</th></tr><tr><td>Karakter</td><td>'+html.length.toLocaleString('id-ID')+'</td></tr><tr><td>Baris</td><td>'+html.split('\n').length.toLocaleString('id-ID')+'</td></tr><tr><td>DOM Nodes</td><td>'+document.getElementsByTagName('*').length+'</td></tr></table></div>';}
-function closeAnalysis(){var panel=document.getElementById('analysisPanel');if(panel)panel.classList.remove('show');}
 
 // ================================================================
-// FEATURE MANIFEST SYSTEM (Android Manifest Style)
+// CONSOLE
+// ================================================================
+var currentConsoleTab='terminal';
+var consoleLogs={terminal:[],debug:[],firebase:[],github:[]};
+function openConsole(){if(!S.admin){toast('🔒 Admin only!','error');return;}var panel=document.getElementById('consolePanel');if(panel)panel.classList.add('show');}
+function closeConsole(){var panel=document.getElementById('consolePanel');if(panel)panel.classList.remove('show');}
+function switchConsoleTab(tab){currentConsoleTab=tab;document.querySelectorAll('.console-tab').forEach(function(t){t.classList.remove('active');});var tabMap={terminal:'tabTerminal',debug:'tabDebug',firebase:'tabFirebase',github:'tabGithub'};var activeTab=document.getElementById(tabMap[tab]);if(activeTab)activeTab.classList.add('active');renderConsoleContent();}
+function consolePrint(message,type){type=type||'info';consoleLogs[currentConsoleTab]=consoleLogs[currentConsoleTab]||[];consoleLogs[currentConsoleTab].push({message:message,type:type,time:new Date().toLocaleTimeString()});renderConsoleContent();}
+function renderConsoleContent(){var content=document.getElementById('consoleContent');if(!content)return;content.innerHTML=consoleLogs[currentConsoleTab].map(function(l){return '<div style="padding:4px 0;border-bottom:1px solid #1a1a2e"><span style="color:#666">['+l.time+']</span> <span class="console-line '+l.type+'">'+escapeHtml(l.message)+'</span></div>';}).join('');content.scrollTop=content.scrollHeight;}
+async function executeConsole(){var input=document.getElementById('consoleInput');var command=input.value.trim();if(!command)return;consolePrint('➜ '+command,'cmd');input.value='';var parts=command.split(' ');var cmd=parts[0].toLowerCase();
+switch(cmd){
+    case'help':consolePrint('📋 Commands:');consolePrint('  help - Show this help');consolePrint('  clear - Clear console');consolePrint('  exit - Close console');consolePrint('  reload - Reload page');consolePrint('  fb stats - Firebase stats');consolePrint('  gh push - Push to GitHub');consolePrint('  gf list - List GitHub files');break;
+    case'clear':consoleLogs[currentConsoleTab]=[];renderConsoleContent();break;
+    case'exit':closeConsole();break;
+    case'reload':location.reload();break;
+    case'fb':consolePrint('📊 Firebase: '+firebase.apps.length+' apps initialized');break;
+    case'gh':
+        if(parts[1]==='push'){consolePrint('📤 Pushing...');await pushToGithub();}
+        else if(parts[1]==='test'){consolePrint('🧪 Testing GitHub...');await testGitHubConnection();}
+        else{consolePrint('❌ Usage: gh push|test');}
+        break;
+    case'gf':
+        if(parts[1]==='list'){consolePrint('📁 Opening file manager...');openGitHubFileManager();}
+        else{consolePrint('❌ Usage: gf list');}
+        break;
+    default:consolePrint('❌ Unknown command: '+cmd,'error');consolePrint('Type "help" for available commands');}
+}
+
+// ================================================================
+// AUTO FIX & OPTIMIZE
+// ================================================================
+async function runAutoFix(){
+    try{
+        var fixed=0;
+        var issues=[];
+        
+        // Check for duplicate features
+        var seen={};
+        S.features=S.features.filter(function(f){
+            if(seen[f.name]){
+                issues.push('Duplicate feature: '+f.name);
+                fixed++;
+                return false;
+            }
+            seen[f.name]=true;
+            return true;
+        });
+        
+        // Check for invalid orders
+        S.orders=S.orders.filter(function(o){
+            if(!o.id||!o.game||!o.item||!o.price){
+                issues.push('Invalid order removed');
+                fixed++;
+                return false;
+            }
+            return true;
+        });
+        
+        // Save fixed data
+        localStorage.setItem('yad_features_manifest',JSON.stringify(S.features));
+        localStorage.setItem('store_orders',JSON.stringify(S.orders));
+        
+        toast('🔧 AutoFix: '+fixed+' issues fixed','success');
+        if(issues.length){
+            consolePrint('AutoFix issues: '+issues.join(', '),'debug');
+        }
+        return{fixed:fixed,issues:issues};
+    }catch(e){
+        toast('❌ AutoFix error: '+e.message,'error');
+        return{fixed:0,issues:[e.message]};
+    }
+}
+
+async function runOptimize(){
+    try{
+        var cleaned=0;
+        
+        // Clean up old orders (keep last 100)
+        if(S.orders.length>100){
+            var removed=S.orders.length-100;
+            S.orders=S.orders.slice(0,100);
+            cleaned+=removed;
+            localStorage.setItem('store_orders',JSON.stringify(S.orders));
+        }
+        
+        // Clean up features
+        var validFeatures=S.features.filter(function(f){
+            if(!f.name||!f.code){
+                cleaned++;
+                return false;
+            }
+            return true;
+        });
+        S.features=validFeatures;
+        localStorage.setItem('yad_features_manifest',JSON.stringify(S.features));
+        
+        // Clean localStorage
+        var keys=Object.keys(localStorage);
+        var now=Date.now();
+        keys.forEach(function(key){
+            if(key.startsWith('temp_')||key.startsWith('cache_')){
+                try{
+                    var data=JSON.parse(localStorage.getItem(key));
+                    if(data&&data.timestamp&&(now-data.timestamp)>86400000){
+                        localStorage.removeItem(key);
+                        cleaned++;
+                    }
+                }catch(e){}
+            }
+        });
+        
+        toast('🔧 Optimize: '+cleaned+' items cleaned','success');
+        return{cleaned:cleaned};
+    }catch(e){
+        toast('❌ Optimize error: '+e.message,'error');
+        return{cleaned:0};
+    }
+}
+
+// ================================================================
+// UI UPDATE
+// ================================================================
+function updateUI(){
+    var qb=document.getElementById('quickEditBar');
+    var fit=document.getElementById('fitMenuBtn');
+    var cb=document.getElementById('consoleBtn');
+    var lb=document.getElementById('loginBtn');
+    var pn=document.getElementById('profileNavBtn');
+    
+    if(qb)qb.style.display=S.admin?'block':'none';
+    if(fit)fit.style.display=S.admin?'inline-flex':'none';
+    if(cb)cb.style.display=S.admin?'inline-block':'none';
+    if(lb)lb.style.display=S.user?'none':'inline-block';
+    if(pn)pn.textContent=S.user?'👤 '+ (S.user.displayName||S.user.email):'👤 Profil';
+}
+
+auth.onAuthStateChanged(function(u){
+    S.user=u||null;
+    S.admin=(u&&u.email==='ynuraini686@gmail.com')||false;
+    updateUI();
+    if(u){
+        consolePrint('User logged in: '+u.email,'firebase');
+    }
+});
+
+// ================================================================
+// QUICK EDIT
+// ================================================================
+function quickEdit(type){
+    if(!S.admin)return;
+    try{
+        switch(type){
+            case'judul':
+                var v=prompt('Judul:');
+                if(v){document.querySelector('.logo').textContent=v;document.title=v;}
+                break;
+            case'warna':
+                var v=prompt('Warna (hex):','#8b5cf6');
+                if(v&&/^#[0-9a-f]{6}$/i.test(v))document.documentElement.style.setProperty('--accent',v);
+                break;
+            case'bg':
+                var v=prompt('Background (hex):','#0a0a14');
+                if(v&&/^#[0-9a-f]{6}$/i.test(v))document.documentElement.style.setProperty('--bg',v);
+                break;
+            case'wa':
+                var v=prompt('No WA:');
+                if(v)document.querySelector('.whatsapp-float').href='https://wa.me/62'+v.replace(/^0/,'');
+                break;
+            case'toko':
+                var v=prompt('Nama toko:');
+                if(v)document.querySelector('.logo').textContent='🎮 '+v;
+                break;
+            case'analisis':
+                openAnalysis();
+                break;
+            case'push':
+                if(confirm('Push ke GitHub?'))pushToGithub();
+                break;
+            case'testgithub':
+                testGitHubConnection();
+                break;
+            case'reload':
+                if(confirm('Reload halaman?'))location.reload();
+                break;
+            case'novel':
+                openNovelReader();
+                break;
+        }
+    }catch(e){
+        toast('❌ Error: '+e.message,'error');
+    }
+}
+
+function openAnalysis(){
+    var panel=document.getElementById('analysisPanel');
+    if(!panel){
+        panel=document.createElement('div');
+        panel.id='analysisPanel';
+        panel.className='fit-panel';
+        panel.innerHTML='<div class="fit-panel-dialog"><div class="fit-panel-header"><h3 style="color:#fff;font-size:16px;margin:0">🔍 Analisis</h3><span onclick="closeAnalysis()" style="cursor:pointer;font-size:22px;color:#9090a8">×</span></div><div class="fit-panel-body" id="analysisBody"></div></div>';
+        document.body.appendChild(panel);
+    }
+    
+    var html=document.documentElement.outerHTML;
+    var body=document.getElementById('analysisBody');
+    body.innerHTML=`
+    <div style="background:#0d0d20;padding:16px;border-radius:8px;margin-bottom:12px">
+        <h4 style="color:#fff;margin-bottom:12px">📏 Statistik</h4>
+        <table style="width:100%;font-size:12px">
+            <tr><td style="padding:4px;color:#9090a8">Karakter</td><td style="padding:4px;color:#fff">${html.length.toLocaleString('id-ID')}</td></tr>
+            <tr><td style="padding:4px;color:#9090a8">Baris</td><td style="padding:4px;color:#fff">${html.split('\n').length.toLocaleString('id-ID')}</td></tr>
+            <tr><td style="padding:4px;color:#9090a8">DOM Nodes</td><td style="padding:4px;color:#fff">${document.getElementsByTagName('*').length}</td></tr>
+            <tr><td style="padding:4px;color:#9090a8">Scripts</td><td style="padding:4px;color:#fff">${document.scripts.length}</td></tr>
+            <tr><td style="padding:4px;color:#9090a8">Styles</td><td style="padding:4px;color:#fff">${document.styleSheets.length}</td></tr>
+        </table>
+    </div>
+    <div style="background:#0d0d20;padding:16px;border-radius:8px;margin-bottom:12px">
+        <h4 style="color:#fff;margin-bottom:12px">📦 Data</h4>
+        <table style="width:100%;font-size:12px">
+            <tr><td style="padding:4px;color:#9090a8">Orders</td><td style="padding:4px;color:#fff">${S.orders.length}</td></tr>
+            <tr><td style="padding:4px;color:#9090a8">Features</td><td style="padding:4px;color:#fff">${S.features.length}</td></tr>
+            <tr><td style="padding:4px;color:#9090a8">Payment Methods</td><td style="padding:4px;color:#fff">${S.paymentMethods.length}</td></tr>
+            <tr><td style="padding:4px;color:#9090a8">Novels</td><td style="padding:4px;color:#fff">${novels.length}</td></tr>
+        </table>
+    </div>
+    <div style="background:#0d0d20;padding:16px;border-radius:8px">
+        <h4 style="color:#fff;margin-bottom:12px">💾 Storage</h4>
+        <table style="width:100%;font-size:12px">
+            <tr><td style="padding:4px;color:#9090a8">LocalStorage Used</td><td style="padding:4px;color:#fff">${(JSON.stringify(localStorage).length/1024).toFixed(2)} KB</td></tr>
+            <tr><td style="padding:4px;color:#9090a8">Memory (approx)</td><td style="padding:4px;color:#fff">${(performance.memory?performance.memory.usedJSHeapSize/1048576:0).toFixed(2)} MB</td></tr>
+        </table>
+    </div>`;
+    panel.classList.add('show');
+}
+
+function closeAnalysis(){
+    var panel=document.getElementById('analysisPanel');
+    if(panel)panel.classList.remove('show');
+}
+
+// ================================================================
+// FEATURE MANIFEST SYSTEM
 // ================================================================
 var fitMode='add';
+
 function toggleFitMenu(){var dd=document.getElementById('fitDropdown');if(dd)dd.classList.toggle('show');}
 function closeFitMenu(){var dd=document.getElementById('fitDropdown');if(dd)dd.classList.remove('show');}
-function openFitPanel(mode){if(!S.admin){toast('🔒 Admin only!','error');return;}fitMode=mode;var panel=document.getElementById('fitPanel'),body=document.getElementById('fitPanelBody'),title=document.getElementById('fitPanelTitle'),footer=document.getElementById('fitPanelFooter');closeFitMenu();
-if(mode==='add'){
-title.textContent='➕ Tambah Fitur (Manifest Style)';
-body.innerHTML=`
-<label>📝 Nama Fitur (Package Name)</label>
-<input id="fitName" placeholder="com.yadstore.feature.nama" value="com.yadstore.feature.">
-<label>🏷️ Label Fitur</label>
-<input id="fitLabel" placeholder="Nama tampilan fitur">
-<label>📌 Versi</label>
-<input id="fitVersion" placeholder="1.0.0" value="1.0.0">
-<label>🔑 Izin (Permissions) - pisahkan dengan koma</label>
-<input id="fitPermissions" placeholder="storage,notification,network">
-<label>⚙️ Proses (Process)</label>
-<select id="fitProcess">
-<option value="main">main (default)</option>
-<option value="background">background</option>
-<option value="system">system (special)</option>
-</select>
-<label>📦 Tipe Komponen</label>
-<select id="fitComponentType">
-<option value="button">Button (Tombol)</option>
-<option value="widget">Widget</option>
-<option value="panel">Panel</option>
-<option value="script">Script Only</option>
-</select>
-<label>💻 Kode HTML/JS</label>
-<textarea id="fitCode" style="min-height:150px;font-family:monospace;" placeholder="<button onclick='alert(\"Hello\")'>Klik Saya</button>"></textarea>
-<div style="background:#0d0d20;border-radius:8px;padding:12px;margin:10px 0;font-size:10px;color:var(--text-dim)">
-<strong>📋 Preview Manifest:</strong>
-<div id="manifestPreview" class="feature-manifest-view">&lt;feature&gt;
+
+function openFitPanel(mode){
+    if(!S.admin){toast('🔒 Admin only!','error');return;}
+    fitMode=mode;
+    var panel=document.getElementById('fitPanel');
+    var body=document.getElementById('fitPanelBody');
+    var title=document.getElementById('fitPanelTitle');
+    var footer=document.getElementById('fitPanelFooter');
+    closeFitMenu();
+    
+    if(mode==='add'){
+        title.textContent='➕ Tambah Fitur (Manifest Style)';
+        body.innerHTML=`
+        <label>📝 Nama Fitur (Package Name)</label>
+        <input id="fitName" placeholder="com.yadstore.feature.nama" value="com.yadstore.feature.">
+        <label>🏷️ Label Fitur</label>
+        <input id="fitLabel" placeholder="Nama tampilan fitur">
+        <label>📌 Versi</label>
+        <input id="fitVersion" placeholder="1.0.0" value="1.0.0">
+        <label>🔑 Izin (Permissions) - pisahkan dengan koma</label>
+        <input id="fitPermissions" placeholder="storage,notification,network">
+        <label>⚙️ Proses (Process)</label>
+        <select id="fitProcess">
+            <option value="main">main (default)</option>
+            <option value="background">background</option>
+            <option value="system">system (special)</option>
+        </select>
+        <label>📦 Tipe Komponen</label>
+        <select id="fitComponentType">
+            <option value="button">Button (Tombol)</option>
+            <option value="widget">Widget</option>
+            <option value="panel">Panel</option>
+            <option value="script">Script Only</option>
+        </select>
+        <label>💻 Kode HTML/JS</label>
+        <textarea id="fitCode" style="min-height:150px;font-family:monospace;" placeholder="<button onclick='alert(\"Hello\")'>Klik Saya</button>"></textarea>
+        <div style="background:#0d0d20;border-radius:8px;padding:12px;margin:10px 0;font-size:10px;color:var(--text-dim)">
+            <strong>📋 Preview Manifest:</strong>
+            <div id="manifestPreview" class="feature-manifest-view">&lt;feature&gt;
   &lt;manifest package="com.yadstore.feature.nama" version="1.0.0"&gt;
   &lt;/manifest&gt;
 &lt;/feature&gt;</div>
-</div>
-<p style="font-size:10px;color:var(--text-dim)">⚠️ Fitur akan disimpan sebagai konfigurasi manifest dan dirender sesuai tipe komponen.</p>`;
-footer.innerHTML='<button onclick="closeFitPanel()" style="padding:8px 16px;background:#252540;color:#e8e8f0;border:none;border-radius:8px;cursor:pointer">Batal</button><button onclick="saveFitFromPanel()" style="padding:8px 16px;background:#10b981;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600">✅ Simpan Fitur</button>';
-document.getElementById('fitName').addEventListener('input',updateManifestPreview);
-document.getElementById('fitVersion').addEventListener('input',updateManifestPreview);
-document.getElementById('fitLabel').addEventListener('input',updateManifestPreview);
+        </div>
+        <p style="font-size:10px;color:var(--text-dim)">⚠️ Fitur akan disimpan sebagai konfigurasi manifest dan dirender sesuai tipe komponen.</p>`;
+        
+        footer.innerHTML='<button onclick="closeFitPanel()" style="padding:8px 16px;background:#252540;color:#e8e8f0;border:none;border-radius:8px;cursor:pointer">Batal</button><button onclick="saveFitFromPanel()" style="padding:8px 16px;background:#10b981;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600">✅ Simpan Fitur</button>';
+        
+        document.getElementById('fitName').addEventListener('input',updateManifestPreview);
+        document.getElementById('fitVersion').addEventListener('input',updateManifestPreview);
+        document.getElementById('fitLabel').addEventListener('input',updateManifestPreview);
+    }
+    else if(mode==='list'){
+        title.textContent='📦 Daftar Fitur Terdaftar';
+        var html=S.features.length?S.features.map(function(f,i){
+            return '<div class="fit-list-item" style="flex-direction:column;align-items:flex-start;gap:6px"><div style="display:flex;justify-content:space-between;width:100%"><span><strong>'+escapeHtml(f.label||f.name)+'</strong> <small style="color:var(--text-dim)">v'+f.version+'</small></span><button class="fit-list-del" onclick="deleteFitByIndex('+i+')">✕</button></div><div style="font-size:9px;color:var(--text-dim);word-break:break-all">📦 '+escapeHtml(f.name)+'</div><div style="font-size:9px;color:var(--text-dim)">🔑 Izin: '+(f.permissions||[]).join(', ')+' | ⚙️ Proses: '+f.process+' | 📦 Tipe: '+f.componentType+'</div><div style="font-size:9px;color:var(--text-dim)">Status: <span style="color:'+(f.status==='active'?'var(--green)':'var(--red)')+'">'+f.status.toUpperCase()+'</span></div></div>';
+        }).join(''):'<p style="color:#9090a8;text-align:center;padding:20px;">📭 Tidak ada fitur terdaftar</p>';
+        body.innerHTML=html;
+        footer.innerHTML='<button onclick="closeFitPanel()" style="padding:8px 16px;background:#252540;color:#e8e8f0;border:none;border-radius:8px;cursor:pointer">✕ Tutup</button>';
+    }
+    else{
+        title.textContent='🗑️ Hapus Fitur';
+        var html=S.features.length?S.features.map(function(f,i){
+            return '<div class="fit-list-item"><span>'+(i+1)+'. '+escapeHtml(f.label||f.name)+'</span><button class="fit-list-del" onclick="deleteFitByIndex('+i+')">✕</button></div>';
+        }).join('')+'<button onclick="deleteAllFits()" style="width:100%;padding:10px;background:#ef4444;color:#fff;border:none;border-radius:8px;cursor:pointer;margin-top:10px;">🗑️ Hapus Semua Fitur</button>':'<p style="color:#9090a8;text-align:center;padding:20px;">📭 Tidak ada fitur</p>';
+        body.innerHTML=html;
+        footer.innerHTML='<button onclick="closeFitPanel()" style="padding:8px 16px;background:#252540;color:#e8e8f0;border:none;border-radius:8px;cursor:pointer">✕ Tutup</button>';
+    }
+    panel.classList.add('show');
 }
-else if(mode==='list'){
-title.textContent='📦 Daftar Fitur Terdaftar';
-var html=S.features.length?S.features.map(function(f,i){
-return '<div class="fit-list-item" style="flex-direction:column;align-items:flex-start;gap:6px"><div style="display:flex;justify-content:space-between;width:100%"><span><strong>'+escapeHtml(f.label||f.name)+'</strong> <small style="color:var(--text-dim)">v'+f.version+'</small></span><button class="fit-list-del" onclick="deleteFitByIndex('+i+')">✕</button></div><div style="font-size:9px;color:var(--text-dim);word-break:break-all">📦 '+escapeHtml(f.name)+'</div><div style="font-size:9px;color:var(--text-dim)">🔑 Izin: '+(f.permissions||[]).join(', ')+' | ⚙️ Proses: '+f.process+' | 📦 Tipe: '+f.componentType+'</div><div style="font-size:9px;color:var(--text-dim)">Status: <span style="color:'+(f.status==='active'?'var(--green)':'var(--red)')+'">'+f.status.toUpperCase()+'</span></div></div>';}).join(''):'<p style="color:#9090a8;text-align:center;padding:20px;">📭 Tidak ada fitur terdaftar</p>';
-body.innerHTML=html;
-footer.innerHTML='<button onclick="closeFitPanel()" style="padding:8px 16px;background:#252540;color:#e8e8f0;border:none;border-radius:8px;cursor:pointer">✕ Tutup</button>';
-}
-else{
-title.textContent='🗑️ Hapus Fitur';
-var html=S.features.length?S.features.map(function(f,i){
-return '<div class="fit-list-item"><span>'+(i+1)+'. '+escapeHtml(f.label||f.name)+'</span><button class="fit-list-del" onclick="deleteFitByIndex('+i+')">✕</button></div>';}).join('')+'<button onclick="deleteAllFits()" style="width:100%;padding:10px;background:#ef4444;color:#fff;border:none;border-radius:8px;cursor:pointer;margin-top:10px;">🗑️ Hapus Semua Fitur</button>':'<p style="color:#9090a8;text-align:center;padding:20px;">📭 Tidak ada fitur</p>';
-body.innerHTML=html;
-footer.innerHTML='<button onclick="closeFitPanel()" style="padding:8px 16px;background:#252540;color:#e8e8f0;border:none;border-radius:8px;cursor:pointer">✕ Tutup</button>';
-}
-panel.classList.add('show');}
+
 function closeFitPanel(){var p=document.getElementById('fitPanel');if(p)p.classList.remove('show');}
-function updateManifestPreview(){var name=document.getElementById('fitName').value.trim()||'com.yadstore.feature.nama';var version=document.getElementById('fitVersion').value.trim()||'1.0.0';var label=document.getElementById('fitLabel').value.trim()||name;var permissions=document.getElementById('fitPermissions').value.trim();var process=document.getElementById('fitProcess').value;var componentType=document.getElementById('fitComponentType').value;var permStr=permissions?permissions.split(',').map(function(p){return p.trim();}).filter(Boolean):[];var manifest='<feature>\n  <manifest package="'+name+'" version="'+version+'" label="'+label+'">\n    <uses-permission android:name="'+permStr.join('" />\n    <uses-permission android:name="')+'" />\n    <application android:process="'+process+'">\n      <component type="'+componentType+'" />\n    </application>\n  </manifest>\n</feature>';document.getElementById('manifestPreview').textContent=manifest;}
-function saveFitFromPanel(){var name=document.getElementById('fitName').value.trim();var label=document.getElementById('fitLabel').value.trim();var version=document.getElementById('fitVersion').value.trim()||'1.0.0';var permissions=document.getElementById('fitPermissions').value.split(',').map(function(p){return p.trim();}).filter(Boolean);var process=document.getElementById('fitProcess').value;var componentType=document.getElementById('fitComponentType').value;var code=document.getElementById('fitCode').value.trim();if(!name||!code){toast('❌ Lengkapi nama dan kode!','error');return;}var feature={name:name,label:label||name,version:version,permissions:permissions,process:process,componentType:componentType,code:code,status:'active',created:new Date().toISOString()};S.features=S.features.filter(function(f){return f.name!==name;});S.features.push(feature);localStorage.setItem('yad_features_manifest',JSON.stringify(S.features));renderFeature(feature);closeFitPanel();toast('✅ Fitur "'+label+'" ditambahkan!','success');}
-function renderFeature(feature){var old=document.querySelector('[data-feature-manifest="'+feature.name+'"]');if(old)old.remove();var container=document.createElement('div');container.setAttribute('data-feature-manifest',feature.name);container.style.display='none';container.innerHTML=feature.code;document.body.appendChild(container);if(feature.componentType==='button'){var btn=document.createElement('button');btn.className='btn';btn.setAttribute('data-feature-manifest',feature.name);btn.textContent=feature.label;btn.onclick=function(){var el=document.querySelector('[data-feature-manifest="'+feature.name+'"]');if(el&&el.innerHTML)eval(el.innerHTML);};document.body.appendChild(btn);}else if(feature.componentType==='widget'){var widget=document.createElement('div');widget.setAttribute('data-feature-manifest',feature.name);widget.innerHTML=feature.code;document.body.appendChild(widget);}}
-function deleteFitByIndex(idx){if(!S.admin)return;var feature=S.features[idx];if(!feature)return;if(!confirm('Hapus fitur "'+(feature.label||feature.name)+'"?'))return;document.querySelectorAll('[data-feature-manifest="'+feature.name+'"]').forEach(function(el){el.remove();});S.features.splice(idx,1);localStorage.setItem('yad_features_manifest',JSON.stringify(S.features));openFitPanel(fitMode);toast('🗑️ Fitur dihapus','success');}
-function deleteAllFits(){if(!S.admin)return;if(!S.features.length)return;if(!confirm('Hapus SEMUA fitur ('+S.features.length+')?'))return;document.querySelectorAll('[data-feature-manifest]').forEach(function(el){el.remove();});S.features=[];localStorage.setItem('yad_features_manifest','[]');closeFitPanel();toast('✅ Semua fitur dihapus','success');}
-function openPaymentForm(){if(!S.admin)return toast('❌ Admin only!','error');var panel=document.getElementById('paymentFormPanel');if(panel)panel.classList.add('show');}
+
+function updateManifestPreview(){
+    var name=document.getElementById('fitName').value.trim()||'com.yadstore.feature.nama';
+    var version=document.getElementById('fitVersion').value.trim()||'1.0.0';
+    var label=document.getElementById('fitLabel').value.trim()||name;
+    var permissions=document.getElementById('fitPermissions').value.trim();
+    var process=document.getElementById('fitProcess').value;
+    var componentType=document.getElementById('fitComponentType').value;
+    var permStr=permissions?permissions.split(',').map(function(p){return p.trim();}).filter(Boolean):[];
+    var manifest='<feature>\n  <manifest package="'+name+'" version="'+version+'" label="'+label+'">\n    <uses-permission android:name="'+permStr.join('" />\n    <uses-permission android:name="')+'" />\n    <application android:process="'+process+'">\n      <component type="'+componentType+'" />\n    </application>\n  </manifest>\n</feature>';
+    document.getElementById('manifestPreview').textContent=manifest;
+}
+
+function saveFitFromPanel(){
+    try{
+        var name=document.getElementById('fitName').value.trim();
+        var label=document.getElementById('fitLabel').value.trim();
+        var version=document.getElementById('fitVersion').value.trim()||'1.0.0';
+        var permissions=document.getElementById('fitPermissions').value.split(',').map(function(p){return p.trim();}).filter(Boolean);
+        var process=document.getElementById('fitProcess').value;
+        var componentType=document.getElementById('fitComponentType').value;
+        var code=document.getElementById('fitCode').value.trim();
+        
+        if(!name||!code){toast('❌ Lengkapi nama dan kode!','error');return;}
+        
+        var feature={
+            name:name,
+            label:label||name,
+            version:version,
+            permissions:permissions,
+            process:process,
+            componentType:componentType,
+            code:code,
+            status:'active',
+            created:new Date().toISOString()
+        };
+        
+        S.features=S.features.filter(function(f){return f.name!==name;});
+        S.features.push(feature);
+        localStorage.setItem('yad_features_manifest',JSON.stringify(S.features));
+        renderFeature(feature);
+        closeFitPanel();
+        toast('✅ Fitur "'+label+'" ditambahkan!','success');
+        consolePrint('Feature added: '+name,'debug');
+    }catch(e){
+        toast('❌ Error: '+e.message,'error');
+    }
+}
+
+function renderFeature(feature){
+    try{
+        // Remove existing feature elements
+        var existing=document.querySelectorAll('[data-feature-manifest="'+feature.name+'"]');
+        existing.forEach(function(el){el.remove();});
+        
+        // Create container for feature code
+        var container=document.createElement('div');
+        container.setAttribute('data-feature-manifest',feature.name);
+        container.style.display='none';
+        container.innerHTML=feature.code;
+        document.body.appendChild(container);
+        
+        if(feature.componentType==='button'){
+            var btn=document.createElement('button');
+            btn.className='btn';
+            btn.setAttribute('data-feature-manifest',feature.name);
+            btn.textContent=feature.label;
+            btn.onclick=function(){
+                var el=document.querySelector('[data-feature-manifest="'+feature.name+'"]');
+                if(el&&el.innerHTML){
+                    // Use safe evaluation instead of direct eval
+                    try{
+                        var scripts=el.getElementsByTagName('script');
+                        for(var i=0;i<scripts.length;i++){
+                            safeEval(scripts[i].textContent);
+                        }
+                    }catch(e){
+                        console.error('Feature execution error:',e);
+                    }
+                }
+            };
+            // Add to nav links
+            var navLinks=document.querySelector('.nav-links');
+            if(navLinks)navLinks.appendChild(btn);
+        }
+        else if(feature.componentType==='widget'){
+            var widget=document.createElement('div');
+            widget.setAttribute('data-feature-manifest',feature.name);
+            widget.innerHTML=feature.code;
+            document.body.appendChild(widget);
+        }
+        else if(feature.componentType==='panel'){
+            var panel=document.createElement('div');
+            panel.setAttribute('data-feature-manifest',feature.name);
+            panel.className='fit-panel';
+            panel.innerHTML=feature.code;
+            document.body.appendChild(panel);
+        }
+        // Script only - just store the code
+    }catch(e){
+        console.error('Error rendering feature:',e);
+        toast('❌ Error rendering feature: '+e.message,'error');
+    }
+}
+
+function deleteFitByIndex(idx){
+    if(!S.admin)return;
+    var feature=S.features[idx];
+    if(!feature)return;
+    if(!confirm('Hapus fitur "'+(feature.label||feature.name)+'"?'))return;
+    document.querySelectorAll('[data-feature-manifest="'+feature.name+'"]').forEach(function(el){el.remove();});
+    S.features.splice(idx,1);
+    localStorage.setItem('yad_features_manifest',JSON.stringify(S.features));
+    openFitPanel(fitMode);
+    toast('🗑️ Fitur dihapus','success');
+}
+
+function deleteAllFits(){
+    if(!S.admin)return;
+    if(!S.features.length)return;
+    if(!confirm('Hapus SEMUA fitur ('+S.features.length+')?'))return;
+    document.querySelectorAll('[data-feature-manifest]').forEach(function(el){el.remove();});
+    S.features=[];
+    localStorage.setItem('yad_features_manifest','[]');
+    closeFitPanel();
+    toast('✅ Semua fitur dihapus','success');
+}
+
+// ================================================================
+// PAYMENT MANAGEMENT
+// ================================================================
+function openPaymentForm(){
+    if(!S.admin)return toast('❌ Admin only!','error');
+    var panel=document.getElementById('paymentFormPanel');
+    if(!panel){
+        panel=document.createElement('div');
+        panel.id='paymentFormPanel';
+        panel.className='fit-panel';
+        panel.innerHTML='<div class="fit-panel-dialog"><div class="fit-panel-header"><h3 style="color:#fff;font-size:16px;margin:0">💳 Tambah Metode Pembayaran</h3><span onclick="closePaymentForm()" style="cursor:pointer;font-size:22px;color:#9090a8">×</span></div><div class="fit-panel-body"><label>Nama Metode</label><input id="payName" placeholder="Contoh: DANA, OVO, dll"><label>Nomor</label><input id="payNumber" placeholder="Nomor rekening/HP"></div><div style="padding:12px;background:#0d0d20;border-top:1px solid #252540;display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="closePaymentForm()">Batal</button><button class="btn btn-primary" onclick="savePayment()">💾 Simpan</button></div></div>';
+        document.body.appendChild(panel);
+    }
+    panel.classList.add('show');
+}
 function closePaymentForm(){var panel=document.getElementById('paymentFormPanel');if(panel)panel.classList.remove('show');}
-function savePayment(){var n=document.getElementById('payName').value.trim(),num=document.getElementById('payNumber').value.trim();if(!n||!num)return toast('❌ Lengkapi!','error');S.paymentMethods.push({name:n,number:num,holder:'YAD Store'});localStorage.setItem('store_payments',JSON.stringify(S.paymentMethods));renderPayments();closePaymentForm();toast('✅ '+n+' ditambahkan!','success');}
+function savePayment(){
+    try{
+        var n=document.getElementById('payName').value.trim();
+        var num=document.getElementById('payNumber').value.trim();
+        if(!n||!num)return toast('❌ Lengkapi!','error');
+        S.paymentMethods.push({name:n,number:num,holder:'YAD Store'});
+        localStorage.setItem('store_payments',JSON.stringify(S.paymentMethods));
+        renderPayments();
+        closePaymentForm();
+        toast('✅ '+n+' ditambahkan!','success');
+    }catch(e){
+        toast('❌ Error: '+e.message,'error');
+    }
+}
 
 // ================================================================
 // INITIALIZE
 // ================================================================
-(function init(){renderGames('all');renderPayments();addLive('🛒 Sistem online');setInterval(function(){var actions=['📱 Pulsa 10K','🎮 ML 86 Diamonds','📶 Data 5GB','⚡ Token 50K'];var action=actions[Math.floor(Math.random()*actions.length)];addLive('✅ '+action);},15000);})();
+(function init(){
+    try{
+        renderGames('all');
+        renderPayments();
+        addLive('🛒 Sistem online');
+        
+        // Load saved features
+        S.features.forEach(function(feature){
+            if(feature.status==='active'){
+                renderFeature(feature);
+            }
+        });
+        
+        // Update online count periodically
+        setInterval(function(){
+            var count=87+Math.floor(Math.random()*20);
+            document.getElementById('onlineCount').textContent=count;
+        },30000);
+        
+        // Live feed simulation
+        setInterval(function(){
+            var actions=['📱 Pulsa 10K','🎮 ML 86 Diamonds','📶 Data 5GB','⚡ Token 50K','💳 E-Wallet 20K'];
+            var action=actions[Math.floor(Math.random()*actions.length)];
+            addLive('✅ '+action);
+        },15000);
+        
+        // Auto-save orders periodically
+        setInterval(function(){
+            localStorage.setItem('store_orders',JSON.stringify(S.orders));
+        },60000);
+        
+        consolePrint('System initialized','terminal');
+        consolePrint('Products loaded: '+Object.keys(ALL_PRODUCTS).length+' categories','debug');
+    }catch(e){
+        console.error('Init error:',e);
+        toast('❌ Init error: '+e.message,'error');
+    }
+})();
 </script>
 </body>
 </html>

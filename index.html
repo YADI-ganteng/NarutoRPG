@@ -2,1823 +2,431 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>YAD Store - Complete AI & File Manager</title>
-    
-    <!-- Firebase SDKs -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>YAD Store - Top Up Game & Pulsa Termurah</title>
+    <meta name="description" content="YAD Store - Top up game, pulsa, paket data, token listrik, voucher, dan e-wallet termurah.">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    
     <style>
-        :root {
-            --bg: #0a0a14;
-            --bg-card: #12122a;
-            --bg-hover: #1a1a35;
-            --bg-input: #0d0d20;
-            --text: #e8e8f0;
-            --text-dim: #9090a8;
-            --accent: #8b5cf6;
-            --accent2: #06b6d4;
-            --gold: #f59e0b;
-            --green: #10b981;
-            --red: #ef4444;
-            --pink: #ec4899;
-            --border: #252540;
-            --radius: 14px;
-        }
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            min-height: 100vh;
-        }
-        
-        /* Header */
-        .header {
-            background: rgba(10,10,20,0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        
-        .logo {
-            font-size: 20px;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--accent), var(--pink));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .nav-links {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        
-        .btn {
-            padding: 8px 16px;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            background: transparent;
-            color: var(--text);
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            transition: all 0.3s;
-            font-family: inherit;
-        }
-        
-        .btn:hover {
-            background: var(--bg-hover);
-            border-color: var(--accent);
-        }
-        
-        .btn-primary {
-            background: var(--accent);
-            color: white;
-            border: none;
-        }
-        
-        .btn-success {
-            background: var(--green);
-            color: white;
-            border: none;
-        }
-        
-        .btn-danger {
-            background: var(--red);
-            color: white;
-            border: none;
-        }
-        
-        /* Activity Bar */
-        .activity-bar {
-            background: #0d0d15;
-            border-bottom: 1px solid var(--border);
-            padding: 8px 16px;
-            font-size: 11px;
-            color: var(--text-dim);
-            display: flex;
-            gap: 20px;
-            overflow-x: auto;
-            white-space: nowrap;
-        }
-        
-        .dot-live {
-            width: 6px;
-            height: 6px;
-            background: var(--green);
-            border-radius: 50%;
-            display: inline-block;
-            animation: blink 2s infinite;
-        }
-        
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-        
-        /* Container */
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        /* Floating Buttons */
-        .floating-ai {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent), var(--pink));
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 24px;
-            z-index: 400;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 8px 32px rgba(139,92,246,0.4);
-            animation: float 3s ease-in-out infinite;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
-        }
-        
-        .whatsapp-float {
-            position: fixed;
-            bottom: 24px;
-            left: 24px;
-            width: 56px;
-            height: 56px;
-            background: #25D366;
-            color: white;
-            border-radius: 50%;
-            text-align: center;
-            font-size: 28px;
-            box-shadow: 0 8px 32px rgba(37,211,102,0.4);
-            z-index: 400;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-        }
-        
-        /* AI Chat Widget */
-        .ai-chat-widget {
-            position: fixed;
-            bottom: 90px;
-            right: 20px;
-            width: 420px;
-            max-width: 92vw;
-            z-index: 450;
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            border: 2px solid var(--accent);
-            overflow: hidden;
-            box-shadow: 0 8px 40px rgba(0,0,0,0.6);
-            display: none;
-            flex-direction: column;
-            max-height: 80vh;
-        }
-        
-        .ai-chat-widget.show {
-            display: flex;
-        }
-        
-        .ai-chat-header {
-            padding: 12px 16px;
-            background: var(--bg-hover);
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: 700;
-            font-size: 13px;
-        }
-        
-        .ai-chat-messages {
-            height: 350px;
-            overflow-y: auto;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            background: #05050a;
-        }
-        
-        .ai-msg {
-            padding: 10px 14px;
-            border-radius: 12px;
-            font-size: 12px;
-            line-height: 1.5;
-            background: var(--bg-input);
-            max-width: 90%;
-            word-break: break-word;
-        }
-        
-        .ai-msg.user {
-            background: var(--accent);
-            color: white;
-            margin-left: auto;
-        }
-        
-        .ai-msg.bot {
-            background: var(--bg-hover);
-            border: 1px solid var(--border);
-        }
-        
-        .ai-chat-input-area {
-            padding: 10px;
-            border-top: 1px solid var(--border);
-            display: flex;
-            gap: 8px;
-            background: var(--bg-card);
-        }
-        
-        .ai-chat-input-area input {
-            flex: 1;
-            padding: 10px 14px;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            color: var(--text);
-            font-size: 12px;
-            outline: none;
-        }
-        
-        .ai-chat-input-area button {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-        }
-        
-        /* Game Grid */
-        .game-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 16px;
-        }
-        
-        .game-card {
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            padding: 20px;
-            border: 1px solid var(--border);
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .game-card:hover {
-            border-color: var(--accent);
-            transform: translateY(-4px);
-            box-shadow: 0 8px 24px rgba(139,92,246,0.2);
-        }
-        
-        /* Panels */
-        .panel {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            border: 2px solid var(--accent);
-            z-index: 1000;
-            display: none;
-            flex-direction: column;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
-            width: 90vw;
-            max-width: 800px;
-            max-height: 90vh;
-            overflow: hidden;
-        }
-        
-        .panel.show {
-            display: flex;
-        }
-        
-        .panel-header {
-            padding: 15px 20px;
-            background: var(--bg-hover);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .panel-body {
-            padding: 20px;
-            overflow-y: auto;
-            flex: 1;
-        }
-        
-        /* Form Elements */
-        input, select, textarea {
-            width: 100%;
-            padding: 10px 14px;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text);
-            font-size: 13px;
-            font-family: inherit;
-            outline: none;
-            transition: all 0.3s;
-        }
-        
-        input:focus, select:focus, textarea:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(139,92,246,0.2);
-        }
-        
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-            font-family: 'Courier New', monospace;
-        }
-        
-        /* Code Editor */
-        .code-editor {
-            width: 100%;
-            min-height: 400px;
-            background: #000;
-            color: #00ff00;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            padding: 15px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            resize: vertical;
-        }
-        
-        /* GitHub File List */
-        .file-list {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        
-        .file-item {
-            padding: 10px;
-            background: var(--bg-input);
-            margin-bottom: 5px;
-            border-radius: 6px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .file-item:hover {
-            background: var(--bg-hover);
-            border-left: 3px solid var(--accent);
-        }
-        
-        /* Search & Replace */
-        .search-replace-bar {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .search-replace-bar input {
-            flex: 1;
-            min-width: 150px;
-        }
-        
-        /* Toast */
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 9999;
-        }
-        
-        /* Admin Dashboard */
-        .admin-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .stat-card {
-            background: var(--bg-input);
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        
-        .stat-value {
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--accent);
-        }
-        
-        .stat-label {
-            font-size: 11px;
-            color: var(--text-dim);
-            margin-top: 5px;
-        }
-        
-        /* Voucher */
-        .voucher-input {
-            display: flex;
-            gap: 10px;
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .game-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .ai-chat-widget {
-                width: 95vw;
-                right: 2.5vw;
-                bottom: 80px;
-            }
-            
-            .floating-ai, .whatsapp-float {
-                width: 48px;
-                height: 48px;
-                font-size: 20px;
-            }
-        }
-        
-        /* Loading Spinner */
-        .loading-spinner {
-            display: inline-block;
-            width: 15px;
-            height: 15px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        /* Hidden */
-        .hidden {
-            display: none !important;
-        }
+        :root{--bg:#0a0a14;--bg-card:#12122a;--bg-hover:#1a1a35;--bg-input:#0d0d20;--text:#e8e8f0;--text-dim:#9090a8;--accent:#8b5cf6;--accent2:#06b6d4;--gold:#f59e0b;--green:#10b981;--red:#ef4444;--pink:#ec4899;--border:#252540;--radius:14px}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
+        .header{background:rgba(10,10,20,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:12px;flex-wrap:wrap}
+        .logo{font-size:20px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .nav-links{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+        .btn{padding:7px 14px;border-radius:18px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;font-size:11px;font-weight:600;transition:all 0.2s;font-family:inherit}
+        .btn:hover{background:var(--bg-hover);border-color:var(--accent)}
+        .btn-primary{background:var(--accent);color:white;border:none}
+        .btn-gold{background:linear-gradient(135deg,#f59e0b,#d97706);color:#1a1a1a;border:none}
+        .activity-bar{background:#0d0d15;border-bottom:1px solid var(--border);padding:6px 16px;font-size:10px;color:var(--text-dim);display:flex;gap:20px;overflow:hidden;white-space:nowrap;flex-wrap:wrap}
+        .dot-live{width:6px;height:6px;background:var(--green);border-radius:50%;display:inline-block;animation:blink 2s infinite}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+        .container{max-width:1200px;margin:0 auto;padding:20px}
+        .floating-ai{position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--pink));color:white;border:none;cursor:pointer;font-size:24px;z-index:400;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(139,92,246,0.4);animation:float 3s ease-in-out infinite}
+        @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+        .whatsapp-float{position:fixed;bottom:24px;left:24px;width:56px;height:56px;background:#25D366;color:white;border-radius:50%;text-align:center;font-size:28px;box-shadow:0 8px 32px rgba(37,211,102,0.4);z-index:400;display:flex;align-items:center;justify-content:center;text-decoration:none}
+        .ai-chat-widget{position:fixed;bottom:90px;right:20px;width:420px;max-width:92vw;z-index:450;background:var(--bg-card);border-radius:var(--radius);border:2px solid var(--accent);overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.6);display:none;flex-direction:column;max-height:80vh}
+        .ai-chat-widget.show{display:flex}
+        .ai-chat-header{padding:10px 14px;background:var(--bg-hover);cursor:pointer;display:flex;justify-content:space-between;font-weight:700;font-size:13px}
+        .ai-chat-body{display:flex;flex-direction:column;overflow:hidden}
+        .ai-chat-body.hidden{display:none}
+        .ai-chat-messages{height:300px;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px}
+        .ai-msg{padding:7px 10px;border-radius:12px;font-size:12px;line-height:1.4;background:var(--bg-input);max-width:90%;word-break:break-word}
+        .ai-msg.user{background:var(--accent);color:white;margin-left:auto}
+        .ai-msg.system{background:var(--bg-hover);color:var(--accent2);text-align:center;font-size:10px;max-width:100%}
+        .ai-msg.error{background:#3d1f1f;color:var(--red)}
+        .ai-msg.success{background:#1f3d2f;color:var(--green)}
+        .ai-chat-input-area{padding:8px;border-top:1px solid var(--border);display:flex;gap:6px}
+        .ai-chat-input-area input{flex:1;padding:8px 12px;background:var(--bg-input);border:1px solid var(--border);border-radius:16px;color:var(--text);font-size:12px;outline:none;font-family:inherit}
+        .ai-chat-input-area button{background:var(--accent);color:white;border:none;padding:8px 14px;border-radius:16px;cursor:pointer;font-size:14px}
+        .voice-btn{background:#ef4444;color:#fff;border:none;padding:8px 14px;border-radius:20px;cursor:pointer;font-size:16px;margin-right:6px;transition:all 0.3s}
+        .voice-btn.listening{background:#10b981;animation:pulse-voice 1.2s infinite}
+        @keyframes pulse-voice{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.5)}50%{box-shadow:0 0 0 12px rgba(16,185,129,0)}}
+        .quick-edit-bar{padding:8px;background:var(--bg-input);border-top:1px solid var(--border)}
+        .quick-edit-bar .edit-title{font-size:10px;color:var(--text-dim);margin-bottom:4px}
+        .quick-edit-btn{padding:4px 8px;margin:2px;font-size:10px;border-radius:4px;border:1px solid var(--border);background:var(--bg-hover);color:var(--text);cursor:pointer;font-family:inherit}
+        .quick-edit-btn:hover{background:var(--accent);color:white}
+        .github-debug-panel{position:fixed;bottom:90px;left:20px;width:380px;max-width:90vw;z-index:450;background:#0a0a0a;border-radius:var(--radius);border:2px solid var(--accent2);overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.8);display:none;flex-direction:column;max-height:400px}
+        .github-debug-panel.show{display:flex}
+        .debug-header{padding:8px 12px;background:#0d3d3d;display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:var(--accent2)}
+        .debug-content{padding:10px;overflow-y:auto;font-size:10px;font-family:'Courier New',monospace;color:#00ff00;max-height:350px}
+        .debug-line{margin:2px 0;padding:2px 0;border-bottom:1px solid #1a1a1a}
+        .debug-line.error{color:#ff4444}.debug-line.success{color:#44ff44}.debug-line.info{color:#44aaff}.debug-line.warn{color:#ffaa44}
+        .novel-reader-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:90vw;max-width:800px;max-height:90vh;background:var(--bg-card);border-radius:var(--radius);border:2px solid var(--accent);z-index:500;display:none;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.8)}
+        .novel-reader-panel.show{display:flex}
+        .novel-header{padding:12px 16px;background:var(--bg-hover);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:8px}
+        .novel-content{flex:1;overflow-y:auto;padding:20px;font-size:14px;line-height:1.8;color:var(--text);max-height:60vh}
+        .novel-controls{padding:12px;background:var(--bg-input);border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+        .novel-controls button{padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg-hover);color:var(--text);cursor:pointer;font-size:11px;font-family:inherit}
+        .novel-library{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;padding:16px}
+        .novel-card{background:var(--bg-input);border-radius:8px;padding:12px;cursor:pointer;border:1px solid var(--border)}
+        .novel-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+        .novel-progress{width:100%;height:4px;background:var(--border);border-radius:2px;margin-top:8px}
+        .novel-progress-bar{height:100%;background:var(--accent);border-radius:2px}
+        .write-novel-btn{background:linear-gradient(135deg,#10b981,#059669)!important;color:#fff!important;border:none!important;font-weight:700!important}
+        .novel-editor-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:95vw;max-width:700px;max-height:90vh;background:#1a1a2e;border-radius:16px;border:2px solid #10b981;z-index:9999;display:none;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(16,185,129,0.4)}
+        .novel-editor-panel.show{display:flex}
+        .novel-editor-header{padding:14px 20px;background:linear-gradient(135deg,#1a1a2e,#0d3d2e);border-bottom:1px solid #10b981;display:flex;justify-content:space-between;align-items:center}
+        .novel-editor-body{padding:20px;overflow-y:auto}
+        .novel-editor-body input,.novel-editor-body textarea{width:100%;padding:10px;background:#0d0d20;border:1px solid #252540;border-radius:8px;color:#e8e8f0;font-size:13px;outline:none;font-family:inherit;margin-bottom:12px;resize:vertical}
+        .novel-editor-body textarea{min-height:250px;font-size:14px;line-height:1.8;font-family:Georgia,serif}
+        .profile-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:95vw;max-width:450px;max-height:85vh;background:var(--bg-card);border-radius:var(--radius);border:2px solid var(--accent);z-index:500;display:none;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.8);overflow:hidden}
+        .profile-panel.show{display:flex}
+        .profile-header{padding:20px;text-align:center;background:linear-gradient(135deg,#1a1a2e,#16213e);border-bottom:2px solid var(--accent)}
+        .profile-avatar{width:65px;height:65px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#ec4899);display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;margin:0 auto 10px;border:3px solid var(--accent)}
+        .profile-body{padding:16px;overflow-y:auto;max-height:45vh}
+        .profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+        .profile-stat{background:var(--bg-input);border-radius:8px;padding:12px;text-align:center;border:1px solid var(--border)}
+        .profile-stat-value{font-size:20px;font-weight:700;color:var(--accent)}
+        .profile-stat-label{font-size:10px;color:var(--text-dim)}
+        .profile-footer{padding:12px;background:var(--bg-input);border-top:1px solid var(--border);text-align:center;display:flex;gap:8px;justify-content:center}
+        .profile-edit-btn{padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;width:100%;margin-top:8px}
+        .profile-edit-form{display:none;margin-top:8px}
+        .profile-edit-form.show{display:block}
+        .profile-edit-form input{width:100%;padding:8px;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;outline:none}
+        .profile-order-item{background:var(--bg-input);padding:8px;border-radius:6px;margin:4px 0;font-size:10px;border:1px solid var(--border)}
+        .analysis-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:95vw;max-width:800px;max-height:90vh;background:var(--bg-card);border-radius:var(--radius);border:2px solid var(--accent);z-index:500;display:none;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.8);overflow:hidden}
+        .analysis-panel.show{display:flex}
+        .analysis-header{padding:12px 16px;background:var(--bg-hover);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+        .analysis-body{padding:20px;overflow-y:auto;max-height:70vh}
+        .analysis-body table{width:100%;border-collapse:collapse;margin:10px 0}
+        .analysis-body th,.analysis-body td{padding:8px 12px;border:1px solid var(--border);text-align:left;font-size:12px}
+        .analysis-body th{background:var(--bg-hover);color:var(--accent)}
+        .analysis-section{margin:16px 0;padding:12px;background:var(--bg-input);border-radius:8px;border:1px solid var(--border)}
+        .analysis-section h3{color:var(--accent);margin-bottom:8px;font-size:14px}
+        .payment-form-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1a2e;border-radius:16px;border:2px solid #f59e0b;z-index:9999;display:none;flex-direction:column;overflow:hidden;width:400px;max-width:95vw;box-shadow:0 20px 60px rgba(245,158,11,0.4)}
+        .payment-form-panel.show{display:flex}
+        .payment-form-header{padding:14px 20px;background:linear-gradient(135deg,#1a1a2e,#2d1a0e);border-bottom:1px solid #f59e0b;display:flex;justify-content:space-between;align-items:center}
+        .payment-form-body{padding:20px}
+        .payment-form-body input{width:100%;padding:10px;background:#0d0d20;border:1px solid #252540;border-radius:8px;color:#e8e8f0;font-size:13px;margin-bottom:10px;outline:none}
+        .category-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:16px 0}
+        .cat-tab{padding:8px 16px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-family:inherit}
+        .cat-tab:hover,.cat-tab.active{background:var(--accent);color:white;border-color:var(--accent)}
+        .game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+        .game-card{background:var(--bg-card);border-radius:var(--radius);padding:20px;border:1px solid var(--border);cursor:pointer}
+        .game-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+        .game-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+        .game-icon{font-size:40px}.game-name{font-size:16px;font-weight:700}.game-developer{font-size:10px;color:var(--text-dim)}
+        .item-list{display:flex;flex-direction:column;gap:6px}
+        .item-row{display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg-input);border-radius:8px;font-size:12px;cursor:pointer}
+        .item-row:hover{background:var(--bg-hover)}.item-price{font-weight:700;color:var(--gold)}
+        .order-section{background:var(--bg-card);border-radius:var(--radius);padding:24px;margin:20px 0;border:1px solid var(--border)}
+        .form-group{margin:10px 0}.form-group label{display:block;font-size:11px;font-weight:600;color:var(--text-dim);margin-bottom:3px;text-transform:uppercase}
+        .form-group input,.form-group select{width:100%;padding:10px;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+        @media(max-width:500px){.form-row{grid-template-columns:1fr}}
+        .payment-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin:10px 0}
+        .payment-card{background:var(--bg-input);border:2px solid var(--border);border-radius:10px;padding:14px;text-align:center;cursor:pointer;font-size:12px}
+        .payment-card:hover,.payment-card.selected{border-color:var(--accent);background:var(--bg-hover)}
+        .live-feed{background:var(--bg-card);border-radius:var(--radius);padding:16px;margin:20px 0;border:1px solid var(--border);max-height:200px;overflow-y:auto}
+        .live-item{padding:6px 0;border-bottom:1px solid var(--border);font-size:11px;color:var(--text-dim)}
+        .toast-container{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:600}
+        .toast{padding:8px 16px;border-radius:16px;color:white;font-size:10px;font-weight:600;animation:toastIn 0.3s ease}
+        @keyframes toastIn{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+        .toast.success{background:var(--green)}.toast.error{background:var(--red)}.toast.info{background:var(--accent2)}
+        .hidden{display:none!important}
+        .fit-btn{background:linear-gradient(135deg,#8b5cf6,#ec4899)!important;color:#fff!important;border:none!important;font-weight:700!important}
+        .fit-dropdown{position:fixed;top:55px;right:20px;z-index:9999;background:#1a1a2e;border-radius:12px;border:2px solid #8b5cf6;box-shadow:0 20px 60px rgba(139,92,246,0.5);display:none;min-width:220px;overflow:hidden}
+        .fit-dropdown.show{display:block}
+        .fit-dropdown-header{padding:12px 16px;background:linear-gradient(135deg,#1a1a2e,#16213e);border-bottom:1px solid #252540;font-weight:700;font-size:14px;color:#fff;display:flex;justify-content:space-between;align-items:center}
+        .fit-dropdown-body{padding:8px}
+        .fit-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;font-size:12px;color:#e8e8f0;transition:all 0.2s;border:none;background:transparent;width:100%;text-align:left;font-family:inherit}
+        .fit-dropdown-item:hover{background:#252540}
+        .fit-dropdown-item.add{border-left:3px solid #10b981}
+        .fit-dropdown-item.list{border-left:3px solid #06b6d4}
+        .fit-dropdown-item.delete{border-left:3px solid #ef4444}
+        .fit-panel{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.85);z-index:99999;display:none;align-items:center;justify-content:center}
+        .fit-panel.show{display:flex}
+        .fit-panel-dialog{background:#1a1a2e;border-radius:16px;border:2px solid #8b5cf6;width:95vw;max-width:550px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(139,92,246,0.5)}
+        .fit-panel-header{padding:14px 20px;background:linear-gradient(135deg,#1a1a2e,#16213e);border-bottom:1px solid #252540;display:flex;justify-content:space-between;align-items:center}
+        .fit-panel-body{padding:20px;overflow-y:auto}
+        .fit-panel-body label{display:block;color:#9090a8;font-size:11px;font-weight:600;margin-bottom:4px;text-transform:uppercase}
+        .fit-panel-body input,.fit-panel-body textarea{width:100%;padding:10px;background:#0d0d20;border:1px solid #252540;border-radius:8px;color:#e8e8f0;font-size:13px;margin-bottom:12px;outline:none;font-family:inherit;resize:vertical}
+        .fit-list-item{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#0d0d20;border-radius:6px;margin-bottom:4px;font-size:11px}
+        .fit-list-del{background:#ef4444;color:#fff;border:none;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:10px}
     </style>
 </head>
 <body>
-
-<!-- Header -->
 <header class="header">
     <div class="logo">🎮 YAD Store</div>
     <div class="nav-links">
         <button class="btn btn-primary" onclick="showSection('home')">🏠 Home</button>
         <button class="btn" onclick="showSection('order')">🛒 Order</button>
-        <button class="btn" onclick="showSection('status')">📋 Cek Status</button>
-        <button class="btn" onclick="showSection('voucher')">🎟️ Voucher</button>
-        <button class="btn" id="adminBtn" onclick="openAdminDashboard()" style="display:none">📊 Admin</button>
-        <button class="btn" id="fitMenuBtn" onclick="toggleFitMenu()" style="display:none">✨ Tools ▾</button>
-        <button class="btn" onclick="openProfile()" id="profileNavBtn" style="display:none">👤 Profil</button>
+        <button class="btn" onclick="showSection('status')">📋 Cek Pesanan</button>
+        <button class="btn" onclick="openNovelReader()">📚 Novel</button>
+        <button class="btn fit-btn" id="fitMenuBtn" onclick="toggleFitMenu()" style="display:none">✨ Fitur ▾</button>
+        <button class="btn" onclick="toggleDebugPanel()" id="debugBtn" style="display:none">🐛 Debug</button>
+        <button class="btn" onclick="openProfile()" id="profileNavBtn">👤 Profil</button>
         <button class="btn" onclick="handleLogin()" id="loginBtn">🔑 Login</button>
     </div>
 </header>
 
-<!-- Admin Dropdown -->
-<div id="fitDropdown" style="position:fixed;top:55px;right:20px;z-index:9999;background:#1a1a2e;border-radius:12px;border:2px solid #8b5cf6;box-shadow:0 20px 60px rgba(139,92,246,0.5);display:none;min-width:220px">
-    <div style="padding:10px;border-bottom:1px solid #222;font-weight:800;font-size:12px">✨ ADMIN TOOLS</div>
-    <button class="btn" style="width:100%;border:none;text-align:left" onclick="openGitHubManager()">📁 GitHub File Manager</button>
-    <button class="btn" style="width:100%;border:none;text-align:left" onclick="openCodeEditor()">💻 Code Editor</button>
-    <button class="btn" style="width:100%;border:none;text-align:left" onclick="openBackupPanel()">💾 Backup Data</button>
-    <button class="btn" style="width:100%;border:none;text-align:left" onclick="openAnalyticsPanel()">📈 Analytics</button>
+<div class="fit-dropdown" id="fitDropdown">
+    <div class="fit-dropdown-header"><span>✨ Menu Fitur</span><span onclick="toggleFitMenu()" style="cursor:pointer">✕</span></div>
+    <div class="fit-dropdown-body">
+        <button class="fit-dropdown-item add" onclick="openFitPanel('add')"><span>➕</span> Tambah Fitur</button>
+        <button class="fit-dropdown-item list" onclick="openFitPanel('list')"><span>📦</span> Daftar Fitur</button>
+        <button class="fit-dropdown-item delete" onclick="openFitPanel('delete')"><span>🗑️</span> Hapus Fitur</button>
+    </div>
 </div>
 
-<!-- Activity Bar -->
+<div class="fit-panel" id="fitPanel">
+    <div class="fit-panel-dialog">
+        <div class="fit-panel-header"><h3 style="color:#fff;font-size:16px;margin:0" id="fitPanelTitle">✨ Fitur</h3><span onclick="closeFitPanel()" style="cursor:pointer;font-size:22px;color:#9090a8">&times;</span></div>
+        <div class="fit-panel-body" id="fitPanelBody"></div>
+        <div class="fit-panel-footer" id="fitPanelFooter" style="padding:12px 20px;background:#0d0d20;border-top:1px solid #252540;display:flex;gap:8px;justify-content:flex-end"></div>
+    </div>
+</div>
+
 <div class="activity-bar">
-    <span><span class="dot-live"></span> <b id="onlineCount">1</b> online</span>
-    <span>🎮 <b id="todayOrders">0</b> pesanan</span>
-    <span>💰 <b id="todayRevenue">Rp 0</b></span>
-    <span>👥 <b id="totalUsers">0</b> users</span>
-    <span id="aiStatus" style="color:var(--gold)">🧠 Menyiapkan AI...</span>
+    <span><span class="dot-live"></span> <b id="onlineCount">87</b> online</span>
+    <span>🎮 <b id="todayOrders">8</b> pesanan</span>
+    <span>💰 <b id="todayRevenue">Rp 150.000</b></span>
+    <span>⭐ 4.9 rating</span>
+    <span id="githubStatus" style="color:var(--accent2)"></span>
 </div>
-
-<!-- Main Container -->
-<div class="container">
-    <!-- HOME -->
-    <div id="homeSection">
-        <h2 style="margin-bottom:20px">🎮 Pilih Game</h2>
-        <div class="game-grid" id="gameGrid"></div>
-    </div>
-    
-    <!-- ORDER -->
-    <div id="orderSection" class="hidden">
-        <div style="background:var(--bg-card);padding:20px;border-radius:var(--radius);border:1px solid var(--border)">
-            <h3>🛒 Buat Pesanan</h3>
-            <div style="margin-top:15px">
-                <label style="font-size:12px">Pilih Produk</label>
-                <select id="orderGame" onchange="updateOrderItems()"></select>
-            </div>
-            <div style="margin-top:15px">
-                <label style="font-size:12px">Pilih Item</label>
-                <select id="orderItem" onchange="updateTotalPrice()"></select>
-            </div>
-            <div style="margin-top:15px">
-                <label style="font-size:12px">ID Game / No HP</label>
-                <input type="text" id="orderUID" placeholder="Contoh: 12345678">
-            </div>
-            <div style="margin-top:15px">
-                <label style="font-size:12px">Kode Voucher (Opsional)</label>
-                <div class="voucher-input">
-                    <input type="text" id="voucherCode" placeholder="Masukkan kode voucher">
-                    <button class="btn" onclick="applyVoucher()">Terapkan</button>
-                </div>
-            </div>
-            <div style="margin-top:20px;padding:15px;background:var(--bg-input);border-radius:8px">
-                <div>Subtotal: <b id="subtotalPrice">Rp 0</b></div>
-                <div>Diskon: <b id="discountPrice" style="color:var(--green)">Rp 0</b></div>
-                <div style="margin-top:10px;font-size:18px">Total: <b id="totalPrice" style="color:var(--gold)">Rp 0</b></div>
-            </div>
-            <button class="btn btn-primary" style="width:100%;margin-top:15px;padding:12px" onclick="submitOrder()">Pesan Sekarang</button>
-        </div>
-    </div>
-    
-    <!-- STATUS -->
-    <div id="statusSection" class="hidden">
-        <div style="background:var(--bg-card);padding:20px;border-radius:var(--radius);border:1px solid var(--border)">
-            <h3>📋 Cek Status Pesanan</h3>
-            <input type="text" id="checkOrderID" placeholder="ID Pesanan (YAD-xxxx)" style="margin-top:15px">
-            <button class="btn btn-primary" style="margin-top:10px" onclick="checkOrder()">Cek Status</button>
-            <div id="orderResult" style="margin-top:15px"></div>
-            
-            <h4 style="margin-top:30px">📜 Riwayat Pesanan</h4>
-            <div id="orderHistory" style="margin-top:10px"></div>
-        </div>
-    </div>
-    
-    <!-- VOUCHER -->
-    <div id="voucherSection" class="hidden">
-        <div style="background:var(--bg-card);padding:20px;border-radius:var(--radius);border:1px solid var(--border)">
-            <h3>🎟️ Voucher & Promo</h3>
-            <div id="voucherList" style="margin-top:15px"></div>
-        </div>
-    </div>
-</div>
-
-<!-- Floating Buttons -->
 <a href="https://wa.me/6283170617054" target="_blank" class="whatsapp-float">💬</a>
-<button class="floating-ai" onclick="toggleAIChat()">🧠</button>
+<button class="floating-ai" id="floatingAI">🧠</button>
 
-<!-- AI Chat Widget -->
+<div class="github-debug-panel" id="githubDebugPanel">
+    <div class="debug-header"><span>🐛 Debug Console</span><span onclick="toggleDebugPanel()" style="cursor:pointer">✕</span></div>
+    <div class="debug-content" id="debugContent"></div>
+</div>
+
 <div class="ai-chat-widget" id="aiChatWidget">
-    <div class="ai-chat-header">
-        <span>🧠 YAD Assistant</span>
-        <span onclick="toggleAIChat()" style="cursor:pointer">✕</span>
-    </div>
-    <div class="ai-chat-messages" id="aiChatMsgs">
-        <div class="ai-msg bot">Halo! Saya AI YAD Store. Ada yang bisa dibantu?</div>
-    </div>
-    <div class="ai-chat-input-area">
-        <input type="text" id="aiChatInput" placeholder="Tanya harga atau bantuan..." onkeydown="if(event.key==='Enter')sendAIMsg()">
-        <button onclick="sendAIMsg()">➤</button>
-    </div>
-</div>
-
-<!-- Admin Dashboard Panel -->
-<div id="adminDashboardPanel" class="panel">
-    <div class="panel-header">
-        <b>📊 Admin Dashboard</b>
-        <span onclick="closeAdminDashboard()" style="cursor:pointer">✕</span>
-    </div>
-    <div class="panel-body">
-        <div class="admin-grid" id="adminStats"></div>
-        <h4>📋 Pesanan Terbaru</h4>
-        <div id="adminOrders" style="margin-top:10px"></div>
-        <h4>👥 User Terdaftar</h4>
-        <div id="adminUsers" style="margin-top:10px"></div>
-    </div>
-</div>
-
-<!-- GitHub File Manager Panel -->
-<div id="githubPanel" class="panel">
-    <div class="panel-header">
-        <b>📁 GitHub File Manager</b>
-        <span onclick="closeGitHubManager()" style="cursor:pointer">✕</span>
-    </div>
-    <div class="panel-body">
-        <div style="display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap">
-            <input type="text" id="ghToken" placeholder="GitHub Token" style="flex:1">
-            <input type="text" id="ghOwner" placeholder="Username" style="flex:1">
-            <input type="text" id="ghRepo" placeholder="Repository" style="flex:1">
-            <button class="btn btn-primary" onclick="saveGitHubConfig()">Simpan</button>
+    <div class="ai-chat-header" onclick="toggleAIChat()"><span>🧠 YAD AI</span><span id="aiChatToggle">▼</span></div>
+    <div class="ai-chat-body" id="aiChatBody">
+        <div class="ai-chat-messages" id="aiChatMsgs"><div class="ai-msg system">🤖 Ketik "help" untuk bantuan.</div></div>
+        <div class="quick-edit-bar" id="quickEditBar" style="display:none">
+            <div class="edit-title">🎨 Quick Admin Tools</div>
+            <button class="quick-edit-btn" onclick="quickEdit('judul')">📝 Judul</button>
+            <button class="quick-edit-btn" onclick="quickEdit('warna')">🎨 Warna</button>
+            <button class="quick-edit-btn" onclick="quickEdit('bg')">🌑 BG</button>
+            <button class="quick-edit-btn" onclick="quickEdit('wa')">📱 WA</button>
+            <button class="quick-edit-btn" onclick="quickEdit('toko')">🏪 Toko</button>
+            <button class="quick-edit-btn" onclick="quickEdit('analisis')">🔍 Analisis</button>
+            <button class="quick-edit-btn" onclick="quickEdit('push')">📤 Push</button>
+            <button class="quick-edit-btn" onclick="quickEdit('testgithub')">🧪 Test GitHub</button>
+            <button class="quick-edit-btn" onclick="quickEdit('reload')">🔄 Reload</button>
+            <button class="quick-edit-btn" onclick="quickEdit('novel')">📚 Novel</button>
+            <button class="quick-edit-btn" onclick="openPaymentForm()">💳 Tambah Bayar</button>
         </div>
-        <button class="btn btn-success" onclick="loadGitHubFiles()" style="margin-bottom:15px">🔄 Muat File</button>
-        <div class="file-list" id="githubFileList"></div>
-    </div>
-</div>
-
-<!-- Code Editor Panel -->
-<div id="codeEditorPanel" class="panel" style="max-width:90vw">
-    <div class="panel-header">
-        <b>💻 Code Editor - <span id="currentFileName">Pilih File</span></b>
-        <span onclick="closeCodeEditor()" style="cursor:pointer">✕</span>
-    </div>
-    <div class="panel-body">
-        <div class="search-replace-bar">
-            <input type="text" id="searchText" placeholder="Cari...">
-            <input type="text" id="replaceText" placeholder="Ganti dengan...">
-            <button class="btn" onclick="searchInCode()">🔍 Cari</button>
-            <button class="btn" onclick="replaceInCode()">🔄 Ganti</button>
-            <button class="btn btn-danger" onclick="replaceAllInCode()">🔄 Ganti Semua</button>
+        <div class="ai-chat-input-area">
+            <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()" title="Voice chat">🎤</button>
+            <input type="text" id="aiChatInput" placeholder="Ketik perintah...">
+            <button onclick="sendAIMsg()">➤</button>
         </div>
-        <textarea class="code-editor" id="codeEditor" placeholder="// Pilih file dari GitHub Manager untuk edit..."></textarea>
-        <div style="display:flex;gap:10px;margin-top:10px">
-            <button class="btn btn-success" onclick="saveCodeToGitHub()">💾 Simpan ke GitHub</button>
-            <button class="btn btn-primary" onclick="commitCode()">📝 Commit</button>
+    </div>
+</div>
+
+<div class="novel-reader-panel" id="novelReaderPanel">
+    <div class="novel-header">
+        <button class="btn write-novel-btn" id="writeNovelBtn" onclick="openNovelEditor()" style="display:none">✍️ Tulis</button>
+        <span id="novelTitle">📚 Novel Reader</span>
+        <span onclick="closeNovelReader()" style="cursor:pointer;font-size:18px">✕</span>
+    </div>
+    <div id="novelLibrary" class="novel-library"></div>
+    <div class="novel-content" id="novelContent" style="display:none"><p style="color:var(--text-dim);text-align:center">Pilih novel</p></div>
+    <div class="novel-controls" id="novelControls" style="display:none">
+        <button onclick="novelPrevPage()">◀</button>
+        <select id="novelFontSize" onchange="changeFontSize()"><option value="12">12px</option><option value="14" selected>14px</option><option value="16">16px</option><option value="18">18px</option></select>
+        <span id="novelPageInfo">1/1</span>
+        <button onclick="novelNextPage()">▶</button>
+        <button onclick="toggleNovelSpeech()" id="speechBtn">🔊 Baca</button>
+        <input type="text" id="novelSearch" placeholder="Cari..." onkeyup="searchInNovel()" style="padding:4px 8px;background:var(--bg-input);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:11px;width:100px">
+        <button onclick="addBookmark()">🔖</button>
+        <button onclick="downloadNovel()">💾</button>
+    </div>
+</div>
+
+<div class="novel-editor-panel" id="novelEditorPanel">
+    <div class="novel-editor-header"><h3 style="color:#fff;font-size:16px;margin:0">✍️ Tulis Novel Baru</h3><span onclick="closeNovelEditor()" style="cursor:pointer;font-size:22px;color:#9090a8">&times;</span></div>
+    <div class="novel-editor-body">
+        <label style="color:#9090a8;font-size:11px;font-weight:600">📝 JUDUL</label>
+        <input id="novelTitleInput" placeholder="Masukkan judul novel...">
+        <label style="color:#9090a8;font-size:11px;font-weight:600">📖 ISI</label>
+        <textarea id="novelContentInput" placeholder="Tulis novel di sini..."></textarea>
+        <div id="novelWordCount" style="color:#9090a8;font-size:10px;text-align:right">0 kata</div>
+    </div>
+    <div style="padding:12px 20px;background:#0d0d20;border-top:1px solid #252540;display:flex;gap:8px;justify-content:flex-end">
+        <button onclick="closeNovelEditor()" style="padding:8px 16px;background:#252540;color:#e8e8f0;border:none;border-radius:8px;cursor:pointer;font-size:12px">Batal</button>
+        <button onclick="saveNovel()" style="padding:8px 16px;background:#10b981;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600">💾 Simpan</button>
+    </div>
+</div>
+
+<div class="analysis-panel" id="analysisPanel">
+    <div class="analysis-header"><span style="color:#fff;font-weight:700">🔍 Analisis HTML</span><span onclick="closeAnalysis()" style="cursor:pointer;font-size:18px;color:#9090a8">✕</span></div>
+    <div class="analysis-body" id="analysisBody"></div>
+</div>
+
+<div class="payment-form-panel" id="paymentFormPanel">
+    <div class="payment-form-header"><b style="color:#fff">💳 Tambah Pembayaran</b><span onclick="closePaymentForm()" style="cursor:pointer;font-size:20px;color:#9090a8">&times;</span></div>
+    <div class="payment-form-body">
+        <label style="color:#9090a8;font-size:11px">🏦 NAMA</label>
+        <input id="payName" placeholder="Seabank, BCA, dll">
+        <label style="color:#9090a8;font-size:11px">📱 NOMOR</label>
+        <input id="payNumber" placeholder="Nomor rekening/HP">
+        <label style="color:#9090a8;font-size:11px">👤 PEMILIK</label>
+        <input id="payHolder" placeholder="Atas nama">
+    </div>
+    <div style="padding:12px 20px;background:#0d0d20;border-top:1px solid #252540;display:flex;gap:8px;justify-content:flex-end">
+        <button onclick="closePaymentForm()" style="padding:8px 16px;background:#252540;color:#e8e8f0;border:none;border-radius:8px;cursor:pointer;font-size:12px">Batal</button>
+        <button onclick="savePayment()" style="padding:8px 16px;background:#f59e0b;color:#000;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600">💾 Simpan</button>
+    </div>
+</div>
+
+<div class="profile-panel" id="profilePanel">
+    <div class="profile-header">
+        <div class="profile-avatar" id="profileAvatar">👤</div>
+        <div style="font-size:18px;font-weight:700;color:#fff" id="profileName">Pengguna</div>
+        <div style="display:inline-block;padding:3px 12px;border-radius:12px;font-size:10px;background:#8b5cf6;color:#fff" id="profileRole">USER</div>
+        <div style="font-size:11px;color:#9090a8;margin-top:4px" id="profileEmail">-</div>
+    </div>
+    <div class="profile-body">
+        <div class="profile-stats">
+            <div class="profile-stat"><div class="profile-stat-value" id="profileTotalOrders">0</div><div class="profile-stat-label">Pesanan</div></div>
+            <div class="profile-stat"><div class="profile-stat-value" id="profileTotalSpent">Rp 0</div><div class="profile-stat-label">Total</div></div>
+            <div class="profile-stat"><div class="profile-stat-value" id="profilePoints">0</div><div class="profile-stat-label">Poin</div></div>
         </div>
-        <div id="searchResult" style="margin-top:10px;font-size:12px;color:var(--text-dim)"></div>
+        <div id="profileLoginSection" style="text-align:center;padding:20px;display:none">
+            <div style="font-size:40px">🔐</div><p style="color:var(--text-dim);margin:8px 0">Login untuk melihat profil</p>
+            <button onclick="doLoginFromProfile()" style="padding:10px 24px;background:linear-gradient(135deg,#8b5cf6,#06b6d4);color:#fff;border:none;border-radius:20px;cursor:pointer;font-weight:600">🔑 Login Google</button>
+        </div>
+        <div id="profileLoggedIn" style="display:none">
+            <div style="margin:10px 0"><h4 style="color:var(--accent);font-size:12px">📝 Info</h4>
+            <p style="font-size:11px;color:var(--text-dim);margin:3px 0">Member sejak: <span id="profileInfoSince">-</span></p>
+            <button class="profile-edit-btn" onclick="toggleEditProfile()">✏️ Edit Nama</button>
+            <div class="profile-edit-form" id="profileEditForm">
+                <input type="text" id="editName" placeholder="Nama baru">
+                <button onclick="saveProfile()" style="width:100%;padding:8px;background:#10b981;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px;margin-top:6px">💾 Simpan</button>
+            </div></div>
+            <div style="margin:10px 0"><h4 style="color:var(--accent);font-size:12px">🛒 Pesanan Terakhir</h4><div id="profileOrders"></div></div>
+            <div id="profileAdminSection" style="display:none;margin:10px 0"><h4 style="color:#f59e0b;font-size:12px">👑 Admin Panel</h4>
+            <div class="profile-stats">
+                <div class="profile-stat"><div class="profile-stat-value" id="adminPendingOrders" style="color:#f59e0b">0</div><div class="profile-stat-label">Pending</div></div>
+                <div class="profile-stat"><div class="profile-stat-value" id="adminTotalRevenue" style="color:#10b981">Rp 0</div><div class="profile-stat-label">Revenue</div></div>
+                <div class="profile-stat"><div class="profile-stat-value" id="adminTotalUsers" style="color:#06b6d4">0</div><div class="profile-stat-label">Users</div></div>
+            </div></div>
+        </div>
+    </div>
+    <div class="profile-footer">
+        <button onclick="handleLogout()" id="profileLogoutBtn" style="padding:8px 16px;background:#ef4444;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:11px;display:none">🚪 Logout</button>
+        <button onclick="closeProfile()" style="padding:8px 16px;background:var(--bg-hover);color:var(--text);border:none;border-radius:8px;cursor:pointer;font-size:11px">✕ Tutup</button>
     </div>
 </div>
 
-<!-- Backup Panel -->
-<div id="backupPanel" class="panel" style="max-width:500px">
-    <div class="panel-header">
-        <b>💾 Backup Data</b>
-        <span onclick="closeBackupPanel()" style="cursor:pointer">✕</span>
+<div class="container">
+    <div class="category-tabs">
+        <button class="cat-tab active" onclick="filterCategory('all',event)">🎮 Semua</button>
+        <button class="cat-tab" onclick="filterCategory('pulsa',event)">📱 Pulsa</button>
+        <button class="cat-tab" onclick="filterCategory('data',event)">📶 Data</button>
+        <button class="cat-tab" onclick="filterCategory('token',event)">⚡ Token</button>
+        <button class="cat-tab" onclick="filterCategory('voucher',event)">🎬 Voucher</button>
+        <button class="cat-tab" onclick="filterCategory('ewallet',event)">💳 E-Wallet</button>
     </div>
-    <div class="panel-body">
-        <button class="btn btn-primary" onclick="exportAllData()" style="margin-bottom:10px">📥 Export Semua Data</button>
-        <button class="btn btn-success" onclick="backupToGitHub()">📤 Backup ke GitHub</button>
-    </div>
+    <div id="homeSection"><div class="game-grid" id="gameGrid"></div><div class="live-feed"><b>🔴 Live Activity</b><div id="liveFeed"></div></div></div>
+    <div id="orderSection" class="hidden"><div class="order-section"><h3>🛒 Order</h3><div class="form-group"><label>Kategori</label><select id="orderCategory" onchange="updateOrderGame()"><option value="game">Game</option><option value="pulsa">Pulsa</option><option value="data">Data</option><option value="token">Token</option><option value="voucher">Voucher</option><option value="ewallet">E-Wallet</option></select></div><div class="form-group"><label>Produk</label><select id="orderGame"></select></div><div class="form-group"><label>Item</label><select id="orderItem" onchange="updateTotalPrice()"></select></div><div class="form-row"><div class="form-group"><label>ID/No HP</label><input type="text" id="orderUID"></div><div class="form-group"><label>Server</label><input type="text" id="orderServer"></div></div><div class="form-group"><label>Email</label><input type="email" id="orderEmail"></div><h4 style="color:var(--gold)">💳 Pembayaran</h4><div class="payment-grid" id="paymentGrid"></div><div class="form-group"><label>Bukti Transfer</label><input type="file" id="paymentProof" onchange="previewProof()" accept="image/*"></div><div id="proofPreview"></div><div style="background:var(--bg-input);padding:12px;border-radius:8px;margin:12px 0"><b>Total:</b> <span style="color:var(--gold);font-size:18px" id="totalPrice">Rp 0</span></div><button class="btn btn-primary" onclick="submitOrder()" style="width:100%;padding:12px">🛒 Pesan Sekarang</button></div></div>
+    <div id="statusSection" class="hidden"><div class="order-section"><h3>📋 Cek Pesanan</h3><div class="form-group"><label>Order ID</label><input type="text" id="checkOrderID"></div><button class="btn btn-primary" onclick="checkOrder()">🔍 Cek</button><div id="orderResult"></div><h3 style="margin-top:20px">📋 Riwayat</h3><div class="form-group"><label>Email</label><input type="email" id="historyEmail" onchange="loadUserHistory()"></div><div id="userOrderHistory"></div></div></div>
 </div>
-
-<!-- Analytics Panel -->
-<div id="analyticsPanel" class="panel">
-    <div class="panel-header">
-        <b>📈 Analytics</b>
-        <span onclick="closeAnalyticsPanel()" style="cursor:pointer">✕</span>
-    </div>
-    <div class="panel-body" id="analyticsBody"></div>
-</div>
-
-<!-- Profile Panel -->
-<div id="profilePanel" class="panel" style="max-width:400px">
-    <div class="panel-body" style="text-align:center">
-        <div style="width:80px;height:80px;background:var(--accent);border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:30px">👤</div>
-        <h2 id="profileName" style="margin-top:15px">User</h2>
-        <p id="profileEmail" style="color:var(--text-dim)">-</p>
-        <p id="profileTier" style="margin-top:10px;color:var(--gold)">Tier: Bronze</p>
-        <p id="profileSpend" style="color:var(--text-dim)">Total Belanja: Rp 0</p>
-        <button class="btn btn-danger" style="margin-top:20px" onclick="handleLogout()">🚪 Logout</button>
-        <button class="btn" style="margin-top:10px" onclick="closeProfile()">Tutup</button>
-    </div>
-</div>
-
-<!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
-// ==================== FIREBASE INIT ====================
-const firebaseConfig = {
-    apiKey: "AIzaSyAvfHxcAT2syVbrf6-TU0JBRXtNLI0AIkc",
-    authDomain: "yadstores.firebaseapp.com",
-    projectId: "yadstores",
-    storageBucket: "yadstores.firebasestorage.app",
-    messagingSenderId: "666352014774",
-    appId: "1:666352014774:web:159ab5b455efb2fb2f9d17"
-};
-
+const firebaseConfig={apiKey:"AIzaSyAvfHxcAT2syVbrf6-TU0JBRXtNLI0AIkc",authDomain:"yadstores.firebaseapp.com",projectId:"yadstores",storageBucket:"yadstores.firebasestorage.app",messagingSenderId:"666352014774",appId:"1:666352014774:web:159ab5b455efb2fb2f9d17"};
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-// ==================== STATE ====================
-let aiGenerator = null;
-let aiReady = false;
-let currentUser = null;
-let isAdmin = false;
-let currentFileSha = null;
-let currentFilePath = null;
-let appliedVoucher = null;
-
-// ==================== GITHUB CONFIG ====================
-let GITHUB_CONFIG = JSON.parse(localStorage.getItem('github_config') || '{"token":"","owner":"","repo":"","branch":"main"}');
-
-// ==================== PRODUCTS ====================
-const ALL_PRODUCTS = {
-    game: [
-        { id: 'ml', name: 'Mobile Legends', icon: '👑', items: [['86 Diamonds', 20000], ['172 Diamonds', 40000], ['257 Diamonds', 60000], ['344 Diamonds', 80000], ['429 Diamonds', 100000]] },
-        { id: 'ff', name: 'Free Fire', icon: '🔥', items: [['70 Diamonds', 12000], ['140 Diamonds', 23000], ['355 Diamonds', 58000], ['720 Diamonds', 115000]] },
-        { id: 'pubg', name: 'PUBG Mobile', icon: '🔫', items: [['60 UC', 15000], ['325 UC', 75000], ['660 UC', 150000]] },
-        { id: 'gi', name: 'Genshin Impact', icon: '✨', items: [['60 Genesis', 15000], ['330 Genesis', 80000], ['1090 Genesis', 250000]] }
-    ],
-    pulsa: [
-        { id: 'tsel', name: 'Telkomsel', icon: '📱', items: [['5.000', 7000], ['10.000', 12000], ['25.000', 27000], ['50.000', 52000], ['100.000', 102000]] },
-        { id: 'xl', name: 'XL', icon: '📶', items: [['5.000', 7000], ['10.000', 12000], ['25.000', 27000]] },
-        { id: 'axis', name: 'Axis', icon: '📡', items: [['5.000', 7000], ['10.000', 12000]] }
-    ]
-};
-
-// ==================== VOUCHERS ====================
-const VOUCHERS = [
-    { code: 'YAD10', discount: 10, minPurchase: 50000, description: 'Diskon 10% minimal Rp 50.000' },
-    { code: 'YAD20', discount: 20, minPurchase: 100000, description: 'Diskon 20% minimal Rp 100.000' },
-    { code: 'YAD50', discount: 50, minPurchase: 500000, description: 'Diskon 50% minimal Rp 500.000' }
-];
-
-// ==================== AI INIT ====================
-async function initAI() {
-    const statusEl = document.getElementById('aiStatus');
-    
-    try {
-        statusEl.textContent = '🧠 Downloading AI...';
-        
-        const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1');
-        
-        aiGenerator = await pipeline('text2text-generation', 'Xenova/LaMini-Flan-T5-78M', {
-            progress_callback: (progress) => {
-                if (progress.status === 'downloading') {
-                    const percent = Math.round((progress.progress || 0) * 100);
-                    statusEl.textContent = `🧠 Downloading AI... ${percent}%`;
-                }
-            }
-        });
-        
-        aiReady = true;
-        statusEl.textContent = '🧠 AI Aktif (Offline)';
-        statusEl.style.color = '#10b981';
-    } catch (error) {
-        console.error('AI Error:', error);
-        statusEl.textContent = '❌ AI Gagal';
-        statusEl.style.color = '#ef4444';
-    }
-}
-
-// ==================== TOAST ====================
-function toast(message, type = 'info') {
-    const container = document.getElementById('toastContainer');
-    const toast = document.createElement('div');
-    const colors = {
-        info: '#8b5cf6',
-        success: '#10b981',
-        error: '#ef4444',
-        warning: '#f59e0b'
-    };
-    
-    toast.style.cssText = `
-        background: ${colors[type]};
-        color: white;
-        padding: 12px 24px;
-        border-radius: 24px;
-        margin-bottom: 8px;
-        font-size: 13px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        animation: slideDown 0.3s ease;
-        cursor: pointer;
-    `;
-    toast.textContent = message;
-    toast.onclick = () => toast.remove();
-    container.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.style.animation = 'slideUp 0.3s ease';
-        setTimeout(() => toast.remove(), 300);
-    }, 4000);
-}
-
-// ==================== NAVIGATION ====================
-function showSection(section) {
-    ['homeSection', 'orderSection', 'statusSection', 'voucherSection'].forEach(id => {
-        document.getElementById(id).classList.add('hidden');
-    });
-    
-    const sectionMap = {
-        'home': 'homeSection',
-        'order': 'orderSection',
-        'status': 'statusSection',
-        'voucher': 'voucherSection'
-    };
-    
-    const targetSection = sectionMap[section] || 'homeSection';
-    document.getElementById(targetSection).classList.remove('hidden');
-    
-    if (section === 'order') {
-        initOrderSelect();
-    }
-    if (section === 'status') {
-        loadOrderHistory();
-    }
-    if (section === 'voucher') {
-        renderVouchers();
-    }
-}
-
-// ==================== PRODUCTS ====================
-function renderGames() {
-    const grid = document.getElementById('gameGrid');
-    grid.innerHTML = '';
-    
-    Object.values(ALL_PRODUCTS).forEach(category => {
-        category.forEach(game => {
-            const card = document.createElement('div');
-            card.className = 'game-card';
-            card.onclick = () => selectProduct(game.id);
-            card.innerHTML = `
-                <div style="font-size:40px">${game.icon}</div>
-                <div style="font-weight:800;margin-top:10px">${game.name}</div>
-                <div style="font-size:10px;color:var(--text-dim);margin-top:5px">${game.items.length} pilihan item</div>
-                <div style="font-size:12px;color:var(--green);margin-top:10px">⚡ Proses Instan</div>
-            `;
-            grid.appendChild(card);
-        });
-    });
-}
-
-function selectProduct(id) {
-    showSection('order');
-    document.getElementById('orderGame').value = id;
-    updateOrderItems();
-}
-
-function initOrderSelect() {
-    const select = document.getElementById('orderGame');
-    select.innerHTML = '<option value="">Pilih Produk</option>';
-    
-    Object.values(ALL_PRODUCTS).forEach(category => {
-        category.forEach(product => {
-            select.innerHTML += `<option value="${product.id}">${product.icon} ${product.name}</option>`;
-        });
-    });
-}
-
-function updateOrderItems() {
-    const productId = document.getElementById('orderGame').value;
-    const itemSelect = document.getElementById('orderItem');
-    itemSelect.innerHTML = '<option value="">Pilih Item</option>';
-    
-    let product = null;
-    Object.values(ALL_PRODUCTS).forEach(category => {
-        const found = category.find(p => p.id === productId);
-        if (found) product = found;
-    });
-    
-    if (!product) return;
-    
-    product.items.forEach(item => {
-        const price = Math.round(item[1] * 1.3); // 30% markup
-        itemSelect.innerHTML += `<option value="${price}" data-name="${item[0]}">${item[0]} - Rp ${price.toLocaleString()}</option>`;
-    });
-    
-    updateTotalPrice();
-}
-
-function updateTotalPrice() {
-    const price = parseInt(document.getElementById('orderItem').value) || 0;
-    const subtotal = document.getElementById('subtotalPrice');
-    const discount = document.getElementById('discountPrice');
-    const total = document.getElementById('totalPrice');
-    
-    subtotal.textContent = 'Rp ' + price.toLocaleString();
-    
-    let discountAmount = 0;
-    if (appliedVoucher && price >= appliedVoucher.minPurchase) {
-        discountAmount = Math.round(price * appliedVoucher.discount / 100);
-    }
-    
-    discount.textContent = 'Rp ' + discountAmount.toLocaleString();
-    total.textContent = 'Rp ' + (price - discountAmount).toLocaleString();
-}
-
-// ==================== VOUCHER ====================
-function renderVouchers() {
-    const list = document.getElementById('voucherList');
-    list.innerHTML = VOUCHERS.map(v => `
-        <div style="background:var(--bg-input);padding:15px;border-radius:10px;margin-bottom:10px;border-left:4px solid var(--gold)">
-            <div style="font-weight:800;font-size:16px">${v.code}</div>
-            <div style="font-size:12px;color:var(--text-dim);margin-top:5px">${v.description}</div>
-            <button class="btn btn-primary" style="margin-top:10px" onclick="useVoucher('${v.code}')">Gunakan</button>
-        </div>
-    `).join('');
-}
-
-function useVoucher(code) {
-    document.getElementById('voucherCode').value = code;
-    showSection('order');
-    applyVoucher();
-}
-
-function applyVoucher() {
-    const code = document.getElementById('voucherCode').value.trim().toUpperCase();
-    appliedVoucher = VOUCHERS.find(v => v.code === code);
-    
-    if (appliedVoucher) {
-        toast('Voucher berhasil diterapkan!', 'success');
-        updateTotalPrice();
-    } else {
-        toast('Voucher tidak ditemukan', 'error');
-        appliedVoucher = null;
-        updateTotalPrice();
-    }
-}
-
-// ==================== ORDER ====================
-async function submitOrder() {
-    const game = document.getElementById('orderGame').value;
-    const uid = document.getElementById('orderUID').value.trim();
-    const price = parseInt(document.getElementById('orderItem').value) || 0;
-    
-    if (!game || !uid || !price) {
-        toast('Lengkapi semua data!', 'error');
-        return;
-    }
-    
-    const orderId = 'YAD-' + Math.random().toString(36).substr(2, 7).toUpperCase();
-    const discountAmount = appliedVoucher ? Math.round(price * appliedVoucher.discount / 100) : 0;
-    
-    const order = {
-        id: orderId,
-        game: game,
-        uid: uid,
-        price: price,
-        discount: discountAmount,
-        finalPrice: price - discountAmount,
-        voucher: appliedVoucher ? appliedVoucher.code : null,
-        status: 'pending',
-        time: new Date().toISOString(),
-        userId: currentUser ? currentUser.uid : 'anonymous',
-        userEmail: currentUser ? currentUser.email : null
-    };
-    
-    try {
-        // Save to Firebase
-        await db.collection('orders').add(order);
-        
-        // Save to localStorage
-        const localOrders = JSON.parse(localStorage.getItem('store_orders') || '[]');
-        localOrders.unshift(order);
-        localStorage.setItem('store_orders', JSON.stringify(localOrders));
-        
-        toast('✅ Pesanan Berhasil!', 'success');
-        alert('Simpan ID Pesanan Anda: ' + orderId);
-        
-        // Reset
-        appliedVoucher = null;
-        document.getElementById('voucherCode').value = '';
-        showSection('home');
-        updateStats();
-        
-    } catch (error) {
-        console.error('Order Error:', error);
-        toast('Gagal membuat pesanan', 'error');
-    }
-}
-
-async function checkOrder() {
-    const orderId = document.getElementById('checkOrderID').value.trim();
-    const result = document.getElementById('orderResult');
-    
-    if (!orderId) {
-        toast('Masukkan ID Pesanan', 'error');
-        return;
-    }
-    
-    result.innerHTML = '<span class="loading-spinner"></span> Mencari...';
-    
-    try {
-        const snapshot = await db.collection('orders').where('id', '==', orderId).get();
-        
-        if (!snapshot.empty) {
-            displayOrderResult(snapshot.docs[0].data());
-        } else {
-            const localOrders = JSON.parse(localStorage.getItem('store_orders') || '[]');
-            const order = localOrders.find(o => o.id === orderId);
-            
-            if (order) {
-                displayOrderResult(order);
-            } else {
-                result.innerHTML = '<p style="color:var(--red)">Pesanan tidak ditemukan.</p>';
-            }
-        }
-    } catch (error) {
-        result.innerHTML = '<p style="color:var(--red)">Gagal memeriksa pesanan.</p>';
-    }
-}
-
-function displayOrderResult(order) {
-    const result = document.getElementById('orderResult');
-    const statusColors = {
-        'pending': 'var(--gold)',
-        'processing': 'var(--accent2)',
-        'completed': 'var(--green)',
-        'failed': 'var(--red)'
-    };
-    
-    result.innerHTML = `
-        <div style="padding:15px;background:var(--bg-input);border-radius:8px;border-left:4px solid ${statusColors[order.status]}">
-            <b>ID:</b> ${order.id}<br>
-            <b>Status:</b> <span style="color:${statusColors[order.status]}">${order.status.toUpperCase()}</span><br>
-            <b>Waktu:</b> ${new Date(order.time).toLocaleString('id-ID')}<br>
-            <b>Total:</b> Rp ${order.finalPrice.toLocaleString()}
-        </div>
-    `;
-}
-
-async function loadOrderHistory() {
-    const historyDiv = document.getElementById('orderHistory');
-    
-    if (!currentUser) {
-        historyDiv.innerHTML = '<p style="color:var(--text-dim)">Login untuk melihat riwayat pesanan.</p>';
-        return;
-    }
-    
-    historyDiv.innerHTML = '<span class="loading-spinner"></span> Memuat...';
-    
-    try {
-        const snapshot = await db.collection('orders')
-            .where('userId', '==', currentUser.uid)
-            .orderBy('time', 'desc')
-            .limit(20)
-            .get();
-        
-        if (snapshot.empty) {
-            historyDiv.innerHTML = '<p style="color:var(--text-dim)">Belum ada pesanan.</p>';
-            return;
-        }
-        
-        historyDiv.innerHTML = snapshot.docs.map(doc => {
-            const order = doc.data();
-            return `
-                <div style="background:var(--bg-input);padding:10px;border-radius:6px;margin-bottom:5px;font-size:12px">
-                    <b>${order.id}</b> - ${order.game} - Rp ${order.finalPrice.toLocaleString()}
-                    <span style="color:var(--gold)">(${order.status})</span>
-                </div>
-            `;
-        }).join('');
-        
-    } catch (error) {
-        historyDiv.innerHTML = '<p style="color:var(--red)">Gagal memuat riwayat.</p>';
-    }
-}
-
-// ==================== AI CHAT ====================
-function toggleAIChat() {
-    document.getElementById('aiChatWidget').classList.toggle('show');
-}
-
-async function sendAIMsg() {
-    const input = document.getElementById('aiChatInput');
-    const msgArea = document.getElementById('aiChatMsgs');
-    const text = input.value.trim();
-    
-    if (!text) return;
-    
-    input.value = '';
-    msgArea.innerHTML += `<div class="ai-msg user">${escapeHtml(text)}</div>`;
-    
-    const loadingDiv = document.createElement('div');
-    loadingDiv.className = 'ai-msg bot';
-    loadingDiv.innerHTML = '<span class="loading-spinner"></span> Berpikir...';
-    msgArea.appendChild(loadingDiv);
-    msgArea.scrollTop = msgArea.scrollHeight;
-    
-    if (!aiReady) {
-        loadingDiv.textContent = 'AI belum siap. Tunggu loading selesai...';
-        return;
-    }
-    
-    try {
-        let context = 'YAD Store menjual: ';
-        Object.values(ALL_PRODUCTS).forEach(category => {
-            category.forEach(product => {
-                context += `${product.name}, `;
-            });
-        });
-        context += '. Jawab dalam Bahasa Indonesia. ';
-        
-        const result = await aiGenerator(context + 'Pertanyaan: ' + text, {
-            max_new_tokens: 100,
-            temperature: 0.7
-        });
-        
-        loadingDiv.textContent = result[0].generated_text || 'Maaf, saya tidak mengerti.';
-    } catch (error) {
-        loadingDiv.textContent = 'Terjadi kesalahan. Coba lagi.';
-    }
-    
-    msgArea.scrollTop = msgArea.scrollHeight;
-}
-
-// ==================== GITHUB MANAGER ====================
-function toggleFitMenu() {
-    const dd = document.getElementById('fitDropdown');
-    dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
-}
-
-function openGitHubManager() {
-    document.getElementById('githubPanel').classList.add('show');
-    document.getElementById('fitDropdown').style.display = 'none';
-    
-    // Load config
-    document.getElementById('ghToken').value = GITHUB_CONFIG.token;
-    document.getElementById('ghOwner').value = GITHUB_CONFIG.owner;
-    document.getElementById('ghRepo').value = GITHUB_CONFIG.repo;
-    
-    if (GITHUB_CONFIG.token) {
-        loadGitHubFiles();
-    }
-}
-
-function closeGitHubManager() {
-    document.getElementById('githubPanel').classList.remove('show');
-}
-
-function saveGitHubConfig() {
-    GITHUB_CONFIG = {
-        token: document.getElementById('ghToken').value.trim(),
-        owner: document.getElementById('ghOwner').value.trim(),
-        repo: document.getElementById('ghRepo').value.trim(),
-        branch: 'main'
-    };
-    
-    localStorage.setItem('github_config', JSON.stringify(GITHUB_CONFIG));
-    toast('GitHub config tersimpan!', 'success');
-    loadGitHubFiles();
-}
-
-async function loadGitHubFiles() {
-    const fileList = document.getElementById('githubFileList');
-    
-    if (!GITHUB_CONFIG.token || !GITHUB_CONFIG.owner || !GITHUB_CONFIG.repo) {
-        fileList.innerHTML = '<p style="color:var(--red)">Lengkapi GitHub config terlebih dahulu.</p>';
-        return;
-    }
-    
-    fileList.innerHTML = '<span class="loading-spinner"></span> Memuat file...';
-    
-    try {
-        const response = await fetch(
-            `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/`,
-            { headers: { Authorization: `token ${GITHUB_CONFIG.token}` } }
-        );
-        
-        if (!response.ok) throw new Error('Gagal memuat file');
-        
-        const files = await response.json();
-        
-        if (!Array.isArray(files)) {
-            throw new Error('Bukan repository valid');
-        }
-        
-        fileList.innerHTML = files.map(file => `
-            <div class="file-item" onclick="openFileForEdit('${file.path}', '${file.sha}')">
-                <span>📄 ${file.name}</span>
-                <small style="color:var(--text-dim)">${(file.size / 1024).toFixed(1)} KB</small>
-            </div>
-        `).join('');
-        
-    } catch (error) {
-        fileList.innerHTML = `<p style="color:var(--red)">Error: ${error.message}</p>`;
-    }
-}
-
-async function openFileForEdit(path, sha) {
-    currentFilePath = path;
-    currentFileSha = sha;
-    
-    document.getElementById('currentFileName').textContent = path;
-    
-    try {
-        const response = await fetch(
-            `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`,
-            { headers: { Authorization: `token ${GITHUB_CONFIG.token}` } }
-        );
-        
-        const data = await response.json();
-        const content = atob(data.content);
-        
-        document.getElementById('codeEditor').value = content;
-        closeGitHubManager();
-        openCodeEditor();
-        
-    } catch (error) {
-        toast('Gagal membuka file', 'error');
-    }
-}
-
-function openCodeEditor() {
-    document.getElementById('codeEditorPanel').classList.add('show');
-}
-
-function closeCodeEditor() {
-    document.getElementById('codeEditorPanel').classList.remove('show');
-}
-
-// Search & Replace Functions
-function searchInCode() {
-    const editor = document.getElementById('codeEditor');
-    const searchText = document.getElementById('searchText').value;
-    const result = document.getElementById('searchResult');
-    
-    if (!searchText) {
-        toast('Masukkan teks untuk dicari', 'warning');
-        return;
-    }
-    
-    const content = editor.value;
-    const count = (content.match(new RegExp(searchText, 'g')) || []).length;
-    
-    if (count > 0) {
-        result.innerHTML = `✅ Ditemukan <b>${count}</b> kemunculan dari "${searchText}"`;
-        result.style.color = 'var(--green)';
-        
-        // Highlight first occurrence
-        const startPos = content.indexOf(searchText);
-        editor.focus();
-        editor.setSelectionRange(startPos, startPos + searchText.length);
-    } else {
-        result.innerHTML = `❌ Tidak ditemukan "${searchText}"`;
-        result.style.color = 'var(--red)';
-    }
-}
-
-function replaceInCode() {
-    const editor = document.getElementById('codeEditor');
-    const searchText = document.getElementById('searchText').value;
-    const replaceText = document.getElementById('replaceText').value;
-    const result = document.getElementById('searchResult');
-    
-    if (!searchText) {
-        toast('Masukkan teks untuk dicari', 'warning');
-        return;
-    }
-    
-    const content = editor.value;
-    const selectionStart = editor.selectionStart;
-    
-    if (selectionStart !== undefined) {
-        const beforeSelection = content.substring(0, selectionStart);
-        const afterSelection = content.substring(selectionStart);
-        
-        if (afterSelection.startsWith(searchText)) {
-            const newAfter = afterSelection.replace(searchText, replaceText);
-            editor.value = beforeSelection + newAfter;
-            
-            // Move cursor after replacement
-            const newCursorPos = selectionStart + replaceText.length;
-            editor.setSelectionRange(newCursorPos, newCursorPos);
-            
-            result.innerHTML = `✅ Diganti 1 kemunculan`;
-            result.style.color = 'var(--green)';
-        } else {
-            // Find next occurrence
-            const nextIndex = content.indexOf(searchText, selectionStart);
-            if (nextIndex !== -1) {
-                editor.setSelectionRange(nextIndex, nextIndex + searchText.length);
-                const newContent = content.substring(0, nextIndex) + replaceText + content.substring(nextIndex + searchText.length);
-                editor.value = newContent;
-                
-                const newCursorPos = nextIndex + replaceText.length;
-                editor.setSelectionRange(newCursorPos, newCursorPos);
-                
-                result.innerHTML = `✅ Diganti 1 kemunculan`;
-                result.style.color = 'var(--green)';
-            } else {
-                result.innerHTML = `❌ Tidak ada lagi yang bisa diganti`;
-                result.style.color = 'var(--red)';
-            }
-        }
-    }
-}
-
-function replaceAllInCode() {
-    const editor = document.getElementById('codeEditor');
-    const searchText = document.getElementById('searchText').value;
-    const replaceText = document.getElementById('replaceText').value;
-    const result = document.getElementById('searchResult');
-    
-    if (!searchText) {
-        toast('Masukkan teks untuk dicari', 'warning');
-        return;
-    }
-    
-    if (!confirm(`Ganti SEMUA "${searchText}" dengan "${replaceText}"?`)) {
-        return;
-    }
-    
-    const content = editor.value;
-    const count = (content.match(new RegExp(searchText, 'g')) || []).length;
-    const newContent = content.split(searchText).join(replaceText);
-    
-    editor.value = newContent;
-    
-    result.innerHTML = `✅ Diganti <b>${count}</b> kemunculan`;
-    result.style.color = 'var(--green)';
-}
-
-async function saveCodeToGitHub() {
-    if (!currentFilePath || !currentFileSha) {
-        toast('Pilih file dari GitHub Manager terlebih dahulu', 'warning');
-        return;
-    }
-    
-    const content = document.getElementById('codeEditor').value;
-    
-    try {
-        const response = await fetch(
-            `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${currentFilePath}`,
-            {
-                method: 'PUT',
-                headers: {
-                    Authorization: `token ${GITHUB_CONFIG.token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    message: `Update ${currentFilePath} via YAD Store Editor`,
-                    content: btoa(content),
-                    sha: currentFileSha,
-                    branch: GITHUB_CONFIG.branch
-                })
-            }
-        );
-        
-        if (response.ok) {
-            const data = await response.json();
-            currentFileSha = data.content.sha;
-            toast('✅ File berhasil disimpan!', 'success');
-        } else {
-            throw new Error('Gagal menyimpan');
-        }
-    } catch (error) {
-        toast('Gagal menyimpan file: ' + error.message, 'error');
-    }
-}
-
-async function commitCode() {
-    const commitMessage = prompt('Masukkan pesan commit:', 'Update via YAD Store');
-    if (!commitMessage) return;
-    
-    await saveCodeToGitHub();
-}
-
-// ==================== ADMIN DASHBOARD ====================
-function openAdminDashboard() {
-    document.getElementById('adminDashboardPanel').classList.add('show');
-    loadAdminStats();
-    loadAdminOrders();
-    loadAdminUsers();
-}
-
-function closeAdminDashboard() {
-    document.getElementById('adminDashboardPanel').classList.remove('show');
-}
-
-async function loadAdminStats() {
-    const statsDiv = document.getElementById('adminStats');
-    
-    try {
-        const ordersSnapshot = await db.collection('orders').get();
-        const usersSnapshot = await db.collection('users').get();
-        
-        const totalOrders = ordersSnapshot.docs.length;
-        const totalUsers = usersSnapshot.docs.length;
-        let totalRevenue = 0;
-        let todayOrders = 0;
-        let todayRevenue = 0;
-        
-        const today = new Date().toISOString().split('T')[0];
-        
-        ordersSnapshot.docs.forEach(doc => {
-            const order = doc.data();
-            totalRevenue += order.finalPrice || 0;
-            
-            if (order.time && order.time.startsWith(today)) {
-                todayOrders++;
-                todayRevenue += order.finalPrice || 0;
-            }
-        });
-        
-        statsDiv.innerHTML = `
-            <div class="stat-card">
-                <div class="stat-value">${totalOrders}</div>
-                <div class="stat-label">Total Pesanan</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">Rp ${totalRevenue.toLocaleString()}</div>
-                <div class="stat-label">Total Revenue</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">${todayOrders}</div>
-                <div class="stat-label">Pesanan Hari Ini</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">Rp ${todayRevenue.toLocaleString()}</div>
-                <div class="stat-label">Revenue Hari Ini</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">${totalUsers}</div>
-                <div class="stat-label">Total Users</div>
-            </div>
-        `;
-        
-    } catch (error) {
-        console.error('Stats Error:', error);
-    }
-}
-
-async function loadAdminOrders() {
-    const ordersDiv = document.getElementById('adminOrders');
-    
-    try {
-        const snapshot = await db.collection('orders')
-            .orderBy('time', 'desc')
-            .limit(10)
-            .get();
-        
-        if (snapshot.empty) {
-            ordersDiv.innerHTML = '<p style="color:var(--text-dim)">Belum ada pesanan.</p>';
-            return;
-        }
-        
-        ordersDiv.innerHTML = snapshot.docs.map(doc => {
-            const order = doc.data();
-            return `
-                <div style="background:var(--bg-input);padding:10px;border-radius:6px;margin-bottom:5px;font-size:12px;display:flex;justify-content:space-between;align-items:center">
-                    <div>
-                        <b>${order.id}</b> - ${order.game}<br>
-                        <small style="color:var(--text-dim)">${order.userEmail || 'Anonymous'} | ${new Date(order.time).toLocaleString('id-ID')}</small>
-                    </div>
-                    <div style="text-align:right">
-                        <div style="color:var(--gold)">Rp ${order.finalPrice.toLocaleString()}</div>
-                        <select onchange="updateOrderStatus('${doc.id}', this.value)" style="width:auto;padding:5px;font-size:11px">
-                            <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
-                            <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>Processing</option>
-                            <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>Completed</option>
-                            <option value="failed" ${order.status === 'failed' ? 'selected' : ''}>Failed</option>
-                        </select>
-                    </div>
-                </div>
-            `;
-        }).join('');
-        
-    } catch (error) {
-        ordersDiv.innerHTML = '<p style="color:var(--red)">Gagal memuat pesanan.</p>';
-    }
-}
-
-async function updateOrderStatus(orderId, status) {
-    try {
-        await db.collection('orders').doc(orderId).update({ status });
-        toast('Status diperbarui!', 'success');
-    } catch (error) {
-        toast('Gagal update status', 'error');
-    }
-}
-
-async function loadAdminUsers() {
-    const usersDiv = document.getElementById('adminUsers');
-    
-    try {
-        const snapshot = await db.collection('users').limit(10).get();
-        
-        if (snapshot.empty) {
-            usersDiv.innerHTML = '<p style="color:var(--text-dim)">Belum ada user terdaftar.</p>';
-            return;
-        }
-        
-        usersDiv.innerHTML = snapshot.docs.map(doc => {
-            const user = doc.data();
-            return `
-                <div style="background:var(--bg-input);padding:10px;border-radius:6px;margin-bottom:5px;font-size:12px">
-                    <b>${user.name || 'User'}</b><br>
-                    <small style="color:var(--text-dim)">${user.email}</small>
-                </div>
-            `;
-        }).join('');
-        
-    } catch (error) {
-        usersDiv.innerHTML = '<p style="color:var(--red)">Gagal memuat users.</p>';
-    }
-}
-
-// ==================== BACKUP ====================
-function openBackupPanel() {
-    document.getElementById('backupPanel').classList.add('show');
-    document.getElementById('fitDropdown').style.display = 'none';
-}
-
-function closeBackupPanel() {
-    document.getElementById('backupPanel').classList.remove('show');
-}
-
-async function exportAllData() {
-    try {
-        const collections = ['orders', 'users'];
-        const backup = {};
-        
-        for (const col of collections) {
-            const snapshot = await db.collection(col).get();
-            backup[col] = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-        }
-        
-        const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `yad_backup_${new Date().toISOString()}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-        
-        toast('Data berhasil diexport!', 'success');
-    } catch (error) {
-        toast('Gagal export data', 'error');
-    }
-}
-
-async function backupToGitHub() {
-    if (!GITHUB_CONFIG.token) {
-        toast('Konfigurasi GitHub terlebih dahulu', 'warning');
-        return;
-    }
-    
-    try {
-        const snapshot = await db.collection('orders').get();
-        const orders = snapshot.docs.map(doc => doc.data());
-        
-        const response = await fetch(
-            `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/backup.json`,
-            {
-                method: 'PUT',
-                headers: {
-                    Authorization: `token ${GITHUB_CONFIG.token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    message: 'Backup data ' + new Date().toISOString(),
-                    content: btoa(JSON.stringify(orders, null, 2))
-                })
-            }
-        );
-        
-        if (response.ok) {
-            toast('Backup ke GitHub berhasil!', 'success');
-        }
-    } catch (error) {
-        toast('Gagal backup ke GitHub', 'error');
-    }
-}
-
-// ==================== ANALYTICS ====================
-function openAnalyticsPanel() {
-    document.getElementById('analyticsPanel').classList.add('show');
-    document.getElementById('fitDropdown').style.display = 'none';
-    loadAnalytics();
-}
-
-function closeAnalyticsPanel() {
-    document.getElementById('analyticsPanel').classList.remove('show');
-}
-
-async function loadAnalytics() {
-    const body = document.getElementById('analyticsBody');
-    body.innerHTML = '<span class="loading-spinner"></span> Memuat analytics...';
-    
-    try {
-        const snapshot = await db.collection('orders').get();
-        const orders = snapshot.docs.map(doc => doc.data());
-        
-        // Popular products
-        const productCount = {};
-        orders.forEach(order => {
-            productCount[order.game] = (productCount[order.game] || 0) + 1;
-        });
-        
-        // Daily revenue (last 7 days)
-        const dailyRevenue = {};
-        const now = new Date();
-        for (let i = 6; i >= 0; i--) {
-            const date = new Date(now);
-            date.setDate(date.getDate() - i);
-            const dateStr = date.toISOString().split('T')[0];
-            dailyRevenue[dateStr] = 0;
-        }
-        
-        orders.forEach(order => {
-            const dateStr = order.time ? order.time.split('T')[0] : null;
-            if (dateStr && dailyRevenue[dateStr] !== undefined) {
-                dailyRevenue[dateStr] += order.finalPrice || 0;
-            }
-        });
-        
-        body.innerHTML = `
-            <h4>📊 Produk Terpopuler</h4>
-            <div style="margin:15px 0">
-                ${Object.entries(productCount).sort((a, b) => b[1] - a[1]).map(([game, count]) => `
-                    <div style="background:var(--bg-input);padding:10px;border-radius:6px;margin-bottom:5px;display:flex;justify-content:space-between">
-                        <span>${game}</span>
-                        <b>${count} pesanan</b>
-                    </div>
-                `).join('')}
-            </div>
-            
-            <h4>💰 Revenue 7 Hari Terakhir</h4>
-            <div style="margin:15px 0">
-                ${Object.entries(dailyRevenue).map(([date, revenue]) => `
-                    <div style="background:var(--bg-input);padding:10px;border-radius:6px;margin-bottom:5px;display:flex;justify-content:space-between">
-                        <span>${date}</span>
-                        <b style="color:var(--gold)">Rp ${revenue.toLocaleString()}</b>
-                    </div>
-                `).join('')}
-            </div>
-            
-            <h4>📈 Statistik Total</h4>
-            <div style="margin:15px 0;display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-                <div class="stat-card">
-                    <div class="stat-value">${orders.length}</div>
-                    <div class="stat-label">Total Pesanan</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">Rp ${orders.reduce((sum, o) => sum + (o.finalPrice || 0), 0).toLocaleString()}</div>
-                    <div class="stat-label">Total Revenue</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">Rp ${orders.length ? Math.round(orders.reduce((sum, o) => sum + (o.finalPrice || 0), 0) / orders.length).toLocaleString() : 0}</div>
-                    <div class="stat-label">Rata-rata/Order</div>
-                </div>
-            </div>
-        `;
-        
-    } catch (error) {
-        body.innerHTML = '<p style="color:var(--red)">Gagal memuat analytics.</p>';
-    }
-}
-
-// ==================== AUTH ====================
-async function handleLogin() {
-    try {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        const result = await auth.signInWithPopup(provider);
-        
-        // Save user to Firestore
-        await db.collection('users').doc(result.user.uid).set({
-            name: result.user.displayName,
-            email: result.user.email,
-            lastLogin: new Date().toISOString()
-        }, { merge: true });
-        
-        toast('Selamat datang, ' + result.user.displayName + '!', 'success');
-    } catch (error) {
-        console.error('Login Error:', error);
-        toast('Login gagal', 'error');
-    }
-}
-
-async function handleLogout() {
-    try {
-        await auth.signOut();
-        closeProfile();
-        toast('Berhasil logout', 'success');
-    } catch (error) {
-        toast('Gagal logout', 'error');
-    }
-}
-
-function openProfile() {
-    document.getElementById('profilePanel').classList.add('show');
-    
-    if (currentUser) {
-        document.getElementById('profileName').textContent = currentUser.displayName || 'User';
-        document.getElementById('profileEmail').textContent = currentUser.email || '-';
-        loadUserStats();
-    }
-}
-
-function closeProfile() {
-    document.getElementById('profilePanel').classList.remove('show');
-}
-
-async function loadUserStats() {
-    if (!currentUser) return;
-    
-    try {
-        const snapshot = await db.collection('orders')
-            .where('userId', '==', currentUser.uid)
-            .get();
-        
-        let totalSpend = 0;
-        snapshot.docs.forEach(doc => {
-            totalSpend += doc.data().finalPrice || 0;
-        });
-        
-        document.getElementById('profileSpend').textContent = 'Total Belanja: Rp ' + totalSpend.toLocaleString();
-        
-        // Determine tier
-        let tier = 'Bronze';
-        if (totalSpend >= 10000000) tier = 'Platinum';
-        else if (totalSpend >= 2000000) tier = 'Gold';
-        else if (totalSpend >= 500000) tier = 'Silver';
-        
-        document.getElementById('profileTier').textContent = 'Tier: ' + tier;
-        
-    } catch (error) {
-        console.error('Stats Error:', error);
-    }
-}
-
-// ==================== UTILITY ====================
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-function updateStats() {
-    if (!currentUser) return;
-    
-    db.collection('orders').get().then(snapshot => {
-        const today = new Date().toISOString().split('T')[0];
-        let todayOrders = 0;
-        let todayRevenue = 0;
-        
-        snapshot.docs.forEach(doc => {
-            const order = doc.data();
-            if (order.time && order.time.startsWith(today)) {
-                todayOrders++;
-                todayRevenue += order.finalPrice || 0;
-            }
-        });
-        
-        document.getElementById('todayOrders').textContent = todayOrders;
-        document.getElementById('todayRevenue').textContent = 'Rp ' + todayRevenue.toLocaleString();
-    });
-}
-
-// ==================== AUTH LISTENER ====================
-auth.onAuthStateChanged(user => {
-    currentUser = user;
-    isAdmin = user && user.email === 'ynuraini686@gmail.com';
-    
-    document.getElementById('loginBtn').style.display = user ? 'none' : 'inline-block';
-    document.getElementById('profileNavBtn').style.display = user ? 'inline-block' : 'none';
-    document.getElementById('adminBtn').style.display = isAdmin ? 'inline-block' : 'none';
-    document.getElementById('fitMenuBtn').style.display = isAdmin ? 'inline-block' : 'none';
-    
-    if (user) {
-        updateStats();
-    }
-});
-
-// ==================== INIT ====================
-renderGames();
-initAI();
-
-// Add animation styles
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideDown {
-        from { transform: translateY(-20px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-    }
-    @keyframes slideUp {
-        from { transform: translateY(0); opacity: 1; }
-        to { transform: translateY(-20px); opacity: 0; }
-    }
-`;
-document.head.appendChild(style);
-
-// Close dropdown when clicking outside
-document.addEventListener('click', (e) => {
-    const dropdown = document.getElementById('fitDropdown');
-    if (dropdown && !e.target.closest('#fitMenuBtn') && !e.target.closest('#fitDropdown')) {
-        dropdown.style.display = 'none';
-    }
-});
+const auth=firebase.auth(),fs=firebase.firestore(),googleProvider=new firebase.auth.GoogleAuthProvider();googleProvider.setCustomParameters({prompt:'select_account'});
+const GITHUB_CONFIG=JSON.parse(localStorage.getItem('github_config')||'{"token":"","owner":"","repo":"","branch":"main","enabled":false}');
+window.AI_KB_KEY='yad_ai_kb_v1';window.AI_KB=JSON.parse(localStorage.getItem('yad_ai_kb_v1')||'[]');
+function debugLog(m,t='info'){const c=document.getElementById('debugContent');if(c){const l=document.createElement('div');l.className='debug-line '+t;l.textContent='['+new Date().toLocaleTimeString()+'] '+m;c.appendChild(l);while(c.children.length>25)c.removeChild(c.firstChild);c.scrollTop=c.scrollHeight;}}
+function toggleDebugPanel(){document.getElementById('githubDebugPanel').classList.toggle('show');}
+function toast(m,t='info'){if(typeof m==='string'&&(m.includes('GitHub')||m.includes('Push')||m.includes('SHA'))){debugLog(m,t);return;}const c=document.getElementById('toastContainer');const d=document.createElement('div');d.className='toast '+t;d.textContent=m;c.appendChild(d);setTimeout(()=>{d.style.opacity='0';setTimeout(()=>d.remove(),300)},3000);}
+function escapeHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function autoCleanStorage(){var c=0;var kb=JSON.parse(localStorage.getItem('yad_ai_kb_v1')||'[]');if(kb.length>200){kb=kb.slice(-100);localStorage.setItem('yad_ai_kb_v1',JSON.stringify(kb));c++;}var f=JSON.parse(localStorage.getItem('yad_features')||'[]');if(f.length>20){var seen={},u=[];f.forEach(function(x){if(!seen[x.name]){seen[x.name]=1;u.push(x);}});if(u.length!==f.length){localStorage.setItem('yad_features',JSON.stringify(u));c++;}}['debugLogs','ai_chat_history','autoheal_logs'].forEach(function(k){if(localStorage.getItem(k)){localStorage.removeItem(k);c++;}});return c;}
+setTimeout(function(){var c=autoCleanStorage();if(c>0)debugLog('🧹 Auto-clean: '+c+' items','info');},3000);setInterval(autoCleanStorage,300000);
+const S={user:null,admin:false,orders:JSON.parse(localStorage.getItem('store_orders')||'[]'),paymentMethods:JSON.parse(localStorage.getItem('store_payments')||'[]'),markup:parseInt(localStorage.getItem('store_markup')||'30'),selectedPayment:null,currentCategory:'all',fakeCount:87,dailyEarning:150000,monthlyTarget:4000000};
+if(!S.paymentMethods.length){S.paymentMethods=[{name:'DANA',number:'083170617054',holder:'YAD Store'},{name:'GoPay',number:'083170617054',holder:'YAD Store'},{name:'OVO',number:'083170617054',holder:'YAD Store'}];localStorage.setItem('store_payments',JSON.stringify(S.paymentMethods));}
+function calcPrice(p){return Math.round(p*(1+S.markup/100));}
+const ALL_PRODUCTS={game:[{id:'ml',name:'Mobile Legends',icon:'👑',dev:'Moonton',items:[['3 Diamonds',1500],['5 Diamonds',2000],['11 Diamonds',3500],['22 Diamonds',6500],['56 Diamonds',13000],['86 Diamonds',20000],['172 Diamonds',40000],['344 Diamonds',78000],['429 Diamonds',95000],['514 Diamonds',115000],['600 Diamonds',135000],['706 Diamonds',155000],['878 Diamonds',190000],['1050 Diamonds',230000],['Starlight',130000],['Weekly Pass',35000]]},{id:'ff',name:'Free Fire',icon:'🔥',dev:'Garena',items:[['5 Diamonds',1500],['12 Diamonds',3000],['50 Diamonds',8500],['70 Diamonds',12000],['140 Diamonds',23000],['355 Diamonds',56000],['500 Diamonds',78000],['720 Diamonds',110000],['1000 Diamonds',150000],['1450 Diamonds',215000],['Weekly',30000],['Monthly',90000]]},{id:'pubg',name:'PUBG Mobile',icon:'🔫',dev:'Tencent',items:[['30 UC',8000],['60 UC',15000],['120 UC',29000],['180 UC',43000],['300 UC',70000],['600 UC',135000],['1500 UC',330000],['3000 UC',650000],['Royale Pass',160000]]},{id:'gi',name:'Genshin Impact',icon:'✨',dev:'HoYoverse',items:[['60 GC',15000],['300 GC',70000],['980 GC',220000],['1980 GC',420000],['3280 GC',680000],['Blessing',70000],['Battle Pass',140000]]},{id:'valo',name:'Valorant',icon:'🎯',dev:'Riot',items:[['125 VP',22000],['420 VP',62000],['475 VP',70000],['1000 VP',140000],['2050 VP',270000],['3650 VP',470000],['5350 VP',670000]]}],pulsa:[{id:'tsel',name:'Telkomsel',icon:'📱',dev:'Pulsa',items:[['5000',6500],['10000',11500],['20000',21500],['50000',51500],['100000',101500]]},{id:'xl',name:'XL',icon:'📱',dev:'Pulsa',items:[['5000',6500],['10000',11500],['20000',21500],['50000',51500]]}],data:[{id:'tsel-data',name:'Telkomsel Data',icon:'📶',dev:'Data',items:[['1GB',12000],['3GB',32000],['5GB',50000],['10GB',95000]]}],token:[{id:'pln',name:'Token PLN',icon:'⚡',dev:'PLN',items:[['20000',22000],['50000',52000],['100000',102000]]}],voucher:[{id:'steam',name:'Steam Wallet',icon:'🎮',dev:'Valve',items:[['30000',35000],['60000',67000],['120000',127000]]},{id:'google',name:'Google Play',icon:'▶️',dev:'Google',items:[['50000',55000],['100000',105000],['200000',205000]]}],ewallet:[{id:'gopay',name:'GoPay',icon:'💚',dev:'Gojek',items:[['10000',11500],['20000',21500],['50000',51500]]},{id:'dana',name:'DANA',icon:'💙',dev:'DANA',items:[['10000',11500],['20000',21500],['50000',51500]]}]};
+function renderGames(cat='all'){S.currentCategory=cat;let p=[];if(cat==='all')Object.values(ALL_PRODUCTS).forEach(a=>p=p.concat(a));else p=ALL_PRODUCTS[cat]||[];document.getElementById('gameGrid').innerHTML=p.map(g=>`<div class="game-card" onclick="selectProduct('${cat}','${g.id}')"><div class="game-header"><div class="game-icon">${g.icon}</div><div><div class="game-name">${escapeHtml(g.name)}</div><div class="game-developer">${g.dev}</div></div></div><div class="item-list">${g.items.slice(0,5).map(i=>`<div class="item-row" onclick="event.stopPropagation();quickOrder('${escapeHtml(g.name)}','${escapeHtml(i[0])}','${i[1]}')"><span>${escapeHtml(i[0])}</span><span class="item-price">Rp ${calcPrice(i[1]).toLocaleString('id-ID')}</span></div>`).join('')}${g.items.length>5?`<div style="text-align:center;color:var(--accent);cursor:pointer;padding:6px" onclick="event.stopPropagation();selectProduct('${cat}','${g.id}')">Lihat Semua (${g.items.length}) →</div>`:''}</div></div>`).join('');}
+function filterCategory(c,e){document.querySelectorAll('.cat-tab').forEach(t=>t.classList.remove('active'));if(e&&e.currentTarget)e.currentTarget.classList.add('active');renderGames(c);}
+function selectProduct(cat,id){const pp=ALL_PRODUCTS[cat]||[],g=pp.find(p=>p.id===id);if(!g)return;updateOrderGame(cat);document.getElementById('orderGame').value=g.name;document.getElementById('orderItem').innerHTML=g.items.map(i=>`<option value="${escapeHtml(i[0])}|${i[1]}">${escapeHtml(i[0])} - Rp ${calcPrice(i[1]).toLocaleString('id-ID')}</option>`).join('');updateTotalPrice();showSection('order');}
+function quickOrder(gn,iname,price){document.getElementById('orderGame').value=gn;document.getElementById('orderItem').innerHTML=`<option value="${escapeHtml(iname)}|${price}">${escapeHtml(iname)} - Rp ${calcPrice(price).toLocaleString('id-ID')}</option>`;updateTotalPrice();showSection('order');}
+function updateOrderGame(cat){const c=cat||document.getElementById('orderCategory').value,pp=ALL_PRODUCTS[c]||[];document.getElementById('orderGame').innerHTML='<option value="">Pilih Produk</option>'+pp.map(p=>`<option value="${escapeHtml(p.name)}">${p.icon} ${escapeHtml(p.name)}</option>`).join('');document.getElementById('orderGame').onchange=function(){const s=pp.find(p=>p.name===this.value);if(s){document.getElementById('orderItem').innerHTML=s.items.map(i=>`<option value="${escapeHtml(i[0])}|${i[1]}">${escapeHtml(i[0])} - Rp ${calcPrice(i[1]).toLocaleString('id-ID')}</option>`).join('');updateTotalPrice();}};}
+function updateTotalPrice(){const v=document.getElementById('orderItem').value;document.getElementById('totalPrice').textContent=v?'Rp '+calcPrice(parseInt(v.split('|')[1])).toLocaleString('id-ID'):'Rp 0';}
+function renderPayments(){document.getElementById('paymentGrid').innerHTML=S.paymentMethods.map((p,i)=>`<div class="payment-card" onclick="selectPayment(${i})" id="payCard${i}"><div>🏦</div><b>${escapeHtml(p.name)}</b><br><small>${escapeHtml(p.number)}</small></div>`).join('');}
+function selectPayment(i){S.selectedPayment=S.paymentMethods[i];document.querySelectorAll('.payment-card').forEach(c=>c.classList.remove('selected'));document.getElementById('payCard'+i)?.classList.add('selected');}
+function showSection(s){['homeSection','orderSection','statusSection'].forEach(id=>document.getElementById(id).classList.add('hidden'));document.getElementById(s+'Section').classList.remove('hidden');}
+async function submitOrder(){const g=document.getElementById('orderGame').value,iv=document.getElementById('orderItem').value,uid=document.getElementById('orderUID').value.trim(),email=document.getElementById('orderEmail').value.trim();if(!g||!iv||!uid)return toast('Lengkapi data!','error');if(!S.selectedPayment)return toast('Pilih pembayaran!','error');const[iname,price]=iv.split('|'),t=calcPrice(parseInt(price));const o={id:'YAD-'+Date.now().toString(36).toUpperCase(),game:g,item:iname,price:t,uid,email,payment:S.selectedPayment,status:'pending',time:new Date().toISOString()};S.orders.unshift(o);localStorage.setItem('store_orders',JSON.stringify(S.orders));toast('✅ '+o.id,'success');addLive(`🛒 ${g} - ${iname}`);alert(`✅ PESANAN BERHASIL!\n\nOrder ID: ${o.id}\n${g} - ${iname}\nTotal: Rp ${t.toLocaleString('id-ID')}\nBayar ke: ${S.selectedPayment.name} ${S.selectedPayment.number}`);document.getElementById('orderUID').value='';document.getElementById('orderEmail').value='';}
+function previewProof(){const f=document.getElementById('paymentProof').files[0];if(!f)return;const r=new FileReader();r.onload=e=>{document.getElementById('proofPreview').innerHTML=`<img src="${e.target.result}" style="max-width:200px;border-radius:8px">`;};r.readAsDataURL(f);}
+function checkOrder(){const id=document.getElementById('checkOrderID').value.trim();if(!id)return;const o=S.orders.find(o=>o.id===id);document.getElementById('orderResult').innerHTML=o?`<div style="background:var(--bg-input);padding:12px;border-radius:8px"><b>${escapeHtml(o.id)}</b><br>${o.game} - ${o.item}<br>Rp ${o.price.toLocaleString('id-ID')}<br>${o.status.toUpperCase()}</div>`:'<p style="color:var(--red)">❌ Tidak ditemukan</p>';}
+function loadUserHistory(){const e=document.getElementById('historyEmail').value.trim().toLowerCase();if(!e)return;const oo=S.orders.filter(o=>o.email&&o.email.toLowerCase().includes(e));document.getElementById('userOrderHistory').innerHTML=oo.length?oo.map(o=>`<div style="background:var(--bg-input);padding:10px;margin:6px 0;border-radius:8px"><b>${escapeHtml(o.id)}</b> - ${o.status}<br>${o.game}<br>Rp ${o.price.toLocaleString('id-ID')}</div>`).join(''):'<p style="color:var(--text-dim)">Tidak ada</p>';}
+function addLive(m){const f=document.getElementById('liveFeed'),d=document.createElement('div');d.className='live-item';d.textContent=`[${new Date().toLocaleTimeString()}] ${m}`;f.insertBefore(d,f.firstChild);if(f.children.length>15)f.removeChild(f.lastChild);}
+const NOVELS_KEY='yad_novels_v1',NOVEL_PROGRESS_KEY='yad_novel_progress_v1';let novels=JSON.parse(localStorage.getItem(NOVELS_KEY)||'[]'),readingProgress=JSON.parse(localStorage.getItem(NOVEL_PROGRESS_KEY)||'{}'),currentNovel=null,currentPage=0;
+function addNovel(filename,content){if(!S.admin){toast('❌ Admin only!','error');return;}const id='novel_'+Date.now();novels.push({id,title:filename.replace(/\.[^/.]+$/,''),content,added:new Date().toISOString(),pages:splitIntoPages(content),bookmarks:[]});localStorage.setItem(NOVELS_KEY,JSON.stringify(novels));renderNovelLibrary();}
+function splitIntoPages(text,cp=2000){const pages=[],paras=text.split(/\n\n+/);let c='';for(const p of paras){if((c+p).length>cp&&c){pages.push(c.trim());c=p;}else c+=(c?'\n\n':'')+p;}if(c.trim())pages.push(c.trim());return pages.length?pages:[text];}
+function openNovelReader(){document.getElementById('novelReaderPanel').classList.add('show');renderNovelLibrary();document.getElementById('novelContent').style.display='none';document.getElementById('novelControls').style.display='none';document.getElementById('novelLibrary').style.display='grid';if(S.admin){var btn=document.getElementById('writeNovelBtn');if(btn)btn.style.display='inline-block';}}
+function closeNovelReader(){document.getElementById('novelReaderPanel').classList.remove('show');window.speechSynthesis&&window.speechSynthesis.cancel();}
+function renderNovelLibrary(){const l=document.getElementById('novelLibrary');if(!novels.length){l.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-dim)"><p>📚 Belum ada novel</p>'+(S.admin?'<button class="btn btn-primary" onclick="openNovelEditor()" style="margin-top:10px">✍️ Tulis Novel</button>':'')+'</div>';return;}l.innerHTML=novels.map((n,i)=>{const p=readingProgress[n.id]||0,pp=n.pages.length?(p/n.pages.length*100):0;return`<div class="novel-card" onclick="openNovel(${i})"><div style="display:flex;justify-content:space-between"><div><div style="font-weight:700">📖 ${escapeHtml(n.title)}</div><div style="font-size:10px;color:var(--text-dim)">${n.pages.length} halaman</div></div>${S.admin?`<button class="btn btn-danger" style="padding:2px 6px;font-size:10px" onclick="event.stopPropagation();deleteNovel(${i})">✕</button>`:''}</div><div class="novel-progress"><div class="novel-progress-bar" style="width:${pp}%"></div></div></div>`}).join('');}
+function deleteNovel(i){if(!S.admin){toast('❌ Admin only!','error');return;}if(confirm('Hapus?')){novels.splice(i,1);localStorage.setItem(NOVELS_KEY,JSON.stringify(novels));renderNovelLibrary();}}
+function openNovel(i){currentNovel=novels[i];currentPage=readingProgress[currentNovel.id]||0;document.getElementById('novelTitle').textContent='📖 '+currentNovel.title;document.getElementById('novelLibrary').style.display='none';document.getElementById('novelContent').style.display='block';document.getElementById('novelControls').style.display='flex';renderCurrentPage();}
+function renderCurrentPage(){if(!currentNovel)return;const p=currentNovel.pages[currentPage]||'';document.getElementById('novelContent').innerHTML=p.split('\n').filter(l=>l.trim()).map(l=>`<p>${escapeHtml(l.trim())}</p>`).join('')||'<p style="color:var(--text-dim)">Halaman kosong</p>';document.getElementById('novelPageInfo').textContent=`${currentPage+1}/${currentNovel.pages.length}`;readingProgress[currentNovel.id]=currentPage;localStorage.setItem(NOVEL_PROGRESS_KEY,JSON.stringify(readingProgress));}
+function novelNextPage(){if(currentNovel&&currentPage<currentNovel.pages.length-1){currentPage++;renderCurrentPage();}}
+function novelPrevPage(){if(currentPage>0){currentPage--;renderCurrentPage();}}
+function changeFontSize(){document.getElementById('novelContent').style.fontSize=document.getElementById('novelFontSize').value+'px';}
+function searchInNovel(){const t=document.getElementById('novelSearch').value.trim();if(!t){renderCurrentPage();return;}const r=[];currentNovel.pages.forEach((p,i)=>{if(p.toLowerCase().includes(t.toLowerCase()))r.push(i);});if(r.length){currentPage=r[0];renderCurrentPage();}}
+function addBookmark(){if(!currentNovel)return;currentNovel.bookmarks.push({page:currentPage});localStorage.setItem(NOVELS_KEY,JSON.stringify(novels));}
+function toggleNovelSpeech(){if(!currentNovel)return;const s=window.speechSynthesis;if(!s)return;if(s.speaking){s.cancel();document.getElementById('speechBtn').textContent='🔊 Baca';return;}const text=currentNovel.pages[currentPage].replace(/<[^>]*>/g,'').replace(/\.\.\./g,'.').replace(/\s+/g,' ').trim();const u=new SpeechSynthesisUtterance(text);u.lang='id-ID';u.rate=0.8;u.pitch=1;u.onend=()=>{document.getElementById('speechBtn').textContent='🔊 Baca';if(currentPage<currentNovel.pages.length-1)setTimeout(()=>{novelNextPage();toggleNovelSpeech();},800);};s.speak(u);document.getElementById('speechBtn').textContent='⏹ Stop';}
+function downloadNovel(){if(!currentNovel)return;const b=new Blob([currentNovel.content],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=currentNovel.title+'.txt';a.click();}
+function openNovelEditor(){if(!S.admin){toast('❌ Admin only!','error');return;}document.getElementById('novelEditorPanel').classList.add('show');document.getElementById('novelTitleInput').focus();}
+function closeNovelEditor(){document.getElementById('novelEditorPanel').classList.remove('show');}
+function saveNovel(){const title=document.getElementById('novelTitleInput').value.trim(),content=document.getElementById('novelContentInput').value.trim();if(!title||!content)return alert('⚠️ Lengkapi judul dan isi!');addNovel(title+'.txt',content);closeNovelEditor();document.getElementById('novelTitleInput').value='';document.getElementById('novelContentInput').value='';}
+document.getElementById('novelContentInput')?.addEventListener('input',function(){var w=this.value.split(/\s+/).filter(function(x){return x.length>0;}).length;document.getElementById('novelWordCount').textContent=w+' kata';});
+let profileData=JSON.parse(localStorage.getItem('yad_profile')||'{"name":"","memberSince":"","points":0}');
+function openProfile(){document.getElementById('profilePanel').style.display='flex';updateProfileUI();}
+function closeProfile(){document.getElementById('profilePanel').style.display='none';}
+function updateProfileUI(){const ls=document.getElementById('profileLoginSection'),li=document.getElementById('profileLoggedIn'),lb=document.getElementById('profileLogoutBtn');if(S.user){ls.style.display='none';li.style.display='block';lb.style.display='inline-block';const n=profileData.name||S.user.displayName||S.user.email?.split('@')[0]||'User';document.getElementById('profileName').textContent=n;document.getElementById('profileEmail').textContent=S.user.email;document.getElementById('profileRole').textContent=S.admin?'👑 ADMIN':'👤 USER';document.getElementById('profileRole').style.background=S.admin?'linear-gradient(135deg,#f59e0b,#d97706)':'#8b5cf6';if(!profileData.memberSince){profileData.memberSince=new Date().toISOString();localStorage.setItem('yad_profile',JSON.stringify(profileData));}document.getElementById('profileInfoSince').textContent=new Date(profileData.memberSince).toLocaleDateString('id-ID');const uo=S.orders.filter(o=>o.email&&o.email===S.user.email);document.getElementById('profileTotalOrders').textContent=uo.length;document.getElementById('profileTotalSpent').textContent='Rp '+uo.reduce((s,o)=>s+(o.price||0),0).toLocaleString('id-ID');document.getElementById('profilePoints').textContent=(profileData.points||0)+uo.filter(o=>o.status==='done').length*10;document.getElementById('profileOrders').innerHTML=uo.slice(-3).reverse().map(o=>`<div class="profile-order-item"><b>${o.id}</b> - ${o.game}<br>Rp ${(o.price||0).toLocaleString('id-ID')} | <span style="color:${o.status==='done'?'#10b981':o.status==='pending'?'#f59e0b':'#ef4444'}">${o.status.toUpperCase()}</span></div>`).join('')||'<p style="font-size:10px;color:var(--text-dim)">Belum ada pesanan</p>';if(S.admin){document.getElementById('profileAdminSection').style.display='block';document.getElementById('adminPendingOrders').textContent=S.orders.filter(o=>o.status==='pending').length;document.getElementById('adminTotalRevenue').textContent='Rp '+S.orders.filter(o=>o.status==='done').reduce((s,o)=>s+(o.price||0),0).toLocaleString('id-ID');document.getElementById('adminTotalUsers').textContent=[...new Set(S.orders.filter(o=>o.email).map(o=>o.email))].length;}const pb=document.getElementById('profileNavBtn');if(pb){pb.innerHTML=S.admin?'👑 '+n:'👤 '+n;pb.style.cssText=S.admin?'font-size:11px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;border:none;font-weight:700;padding:7px 14px;border-radius:18px;cursor:pointer':'font-size:11px;background:linear-gradient(135deg,#8b5cf6,#06b6d4);color:#fff;border:none;font-weight:600;padding:7px 14px;border-radius:18px;cursor:pointer';}}else{ls.style.display='block';li.style.display='none';lb.style.display='none';document.getElementById('profileName').textContent='Pengguna';const pb=document.getElementById('profileNavBtn');if(pb){pb.innerHTML='👤 Profil';pb.style.cssText='font-size:11px;background:transparent;color:#e8e8f0;border:1px solid #252540;padding:7px 14px;border-radius:18px;cursor:pointer';}}}
+function toggleEditProfile(){const f=document.getElementById('profileEditForm');f.classList.toggle('show');if(f.classList.contains('show')){document.getElementById('editName').value=profileData.name||'';document.getElementById('editName').focus();}}
+function saveProfile(){const n=document.getElementById('editName').value.trim();if(!n)return;profileData.name=n;localStorage.setItem('yad_profile',JSON.stringify(profileData));updateProfileUI();toggleEditProfile();}
+async function doLoginFromProfile(){try{const r=await auth.signInWithPopup(googleProvider);S.user=r.user;S.admin=r.user.email==='ynuraini686@gmail.com';updateUI();}catch(e){if(e.code==='auth/popup-blocked')await auth.signInWithRedirect(googleProvider);}}
+async function handleLogout(){if(confirm('Logout?')){await auth.signOut();S.user=null;S.admin=false;updateUI();closeProfile();}}
+async function testGitHubConnection(){if(!GITHUB_CONFIG.enabled)return;try{const r=await fetch('https://api.github.com/user',{headers:{'Authorization':`token ${GITHUB_CONFIG.token}`}});if(r.ok){document.getElementById('githubStatus').textContent='📤 Ready ✅';document.getElementById('githubStatus').style.color='#10b981';}}catch(e){}}
+async function pushToGithub(msg='Auto-update'){if(!GITHUB_CONFIG.enabled)return{success:false};const h='<!DOCTYPE html>\n'+document.documentElement.outerHTML;const b64=btoa(unescape(encodeURIComponent(h)));const H={'Authorization':`token ${GITHUB_CONFIG.token}`,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'};const api=`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/index.html`;let sha=null;try{const gr=await fetch(`${api}?ref=${GITHUB_CONFIG.branch}&_=${Date.now()}`,{headers:H,cache:'no-store'});if(gr.ok){const d=await gr.json();sha=d.sha;}}catch(e){}for(let i=0;i<3;i++){if(i>0){await new Promise(r=>setTimeout(r,2000));try{const fg=await fetch(`${api}?ref=${GITHUB_CONFIG.branch}&_=${Date.now()}`,{headers:H,cache:'no-store'});if(fg.ok){const d=await fg.json();sha=d.sha;}}catch(e){}}const body={message:msg,content:b64,branch:GITHUB_CONFIG.branch};if(sha)body.sha=sha;try{const pr=await fetch(api,{method:'PUT',headers:H,body:JSON.stringify(body)});const data=await pr.json();if(pr.ok){debugLog('✅ Push berhasil!','success');document.getElementById('githubStatus').textContent='📤 Synced ✅';return{success:true};}if(pr.status===409){sha=null;continue;}}catch(e){}}debugLog('❌ Push gagal','error');return{success:false};}
+function toggleAIChat(){const b=document.getElementById('aiChatBody');b.classList.toggle('hidden');document.getElementById('aiChatToggle').textContent=b.classList.contains('hidden')?'▶':'▼';}
+function openAIChat(){const w=document.getElementById('aiChatWidget');w.classList.toggle('show');if(w.classList.contains('show')){document.getElementById('aiChatBody').classList.remove('hidden');setTimeout(()=>document.getElementById('aiChatInput').focus(),300);}}
+var isListening=false,recognition=null;
+function toggleVoice(){if(isListening){stopVoice();}else{startVoice();}}
+function startVoice(){var SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){alert('⚠️ Voice tidak didukung browser ini. Gunakan Chrome.');return;}recognition=new SR();recognition.lang='id-ID';recognition.onstart=function(){isListening=true;var b=document.getElementById('voiceBtn');if(b){b.textContent='🔴';b.classList.add('listening');}};recognition.onresult=function(e){var t=e.results[0][0].transcript;var i=document.getElementById('aiChatInput');if(i){i.value=t;setTimeout(function(){sendAIMsg();},300);}stopVoice();};recognition.onerror=function(){stopVoice();};recognition.onend=function(){stopVoice();};recognition.start();}
+function stopVoice(){if(recognition){try{recognition.stop();}catch(e){}}isListening=false;var b=document.getElementById('voiceBtn');if(b){b.textContent='🎤';b.classList.remove('listening');}}
+function openPaymentForm(){if(!S.admin){toast('❌ Admin only!','error');return;}document.getElementById('paymentFormPanel').classList.add('show');}
+function closePaymentForm(){document.getElementById('paymentFormPanel').classList.remove('show');}
+function savePayment(){const n=document.getElementById('payName').value.trim(),num=document.getElementById('payNumber').value.trim(),h=document.getElementById('payHolder').value.trim()||'YAD Store';if(!n||!num)return alert('⚠️ Lengkapi data!');var ex=S.paymentMethods.find(function(p){return p.name.toLowerCase()===n.toLowerCase();});if(ex)return alert('⚠️ Sudah ada!');S.paymentMethods.push({name:n,number:num,holder:h});localStorage.setItem('store_payments',JSON.stringify(S.paymentMethods));renderPayments();closePaymentForm();toast('✅ '+n+' ditambahkan!','success');}
+function analyzeHTML(){const html=document.documentElement.outerHTML;const tc=html.length,tl=html.split('\n').length,dn=document.getElementsByTagName('*').length,sc=(html.match(/<script[\s>]/gi)||[]).length,st=(html.match(/<style[\s>]/gi)||[]).length;const tags=html.match(/<\/?[a-z][a-z0-9]*/gi)||[];const open=tags.filter(t=>!t.startsWith('</')).length,close=tags.filter(t=>t.startsWith('</')).length;const hasFirebase=html.includes('firebase'),hasAI=html.includes('aiChatWidget'),hasNovel=html.includes('novelReaderPanel'),hasProfile=html.includes('profilePanel'),hasDebug=html.includes('githubDebugPanel');var score=100;if(dn>1000)score-=20;if(open!==close)score-=30;if(!hasFirebase)score-=10;return`<div class="analysis-section"><h3>📏 Statistik</h3><table><tr><th>Metrik</th><th>Nilai</th></tr><tr><td>Total Karakter</td><td>${tc.toLocaleString('id-ID')}</td></tr><tr><td>Total Baris</td><td>${tl.toLocaleString('id-ID')}</td></tr><tr><td>DOM Nodes</td><td>${dn}</td></tr><tr><td>Scripts</td><td>${sc}</td></tr><tr><td>Styles</td><td>${st}</td></tr><tr><td>Tags Open/Close</td><td>${open}/${close}</td></tr></table></div><div class="analysis-section"><h3>🧩 Fitur</h3><table><tr><th>Fitur</th><th>Status</th></tr><tr><td>Firebase</td><td>${hasFirebase?'✅':'❌'}</td></tr><tr><td>AI Chat</td><td>${hasAI?'✅':'❌'}</td></tr><tr><td>Novel Reader</td><td>${hasNovel?'✅':'❌'}</td></tr><tr><td>Profile</td><td>${hasProfile?'✅':'❌'}</td></tr><tr><td>Debug Panel</td><td>${hasDebug?'✅':'❌'}</td></tr></table></div><div class="analysis-section"><h3>📊 Skor</h3><div style="text-align:center;font-size:48px;font-weight:800;color:var(--accent)">${score}/100</div></div>`;}
+function openAnalysis(){document.getElementById('analysisPanel').classList.add('show');document.getElementById('analysisBody').innerHTML=analyzeHTML();}
+function closeAnalysis(){document.getElementById('analysisPanel').classList.remove('show');}
+async function sendAIMsg(){var i=document.getElementById('aiChatInput'),t=i.value.trim();if(!t)return;var m=document.getElementById('aiChatMsgs');m.innerHTML+='<div class="ai-msg user">'+escapeHtml(t)+'</div>';i.value='';m.scrollTop=m.scrollHeight;var x=t.toLowerCase(),r='';if(['hai','halo','hi','hello'].some(function(g){return x.includes(g);}))r='Halo! 😊 Ketik "help" untuk bantuan.';else if(x.includes('kabar'))r='Kabar baik! 😊';else if(x==='help')r='📚 BANTUAN:\n💬 hai, kabar\n🎮 harga, game\n🛒 cara pesan\n📋 cek pesanan [ID]\n📚 novel, profil\n'+(S.admin?'\n👑 ADMIN:\n🔸 konfirmasi [ID], tolak [ID]\n🔸 tambah item, tambah bayar\n🔸 tambah fitur [NAMA]|[KODE]\n🔸 hapus fitur [NOMOR]\n🔸 daftar fitur\n🔸 markup [0-100]\n🔸 push github, analisis':'');else if(x.startsWith('tambah fitur ')&&t.includes('|')){if(!S.admin)r='🔒 Admin only!';else{var p=t.replace(/tambah fitur\s+/i,'').split('|');var n=p[0].trim(),c=p.slice(1).join('|').trim();var old=document.querySelector('[data-feature="'+n+'"]');if(old)old.remove();var w=document.createElement('div');w.setAttribute('data-feature',n);w.innerHTML=c;document.body.appendChild(w);var f=JSON.parse(localStorage.getItem('yad_features')||'[]');f=f.filter(function(x){return x.name!==n;});f.push({name:n,code:c,time:new Date().toISOString()});localStorage.setItem('yad_features',JSON.stringify(f));r='✅ "'+n+'" '+(old?'diganti!':'ditambahkan!');}}else if(/^hapus fitur \d+$/.test(x)){if(!S.admin)r='🔒 Admin only!';else{var num=parseInt(t.replace(/hapus fitur\s+/i,'').trim());var f=JSON.parse(localStorage.getItem('yad_features')||'[]');if(num<1||num>f.length)r='❌ Invalid (1-'+f.length+')';else{var feat=f[num-1];document.querySelectorAll('[data-feature="'+feat.name+'"]').forEach(function(el){el.remove();});f.splice(num-1,1);localStorage.setItem('yad_features',JSON.stringify(f));r='🗑️ "'+feat.name+'" dihapus!';}}}else if(x.startsWith('hapus fitur ')){if(!S.admin)r='🔒 Admin only!';else{var n=t.replace(/hapus fitur\s+/i,'').trim();var els=document.querySelectorAll('[data-feature="'+n+'"]');if(els.length>0){els.forEach(function(el){el.remove();});var f=JSON.parse(localStorage.getItem('yad_features')||'[]');f=f.filter(function(x){return x.name!==n;});localStorage.setItem('yad_features',JSON.stringify(f));r='🗑️ "'+n+'" dihapus!';}else r='❌ Tidak ditemukan.';}}else if(x==='daftar fitur'){var f=JSON.parse(localStorage.getItem('yad_features')||'[]');r=f.length?'📦 FITUR ('+f.length+'):\n'+f.map(function(x,i){return(i+1)+'. '+x.name;}).join('\n')+'\n\n💡 hapus fitur [NOMOR]':'📭 Kosong.';}else if(x==='hapus semua fitur'){if(!S.admin)r='🔒 Admin only!';else{var f=JSON.parse(localStorage.getItem('yad_features')||'[]');document.querySelectorAll('[data-feature]').forEach(function(el){el.remove();});localStorage.setItem('yad_features','[]');r='🗑️ '+f.length+' fitur dihapus!';}}else if(x==='analisis'||x==='analisis html'){openAnalysis();r='🔍 Analisis HTML dibuka!';}else if(x.includes('harga')||x.includes('game'))r='🎮 Game, Pulsa, Data, Token, Voucher, E-Wallet. Cek halaman!';else if(x.includes('bayar')){var mm=S.paymentMethods.map(function(p){return'• '+p.name+': '+p.number;}).join('\n');r='💳 PEMBAYARAN:\n'+mm;}else if(x.includes('cara')||x.includes('pesan'))r='🛒 1. Klik Order 2. Pilih produk 3. Masukkan ID 4. Pilih bayar 5. Upload bukti 6. Klik Pesan';else if(x.startsWith('cek pesanan ')){var id=t.replace(/cek pesanan\s+/i,'').trim().toUpperCase();var o=S.orders.find(function(o){return o.id===id;});r=o?'📋 '+o.id+'\n'+o.game+'\nRp '+(o.price||0).toLocaleString('id-ID')+'\n'+o.status:'❌ Tidak ditemukan';}else if(S&&S.admin&&x.startsWith('konfirmasi ')){var id=t.replace(/konfirmasi\s+/i,'').trim().toUpperCase();var o=S.orders.find(function(o){return o.id===id;});r=o?(o.status='done',localStorage.setItem('store_orders',JSON.stringify(S.orders)),'✅ '+id+' DIKONFIRMASI!'):'❌ Tidak ditemukan';}else if(S&&S.admin&&x.startsWith('tolak ')){var id=t.replace(/tolak\s+/i,'').trim().toUpperCase();var o=S.orders.find(function(o){return o.id===id;});r=o?(o.status='cancelled',localStorage.setItem('store_orders',JSON.stringify(S.orders)),'❌ '+id+' DITOLAK'):'❌ Tidak ditemukan';}else if(S&&S.admin&&x==='pending'){var pp=S.orders.filter(function(o){return o.status==='pending';});r=pp.length?'⏳ '+pp.length+' pending:\n'+pp.map(function(o){return o.id+' | '+o.game;}).join('\n'):'📭 Kosong';}else if(S&&S.admin&&x.startsWith('markup ')){var v=parseInt(t.replace(/markup\s+/i,''));if(v>=0&&v<=100){S.markup=v;localStorage.setItem('store_markup',v);renderGames(S.currentCategory);r='✅ Markup: '+v+'%';}}else if(S&&S.admin&&x.startsWith('tambah bayar ')){var p=t.replace(/tambah bayar\s+/i,'').split('|');if(p.length>=2){var ex=S.paymentMethods.find(function(pm){return pm.name.toLowerCase()===p[0].trim().toLowerCase();});if(ex)r='⚠️ Sudah ada!';else{S.paymentMethods.push({name:p[0].trim(),number:p[1].trim(),holder:(p[2]||'').trim()||'YAD Store'});localStorage.setItem('store_payments',JSON.stringify(S.paymentMethods));renderPayments();r='✅ '+p[0].trim()+' ditambahkan!';}}}else if(S&&S.admin&&x.startsWith('tambah item ')){var p=t.replace(/tambah item\s+/i,'').split('|');if(p.length>=4){var cm={game:'game',pulsa:'pulsa',data:'data',token:'token',voucher:'voucher',ewallet:'ewallet'};var c=cm[p[0].trim().toLowerCase()]||p[0].trim().toLowerCase();if(ALL_PRODUCTS[c]){var g=ALL_PRODUCTS[c].find(function(x){return x.name.toLowerCase()===p[1].trim().toLowerCase();});if(!g){g={id:p[1].toLowerCase().replace(/\s+/g,'-'),name:p[1].trim(),icon:'📦',dev:'Custom',items:[]};ALL_PRODUCTS[c].push(g);}g.items.push([p[2].trim(),parseInt(p[3])]);g.items.sort(function(a,b){return a[1]-b[1];});renderGames(S.currentCategory);r='✅ '+p[2]+' ditambahkan!';}}}else if(S&&S.admin&&(x==='push github'||x==='push')){r='📤 Mendorong...';setTimeout(async function(){var rr=await pushToGithub();m.innerHTML+=rr.success?'<div class="ai-msg success">✅ Berhasil!</div>':'<div class="ai-msg error">❌ Gagal</div>';m.scrollTop=m.scrollHeight;},300);}else r='❓ Ketik "help" untuk bantuan.';setTimeout(function(){m.innerHTML+='<div class="ai-msg">'+r.replace(/\n/g,'<br>')+'</div>';m.scrollTop=m.scrollHeight;},300);}
+async function handleLogin(){try{if(auth.currentUser){S.user=auth.currentUser;S.admin=auth.currentUser.email==='ynuraini686@gmail.com';updateUI();return;}const r=await auth.signInWithPopup(googleProvider);S.user=r.user;S.admin=r.user.email==='ynuraini686@gmail.com';updateUI();}catch(e){if(e.code==='auth/popup-blocked')await auth.signInWithRedirect(googleProvider);}}
+auth.getRedirectResult().then(r=>{if(r?.user){S.user=r.user;S.admin=r.user.email==='ynuraini686@gmail.com';updateUI();}}).catch(()=>{});
+function updateUI(){const f=document.getElementById('floatingAI'),qb=document.getElementById('quickEditBar'),db=document.getElementById('debugBtn'),lb=document.getElementById('loginBtn'),fit=document.getElementById('fitMenuBtn');if(f)f.style.display='flex';if(qb)qb.style.display=S.admin?'block':'none';if(db)db.style.display=(S.admin&&GITHUB_CONFIG.enabled)?'inline-block':'none';if(lb)lb.style.display=S.user?'none':'inline-block';if(fit)fit.style.display=S.admin?'inline-flex':'none';updateProfileUI();}
+auth.onAuthStateChanged(u=>{S.user=u||null;S.admin=u?.email==='ynuraini686@gmail.com'||false;updateUI();});
+function quickEdit(type){if(!S.admin)return;switch(type){case'judul':{const v=prompt('Judul:',document.querySelector('.logo').textContent);if(v){document.querySelector('.logo').textContent=v;document.title=v;}}break;case'warna':{const v=prompt('Warna:');if(v){document.documentElement.style.setProperty('--accent',v);}}break;case'bg':{const v=prompt('Background:');if(v){document.documentElement.style.setProperty('--bg',v);}}break;case'wa':{const v=prompt('No WA:');if(v){document.querySelector('.whatsapp-float').href='https://wa.me/62'+v.replace(/^0/,'');}}break;case'toko':{const v=prompt('Nama toko:');if(v){document.querySelector('.logo').textContent='🎮 '+v;}}break;case'analisis':{openAnalysis();}break;case'push':{if(confirm('Push?'))pushToGithub();}break;case'testgithub':{testGitHubConnection();}break;case'reload':{if(confirm('Reload?'))location.reload();}break;case'novel':{openNovelReader();}break;}}
+var fitMode='add';
+function toggleFitMenu(){var dd=document.getElementById('fitDropdown');if(dd)dd.classList.toggle('show');}
+function closeFitMenu(){var dd=document.getElementById('fitDropdown');if(dd)dd.classList.remove('show');}
+function openFitPanel(mode){if(!S||!S.admin){alert('🔒 Admin only!');return;}fitMode=mode;var panel=document.getElementById('fitPanel'),body=document.getElementById('fitPanelBody'),title=document.getElementById('fitPanelTitle'),footer=document.getElementById('fitPanelFooter');closeFitMenu();if(mode==='add'){title.textContent='➕ Tambah Fitur';body.innerHTML='<label>📝 Nama Fitur</label><input type="text" id="fitName" placeholder="Contoh: Jam Digital"><label>💻 Kode HTML/CSS/JS</label><textarea id="fitCode" placeholder="Paste kode..." style="min-height:200px;font-family:monospace;"></textarea>';footer.innerHTML='<button onclick="closeFitPanel()" style="padding:8px 16px;background:#252540;color:#e8e8f0;border:none;border-radius:8px;cursor:pointer;font-size:12px;">Batal</button><button onclick="saveFitFromPanel()" style="padding:8px 16px;background:#10b981;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;">✅ Simpan</button>';}else if(mode==='list'){title.textContent='📦 Daftar Fitur';var f=JSON.parse(localStorage.getItem('yad_features')||'[]');body.innerHTML=f.length?f.map(function(x,i){return'<div class="fit-list-item"><span>'+(i+1)+'. '+escapeHtml(x.name)+'</span><button class="fit-list-del" onclick="deleteFitByIndex('+i+')">✕</button></div>';}).join(''):'<p style="color:#9090a8;text-align:center;padding:20px;">📭 Kosong</p>';footer.innerHTML='<button onclick="closeFitPanel()" style="padding:8px 16px;background:#252540;color:#e8e8f0;border:none;border-radius:8px;cursor:pointer;font-size:12px;">✕ Tutup</button>';}else if(mode==='delete'){title.textContent='🗑️ Hapus Fitur';var f=JSON.parse(localStorage.getItem('yad_features')||'[]');body.innerHTML=f.length?f.map(function(x,i){return'<div class="fit-list-item"><span>'+(i+1)+'. '+escapeHtml(x.name)+'</span><button class="fit-list-del" onclick="deleteFitByIndex('+i+')">✕</button></div>';}).join('')+'<button onclick="deleteAllFits()" style="width:100%;padding:10px;background:#ef4444;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;margin-top:10px;">🗑️ Hapus Semua</button>':'<p style="color:#9090a8;text-align:center;padding:20px;">📭 Kosong</p>';footer.innerHTML='<button onclick="closeFitPanel()" style="padding:8px 16px;background:#252540;color:#e8e8f0;border:none;border-radius:8px;cursor:pointer;font-size:12px;">✕ Tutup</button>';}panel.classList.add('show');}
+function closeFitPanel(){var p=document.getElementById('fitPanel');if(p)p.classList.remove('show');}
+function saveFitFromPanel(){var n=document.getElementById('fitName').value.trim(),c=document.getElementById('fitCode').value.trim();if(!n||!c)return alert('⚠️ Lengkapi!');var old=document.querySelector('[data-feature="'+n+'"]');if(old)old.remove();var w=document.createElement('div');w.setAttribute('data-feature',n);w.innerHTML=c;document.body.appendChild(w);var f=JSON.parse(localStorage.getItem('yad_features')||'[]');f=f.filter(function(x){return x.name!==n;});f.push({name:n,code:c,time:new Date().toISOString()});localStorage.setItem('yad_features',JSON.stringify(f));closeFitPanel();alert('✅ "'+n+'" '+(old?'diganti!':'ditambahkan!'));}
+function deleteFitByIndex(idx){if(!S||!S.admin)return;var f=JSON.parse(localStorage.getItem('yad_features')||'[]');if(idx<0||idx>=f.length)return;var feat=f[idx];if(!confirm('Hapus "'+feat.name+'"?'))return;document.querySelectorAll('[data-feature="'+feat.name+'"]').forEach(function(el){el.remove();});f.splice(idx,1);localStorage.setItem('yad_features',JSON.stringify(f));openFitPanel(fitMode);}
+function deleteAllFits(){if(!S||!S.admin)return;var f=JSON.parse(localStorage.getItem('yad_features')||'[]');if(!f.length)return;if(!confirm('Hapus SEMUA ('+f.length+')?'))return;document.querySelectorAll('[data-feature]').forEach(function(el){el.remove();});localStorage.setItem('yad_features','[]');closeFitPanel();}
+document.getElementById('floatingAI').onclick=openAIChat;
+document.getElementById('aiChatInput').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();sendAIMsg();}});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){['novelReaderPanel','profilePanel','githubDebugPanel','fitPanel','fitDropdown','novelEditorPanel','analysisPanel','paymentFormPanel'].forEach(function(id){const el=document.getElementById(id);if(el&&(el.classList.contains('show')||el.style.display==='flex'||el.style.display==='block')){if(id==='novelReaderPanel')closeNovelReader();else if(id==='profilePanel')closeProfile();else if(id==='githubDebugPanel')toggleDebugPanel();else if(id==='fitPanel')closeFitPanel();else if(id==='fitDropdown')closeFitMenu();else if(id==='novelEditorPanel')closeNovelEditor();else if(id==='analysisPanel')closeAnalysis();else if(id==='paymentFormPanel')closePaymentForm();}});}});
+document.addEventListener('click',function(e){var dd=document.getElementById('fitDropdown'),btn=document.getElementById('fitMenuBtn');if(dd&&dd.classList.contains('show')&&!dd.contains(e.target)&&e.target!==btn)dd.classList.remove('show');});
+(function(){const t=localStorage.getItem('store_title');if(t){document.querySelector('.logo').textContent=t;document.title=t;}const a=localStorage.getItem('store_accent');if(a)document.documentElement.style.setProperty('--accent',a);const b=localStorage.getItem('store_bg');if(b)document.documentElement.style.setProperty('--bg',b);const n=localStorage.getItem('store_name');if(n)document.querySelector('.logo').textContent='🎮 '+n;if(GITHUB_CONFIG.enabled){document.getElementById('githubStatus').textContent='📤 Ready ✅';document.getElementById('debugBtn').style.display='inline-block';}})();
+function init(){renderGames();renderPayments();updateOrderGame();document.getElementById('orderItem').addEventListener('change',updateTotalPrice);updateUI();for(let i=0;i<3;i++)setTimeout(()=>addLive('✅ Customer menyelesaikan pembayaran'),i*500);debugLog('✅ YAD Store Ready!','success');}
+init();
+setInterval(()=>{const n=['Player***','Gamer***','Pro***'],g=['Mobile Legends','Free Fire','PUBG'],it=['86 Diamonds','355 Diamonds','60 UC'];addLive(`✅ ${n[Math.floor(Math.random()*3)]}${Math.floor(Math.random()*999)} membeli ${it[Math.floor(Math.random()*3)]} (${g[Math.floor(Math.random()*3)]})`);},12000);
+setInterval(()=>{S.fakeCount=Math.floor(Math.random()*150)+50;document.getElementById('onlineCount').textContent=S.fakeCount;document.getElementById('todayOrders').textContent=Math.floor(Math.random()*10)+5;},8000);
+(function(){const f=JSON.parse(localStorage.getItem('yad_features')||'[]');const seen={};let restored=0;f.forEach(function(x){if(!seen[x.name]&&!document.querySelector('[data-feature="'+x.name+'"]')){seen[x.name]=1;const w=document.createElement('div');w.setAttribute('data-feature',x.name);w.innerHTML=x.code;document.body.appendChild(w);restored++;}});if(restored>0)debugLog('📦 '+restored+' fitur di-restore','info');})();
 </script>
 </body>
 </html>

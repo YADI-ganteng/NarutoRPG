@@ -1,31 +1,21 @@
-# YAD Video AI - NarutoRPG
+# Si Pintar Bot 🤖
 
-Buat video cerita dengan animasi otomatis dan suara narator.
+Bot Telegram pintar yang bisa diajak ngobrol, main game, dan banyak lagi!
 
 ## Fitur
+- 💬 Chat AI sederhana
+- 🎮 Game (Tebak Angka, Kuis, Suit)
+- 😂 Jokes & Fakta
+- 📊 Sistem Level & Poin
+- 😊 Mood System
 
-- Animasi otomatis sesuai cerita
-- Suara narator (Text-to-Speech)
-- Deteksi kata kunci
-- Multiple resolusi
-- Download video
+## Cara Menjalankan
+1. Install dependencies: `pip install -r requirements.txt`
+2. Jalankan: `python bot/pintar_bot.py`
 
-## Cara Pakai
-
-1. Tulis cerita di textarea
-2. Pilih gaya animasi
-3. Pilih suara narator
-4. Klik Generate Video
-5. Download video hasil
-
-## Teknologi
-
-- HTML5 Canvas
-- MediaRecorder API
-- Speech Synthesis API
-- Web Audio API
-- Firebase
-
-## Lisensi
-
-MIT License
+## Perintah
+- /start - Mulai bot
+- /help - Bantuan
+- /game - Main game
+- /jokes - Jokes lucu
+- /info - Info pengguna

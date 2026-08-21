@@ -9,12 +9,12 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     
     <style>
         :root {
             --bg-image: url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1920');
             --bg-color: #667eea;
+            --bg-opacity: 0.3;
             --primary: #667eea;
             --secondary: #764ba2;
             --accent: #28a745;
@@ -25,11 +25,7 @@
             --chat-primary: #0088cc;
         }
         
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -41,27 +37,25 @@
         body::before {
             content: '';
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background-image: var(--bg-image);
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            opacity: 0.15;
+            opacity: var(--bg-opacity);
             z-index: -1;
+            pointer-events: none;
         }
         
-        /* Header */
         .header {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            background: linear-gradient(135deg, rgba(30,60,114,0.95) 0%, rgba(42,82,152,0.95) 100%);
             color: white;
             padding: 15px 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             position: sticky;
             top: 0;
             z-index: 1000;
+            backdrop-filter: blur(10px);
         }
         
         .header-top {
@@ -70,721 +64,250 @@
             align-items: center;
             max-width: 1200px;
             margin: 0 auto;
-        }
-        
-        .header h1 {
-            font-size: 1.8em;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            letter-spacing: 2px;
-            cursor: pointer;
-        }
-        
-        .header p {
-            font-size: 0.9em;
-            opacity: 0.9;
-        }
-        
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .user-info {
-            display: flex;
-            align-items: center;
+            flex-wrap: wrap;
             gap: 10px;
         }
         
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 2px solid white;
-            cursor: pointer;
+        .header h1 { font-size: 1.8em; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); cursor: pointer; }
+        .header p { font-size: 0.9em; opacity: 0.9; }
+        
+        .payment-info-bar {
+            background: linear-gradient(135deg, #ffd700, #ffb300);
+            color: #333;
+            padding: 8px 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.85em;
+            border-bottom: 2px solid #ffa000;
         }
         
-        .user-name {
-            font-weight: bold;
-            font-size: 0.9em;
-        }
+        .user-menu { display: flex; align-items: center; gap: 15px; }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid white; cursor: pointer; }
+        .user-name { font-weight: bold; font-size: 0.9em; }
         
         .badge-admin {
-            background: #ffc107;
-            color: #333;
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-size: 0.7em;
-            font-weight: bold;
+            background: #ffc107; color: #333; padding: 3px 8px;
+            border-radius: 10px; font-size: 0.7em; font-weight: bold;
         }
         
         .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9em;
-            font-weight: bold;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-block;
+            padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer;
+            font-size: 0.9em; font-weight: bold; transition: all 0.3s;
         }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5a6fd8; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-success:hover { background: #218838; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-google { background: white; color: #333; border: 1px solid #ddd; display: flex; align-items: center; gap: 10px; }
+        .btn-google:hover { background: #f8f9fa; }
         
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
         
-        .btn-primary:hover {
-            background: #5a6fd8;
-            transform: translateY(-2px);
-        }
-        
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
-        
-        .btn-success:hover {
-            background: #218838;
-        }
-        
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background: #c82333;
-        }
-        
-        .btn-google {
-            background: white;
-            color: #333;
-            border: 1px solid #ddd;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .btn-google:hover {
-            background: #f8f9fa;
-        }
-        
-        /* Container */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        /* Stats */
-        .stats {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-        
+        .stats { display: flex; justify-content: space-around; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
         .stat-card {
-            background: rgba(255,255,255,0.95);
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            min-width: 150px;
-            margin: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            transition: transform 0.3s;
+            background: rgba(255,255,255,0.85); backdrop-filter: blur(10px);
+            padding: 20px; border-radius: 15px; text-align: center;
+            min-width: 150px; margin: 5px; box-shadow: 0 5px 15px rgba(0,0,0,0.15);
         }
+        .stat-card h3 { color: #667eea; font-size: 2em; }
         
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .stat-card h3 {
-            color: #667eea;
-            font-size: 2em;
-        }
-        
-        /* Search */
         .search-bar {
-            background: rgba(255,255,255,0.95);
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            background: rgba(255,255,255,0.85); backdrop-filter: blur(10px);
+            padding: 20px; border-radius: 15px; margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
         }
-        
         .search-bar input {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 1.1em;
-            transition: all 0.3s;
+            width: 100%; padding: 15px; border: 2px solid #e0e0e0;
+            border-radius: 10px; font-size: 1.1em; background: white;
         }
+        .search-bar input:focus { outline: none; border-color: #667eea; }
         
-        .search-bar input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
-        }
-        
-        /* Game Grid */
         .game-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 25px;
-            margin-bottom: 30px;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px; margin-bottom: 30px;
         }
-        
         .game-card {
-            background: rgba(255,255,255,0.95);
-            border-radius: 15px;
-            overflow: hidden;
-            transition: transform 0.3s, box-shadow 0.3s;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(10px);
+            border-radius: 15px; overflow: hidden; transition: transform 0.3s;
+            cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.15);
         }
-        
-        .game-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
-        }
-        
+        .game-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.3); }
         .game-icon {
-            width: 100%;
-            height: 150px;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 4em;
+            width: 100%; height: 120px; display: flex;
+            align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.5); padding: 15px;
         }
-        
-        .game-info {
-            padding: 20px;
-        }
-        
-        .game-info h3 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 1.2em;
-        }
-        
+        .game-icon img { width: 80px; height: 80px; object-fit: contain; border-radius: 10px; }
+        .game-info { padding: 15px; }
+        .game-info h3 { color: #333; margin-bottom: 8px; font-size: 1.1em; }
         .category {
-            display: inline-block;
-            padding: 5px 10px;
-            background: #667eea;
-            color: white;
-            border-radius: 20px;
-            font-size: 0.8em;
-            margin-bottom: 10px;
+            display: inline-block; padding: 4px 10px; background: #667eea;
+            color: white; border-radius: 20px; font-size: 0.75em; margin-bottom: 8px;
         }
+        .price-range { color: #666; font-size: 0.8em; }
+        .item-count { margin-top: 8px; font-size: 0.8em; color: #888; }
         
-        .price-range {
-            color: #666;
-            font-size: 0.85em;
-        }
-        
-        /* Items Table */
         .items-section {
-            background: rgba(255,255,255,0.95);
-            border-radius: 15px;
-            padding: 30px;
-            margin-top: 30px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-            overflow-x: auto;
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(10px);
+            border-radius: 15px; padding: 20px; margin-top: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
         }
-        
-        .items-section h2 {
-            color: #333;
-            margin-bottom: 20px;
-            text-align: center;
+        .items-list-container { max-height: 500px; overflow-y: auto; }
+        .item-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 15px; border-bottom: 1px solid #eee; transition: background 0.2s;
         }
-        
-        .items-table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 600px;
-        }
-        
-        .items-table th {
-            background: #667eea;
-            color: white;
-            padding: 12px;
-            text-align: left;
-            font-size: 0.9em;
-        }
-        
-        .items-table td {
-            padding: 12px;
-            border-bottom: 1px solid #e0e0e0;
-            font-size: 0.9em;
-        }
-        
-        .items-table tr:hover {
-            background: #f8f9fa;
-        }
-        
-        .price-tag {
-            color: #28a745;
-            font-weight: bold;
-        }
-        
+        .item-row:hover { background: #f8f9fa; }
+        .item-name { font-weight: 500; color: #333; flex: 1; }
+        .item-price { color: #28a745; font-weight: bold; margin-right: 15px; white-space: nowrap; }
         .btn-buy {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.85em;
+            background: #28a745; color: white; border: none; padding: 8px 18px;
+            border-radius: 5px; cursor: pointer; font-size: 0.85em; white-space: nowrap;
         }
+        .btn-buy:hover { background: #218838; }
         
-        .btn-buy:hover {
-            background: #218838;
-            transform: scale(1.05);
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center;
         }
-        
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .modal.active {
-            display: flex;
-        }
-        
+        .modal-overlay.active { display: flex; }
         .modal-content {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-            position: relative;
+            background: white; border-radius: 15px; padding: 30px;
+            max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;
+            position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
-        
         .modal-close {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 1.5em;
-            cursor: pointer;
-            color: #666;
+            position: absolute; top: 15px; right: 15px; font-size: 1.5em;
+            cursor: pointer; color: #666; background: none; border: none;
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #333; font-size: 0.9em; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 12px; border: 2px solid #e0e0e0;
+            border-radius: 8px; font-size: 0.95em;
+        }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #667eea; }
+        .file-preview {
+            display: none; margin-top: 8px; padding: 10px; background: #e8f5e9;
+            border-radius: 8px; color: #2e7d32; font-size: 0.85em;
+        }
+        .file-preview.show { display: block; }
+        .btn-submit-order {
+            background: linear-gradient(135deg, #28a745, #20c997); color: white;
+            border: none; padding: 14px 30px; border-radius: 8px; cursor: pointer;
+            font-size: 16px; width: 100%; font-weight: bold;
+        }
+        .btn-submit-order:hover { transform: translateY(-2px); }
+        .btn-submit-order:disabled { background: #6c757d; cursor: not-allowed; }
+        .btn-cancel-order {
+            background: #dc3545; color: white; border: none; padding: 12px 30px;
+            border-radius: 8px; cursor: pointer; font-size: 15px; margin-top: 10px; width: 100%;
         }
         
-        /* Admin Panel */
         .admin-panel {
-            background: rgba(255,255,255,0.95);
-            border-radius: 15px;
-            padding: 30px;
-            margin-top: 30px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-            display: none;
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(10px);
+            border-radius: 15px; padding: 30px; margin-top: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15); display: none;
         }
-        
-        .admin-panel.active {
-            display: block;
-        }
-        
-        .admin-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        
+        .admin-panel.active { display: block; }
+        .admin-tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .admin-tab {
-            padding: 10px 20px;
-            background: #e0e0e0;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
+            padding: 10px 20px; background: #e0e0e0; border: none;
+            border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.85em;
         }
+        .admin-tab.active { background: #667eea; color: white; }
+        .admin-content { display: none; }
+        .admin-content.active { display: block; }
         
-        .admin-tab.active {
-            background: #667eea;
-            color: white;
-        }
-        
-        .admin-content {
-            display: none;
-        }
-        
-        .admin-content.active {
-            display: block;
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #333;
-        }
-        
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 0.9em;
-        }
-        
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        /* Notifications */
         .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            border-radius: 10px;
-            color: white;
-            font-weight: bold;
-            z-index: 3000;
-            animation: slideIn 0.3s ease;
-            max-width: 300px;
+            position: fixed; top: 20px; right: 20px; padding: 15px 20px;
+            border-radius: 10px; color: white; font-weight: bold;
+            z-index: 3000; animation: slideIn 0.3s ease; max-width: 300px;
         }
-        
-        .notification.success {
-            background: #28a745;
-        }
-        
-        .notification.error {
-            background: #dc3545;
-        }
-        
-        .notification.info {
-            background: #667eea;
-        }
-        
+        .notification.success { background: #28a745; }
+        .notification.error { background: #dc3545; }
+        .notification.info { background: #667eea; }
         @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
         
         /* Chat Widget */
-        .chat-widget {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1500;
-        }
-        
+        .chat-widget { position: fixed; bottom: 20px; right: 20px; z-index: 1500; }
         .chat-toggle-btn {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: var(--chat-primary);
-            color: white;
-            border: none;
-            font-size: 28px;
-            cursor: pointer;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-            transition: all 0.3s;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 60px; height: 60px; border-radius: 50%; background: #0088cc;
+            color: white; border: none; font-size: 28px; cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3); position: relative;
+            display: flex; align-items: center; justify-content: center;
         }
-        
-        .chat-toggle-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-        }
-        
         .chat-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #dc3545;
-            color: white;
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
+            position: absolute; top: -5px; right: -5px; background: #dc3545;
+            color: white; border-radius: 50%; width: 22px; height: 22px;
+            font-size: 12px; display: flex; align-items: center; justify-content: center;
         }
-        
         .chat-window {
-            position: fixed;
-            bottom: 90px;
-            right: 20px;
-            width: 350px;
-            height: 500px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            display: none;
-            flex-direction: column;
-            overflow: hidden;
-            z-index: 1499;
+            position: fixed; bottom: 90px; right: 20px; width: 350px; height: 500px;
+            background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            display: none; flex-direction: column; overflow: hidden; z-index: 1499;
         }
-        
-        .chat-window.active {
-            display: flex;
+        .chat-window.active { display: flex; }
+        .chat-header { background: #0088cc; color: white; padding: 15px; display: flex; align-items: center; gap: 10px; }
+        .chat-header img { width: 40px; height: 40px; border-radius: 50%; }
+        .chat-header-info { flex: 1; }
+        .chat-header-info h3 { font-size: 1em; margin: 0; }
+        .chat-header-info p { font-size: 0.75em; opacity: 0.9; margin: 2px 0 0 0; }
+        .chat-close-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; background: #f0f2f5; }
+        .message { margin-bottom: 15px; max-width: 85%; padding: 10px 15px; border-radius: 15px; clear: both; }
+        .message.user { float: right; background: #0088cc; color: white; border-radius: 15px 15px 0 15px; }
+        .message.bot { float: left; background: white; color: #333; border-radius: 15px 15px 15px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .message.admin { float: left; background: #fff3cd; color: #333; border-radius: 15px 15px 15px 0; border: 1px solid #ffc107; }
+        .message .time { font-size: 0.7em; opacity: 0.7; display: block; margin-top: 5px; text-align: right; }
+        .chat-options { display: flex; gap: 10px; margin: 10px 0; flex-wrap: wrap; }
+        .chat-option-btn {
+            padding: 8px 15px; border: none; border-radius: 20px; cursor: pointer;
+            font-size: 0.85em; font-weight: bold; transition: all 0.3s;
         }
+        .chat-option-btn.yes { background: #28a745; color: white; }
+        .chat-option-btn.yes:hover { background: #218838; }
+        .chat-option-btn.no { background: #dc3545; color: white; }
+        .chat-option-btn.no:hover { background: #c82333; }
+        .typing-indicator { display: none; float: left; background: white; padding: 10px 15px; border-radius: 15px; clear: both; }
+        .typing-indicator.active { display: block; }
+        .typing-indicator span { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #999; margin: 0 2px; animation: typing 1.4s infinite; }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-10px); } }
+        .chat-input-container { display: flex; padding: 15px; background: white; border-top: 1px solid #e0e0e0; gap: 10px; }
+        .chat-input-container input { flex: 1; padding: 10px 15px; border: 1px solid #ddd; border-radius: 20px; outline: none; }
+        .chat-send-btn { width: 40px; height: 40px; border-radius: 50%; background: #0088cc; color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .chat-send-btn:hover { background: #006699; }
+        .chat-send-btn:disabled { background: #ccc; cursor: not-allowed; }
         
-        .chat-header {
-            background: var(--chat-primary);
-            color: white;
-            padding: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .chat-header img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 2px solid white;
-        }
-        
-        .chat-header-info {
-            flex: 1;
-        }
-        
-        .chat-header-info h3 {
-            font-size: 1em;
-            margin: 0;
-        }
-        
-        .chat-header-info p {
-            font-size: 0.75em;
-            opacity: 0.9;
-            margin: 2px 0 0 0;
-        }
-        
-        .chat-close-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            padding: 5px;
-        }
-        
-        .chat-close-btn:hover {
-            opacity: 0.8;
-        }
-        
-        .chat-messages {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            background: #f0f2f5;
-        }
-        
-        .message {
-            margin-bottom: 15px;
-            max-width: 85%;
-            padding: 10px 15px;
-            border-radius: 15px;
-            position: relative;
-            clear: both;
-            word-wrap: break-word;
-        }
-        
-        .message.user {
-            float: right;
-            background: var(--chat-primary);
-            color: white;
-            border-radius: 15px 15px 0 15px;
-        }
-        
-        .message.bot {
-            float: left;
-            background: white;
-            color: #333;
-            border-radius: 15px 15px 15px 0;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .message .time {
-            font-size: 0.7em;
-            opacity: 0.7;
-            display: block;
-            margin-top: 5px;
-            text-align: right;
-        }
-        
-        .typing-indicator {
-            display: none;
-            float: left;
-            background: white;
-            padding: 10px 15px;
-            border-radius: 15px;
-            margin-bottom: 15px;
-            clear: both;
-        }
-        
-        .typing-indicator.active {
-            display: block;
-        }
-        
-        .typing-indicator span {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #999;
-            margin: 0 2px;
-            animation: typing 1.4s infinite;
-        }
-        
-        .typing-indicator span:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-        
-        .typing-indicator span:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-        
-        @keyframes typing {
-            0%, 60%, 100% {
-                transform: translateY(0);
-            }
-            30% {
-                transform: translateY(-10px);
-            }
-        }
-        
-        .chat-input-container {
-            display: flex;
-            padding: 15px;
-            background: white;
-            border-top: 1px solid #e0e0e0;
-            gap: 10px;
-        }
-        
-        .chat-input-container input {
-            flex: 1;
-            padding: 10px 15px;
-            border: 1px solid #ddd;
-            border-radius: 20px;
-            outline: none;
-            font-size: 0.9em;
-        }
-        
-        .chat-input-container input:focus {
-            border-color: var(--chat-primary);
-        }
-        
-        .chat-send-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--chat-primary);
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 18px;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .chat-send-btn:hover {
-            background: #006699;
-            transform: scale(1.05);
-        }
-        
-        .chat-send-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        
-        /* Footer */
         .footer {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: white;
-            text-align: center;
-            padding: 30px;
-            margin-top: 50px;
+            background: linear-gradient(135deg, rgba(30,60,114,0.95) 0%, rgba(42,82,152,0.95) 100%);
+            color: white; text-align: center; padding: 30px; margin-top: 50px;
         }
         
-        /* Responsive */
         @media (max-width: 768px) {
-            .game-grid {
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            }
-            
-            .header h1 {
-                font-size: 1.3em;
-            }
-            
-            .stats {
-                flex-direction: column;
-            }
-            
-            .stat-card {
-                min-width: auto;
-            }
-            
-            .user-menu {
-                flex-direction: column;
-                align-items: flex-end;
-            }
-            
-            .chat-window {
-                width: 300px;
-                height: 400px;
-                right: 10px;
-                bottom: 80px;
-            }
+            .game-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
+            .header h1 { font-size: 1.3em; }
+            .chat-window { width: 300px; height: 400px; right: 10px; bottom: 80px; }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
     <div class="header">
         <div class="header-top">
             <div onclick="location.reload()">
                 <h1>🎮 YADSTORE</h1>
                 <p>Top Up Game Termurah & Terpercaya</p>
             </div>
-            <div class="user-menu" id="userMenu">
+            <div class="user-menu">
                 <div id="loginSection">
-                    <button class="btn btn-google" onclick="loginWithGoogle()">
-                        <span>🔐</span> Login dengan Google
-                    </button>
+                    <button class="btn btn-google" onclick="loginWithGoogle()">🔐 Login dengan Google</button>
                 </div>
                 <div id="userSection" style="display: none;">
                     <div class="user-info">
@@ -799,207 +322,147 @@
             </div>
         </div>
     </div>
+    
+    <div class="payment-info-bar">
+        💳 Metode Pembayaran: DANA 083170617054 | GOPAY 083170617054 | WhatsApp 083170617054
+    </div>
 
-    <!-- Container -->
     <div class="container">
-        <!-- Stats -->
         <div class="stats">
-            <div class="stat-card">
-                <h3 id="statGames">12+</h3>
-                <p>Game Tersedia</p>
-            </div>
-            <div class="stat-card">
-                <h3>1 Juta+</h3>
-                <p>Transaksi Sukses</p>
-            </div>
-            <div class="stat-card">
-                <h3>4.9/5</h3>
-                <p>Rating Pelanggan</p>
-            </div>
-            <div class="stat-card">
-                <h3>24/7</h3>
-                <p>Layanan Online</p>
-            </div>
+            <div class="stat-card"><h3 id="statGames">12+</h3><p>Game Tersedia</p></div>
+            <div class="stat-card"><h3>1 Juta+</h3><p>Transaksi Sukses</p></div>
+            <div class="stat-card"><h3>4.9/5</h3><p>Rating Pelanggan</p></div>
+            <div class="stat-card"><h3>24/7</h3><p>Layanan Online</p></div>
         </div>
 
-        <!-- Search -->
         <div class="search-bar">
             <input type="text" id="searchInput" placeholder="🔍 Cari game atau item...">
         </div>
 
-        <!-- Game Grid -->
         <div class="game-grid" id="gameGrid"></div>
 
-        <!-- Items Section -->
         <div class="items-section" id="itemsSection">
             <h2>📦 Daftar Item & Harga</h2>
-            <div id="itemsList"></div>
+            <div class="items-list-container" id="itemsList"></div>
         </div>
 
-        <!-- Admin Panel -->
         <div class="admin-panel" id="adminPanel">
-            <h2 style="text-align: center; margin-bottom: 20px;">⚙️ Admin Panel - YadStore</h2>
+            <h2 style="text-align:center;margin-bottom:20px;">⚙️ Admin Panel</h2>
             <div class="admin-tabs">
                 <button class="admin-tab active" onclick="switchTab('bg', this)">🎨 Background</button>
                 <button class="admin-tab" onclick="switchTab('games', this)">🎮 Games</button>
                 <button class="admin-tab" onclick="switchTab('items', this)">📦 Items</button>
-                <button class="admin-tab" onclick="switchTab('transactions', this)">💰 Transaksi</button>
-                <button class="admin-tab" onclick="switchTab('users', this)">👥 Users</button>
+                <button class="admin-tab" onclick="switchTab('markup', this)">💰 Markup</button>
                 <button class="admin-tab" onclick="switchTab('settings', this)">⚙️ Settings</button>
             </div>
 
-            <!-- Background Settings -->
             <div class="admin-content active" id="tab-bg">
-                <h3>🎨 Ganti Background Website</h3>
-                <div class="form-group">
-                    <label>URL Gambar Background</label>
-                    <input type="text" id="bgUrl" placeholder="https://example.com/image.jpg">
-                </div>
-                <div class="form-group">
-                    <label>Warna Background (jika tanpa gambar)</label>
-                    <input type="color" id="bgColor" value="#667eea">
-                </div>
-                <div class="form-group">
-                    <label>Opacity Background (0.1 - 1.0)</label>
-                    <input type="number" id="bgOpacity" min="0.1" max="1" step="0.05" value="0.15">
-                </div>
-                <button class="btn btn-primary" onclick="updateBackground()">💾 Simpan Background</button>
-                <button class="btn btn-danger" onclick="resetBackground()">🔄 Reset Default</button>
+                <h3>🎨 Background</h3>
+                <div class="form-group"><label>URL Gambar</label><input type="text" id="bgUrl"></div>
+                <div class="form-group"><label>Warna</label><input type="color" id="bgColor" value="#667eea"></div>
+                <div class="form-group"><label>Opacity</label><input type="number" id="bgOpacity" min="0.1" max="1" step="0.05" value="0.3"></div>
+                <button class="btn btn-primary" onclick="updateBackground()">💾 Simpan</button>
             </div>
 
-            <!-- Games Management -->
             <div class="admin-content" id="tab-games">
-                <h3>🎮 Tambah Game Baru</h3>
-                <div class="form-group">
-                    <label>Nama Game</label>
-                    <input type="text" id="gameName" placeholder="Nama Game">
-                </div>
-                <div class="form-group">
-                    <label>Kategori</label>
-                    <select id="gameCategory">
-                        <option value="MOBA">MOBA</option>
-                        <option value="FPS">FPS</option>
-                        <option value="Battle Royale">Battle Royale</option>
-                        <option value="RPG">RPG</option>
-                        <option value="Strategy">Strategy</option>
-                        <option value="Sandbox">Sandbox</option>
-                        <option value="Platform">Platform</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Icon (Emoji)</label>
-                    <input type="text" id="gameIcon" placeholder="🎮">
-                </div>
-                <div class="form-group">
-                    <label>Developer</label>
-                    <input type="text" id="gameDeveloper" placeholder="Nama Developer">
-                </div>
-                <button class="btn btn-success" onclick="addGame()">➕ Tambah Game</button>
+                <h3>🎮 Tambah Game</h3>
+                <div class="form-group"><label>Nama</label><input type="text" id="gameName"></div>
+                <div class="form-group"><label>Kategori</label><select id="gameCategory"><option>MOBA</option><option>FPS</option><option>Battle Royale</option><option>RPG</option><option>Strategy</option><option>Sandbox</option><option>Platform</option></select></div>
+                <div class="form-group"><label>URL Icon</label><input type="text" id="gameIconUrl"></div>
+                <div class="form-group"><label>Developer</label><input type="text" id="gameDeveloper"></div>
+                <button class="btn btn-success" onclick="addGame()">➕ Tambah</button>
             </div>
 
-            <!-- Items Management -->
             <div class="admin-content" id="tab-items">
                 <h3>📦 Tambah Item</h3>
-                <div class="form-group">
-                    <label>Pilih Game</label>
-                    <select id="itemGameSelect"></select>
-                </div>
-                <div class="form-group">
-                    <label>Nama Item</label>
-                    <input type="text" id="itemName" placeholder="Nama Item">
-                </div>
-                <div class="form-group">
-                    <label>Harga (Rp)</label>
-                    <input type="number" id="itemPrice" placeholder="10000">
-                </div>
-                <button class="btn btn-success" onclick="addItem()">➕ Tambah Item</button>
+                <div class="form-group"><label>Game</label><select id="itemGameSelect"></select></div>
+                <div class="form-group"><label>Nama Item</label><input type="text" id="itemName"></div>
+                <div class="form-group"><label>Harga Modal</label><input type="number" id="itemPrice"></div>
+                <button class="btn btn-success" onclick="addItem()">➕ Tambah</button>
             </div>
 
-            <!-- Transactions -->
-            <div class="admin-content" id="tab-transactions">
-                <h3>💰 Riwayat Transaksi</h3>
-                <div id="transactionsList"><p>Memuat transaksi...</p></div>
+            <div class="admin-content" id="tab-markup">
+                <h3>💰 Markup Harga</h3>
+                <div class="form-group"><label>Persentase (%)</label><input type="number" id="markupPercent" min="0" max="100" step="0.5" value="10"></div>
+                <div class="form-group"><label>Markup Tetap (Rp)</label><input type="number" id="markupFlat" min="0" step="500" value="0"></div>
+                <button class="btn btn-primary" onclick="saveMarkup()">💾 Simpan</button>
+                <button class="btn btn-success" onclick="applyMarkup()">⚡ Terapkan</button>
+                <div id="markupPreview"></div>
             </div>
 
-            <!-- Users -->
-            <div class="admin-content" id="tab-users">
-                <h3>👥 Daftar Pengguna</h3>
-                <div id="usersList"><p>Memuat pengguna...</p></div>
-            </div>
-
-            <!-- Settings -->
             <div class="admin-content" id="tab-settings">
-                <h3>⚙️ Pengaturan Toko</h3>
-                <div class="form-group">
-                    <label>Nama Toko</label>
-                    <input type="text" id="storeName" value="YadStore">
-                </div>
-                <div class="form-group">
-                    <label>WhatsApp CS</label>
-                    <input type="text" id="storeWhatsapp" value="6281234567890">
-                </div>
-                <div class="form-group">
-                    <label>Email Support</label>
-                    <input type="text" id="storeEmail" value="support@yadstore.com">
-                </div>
-                <button class="btn btn-primary" onclick="saveSettings()">💾 Simpan Pengaturan</button>
+                <h3>⚙️ Pengaturan</h3>
+                <div class="form-group"><label>WhatsApp</label><input type="text" id="storeWhatsapp" value="083170617054"></div>
+                <div class="form-group"><label>Email</label><input type="text" id="storeEmail" value="support@yadstore.com"></div>
+                <button class="btn btn-primary" onclick="saveSettings()">💾 Simpan</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal -->
-    <div class="modal" id="modal">
+    <!-- Purchase Modal -->
+    <div class="modal-overlay" id="purchaseModal">
         <div class="modal-content">
-            <span class="modal-close" onclick="closeModal()">&times;</span>
-            <div id="modalContent"></div>
+            <button class="modal-close" onclick="closePurchaseModal()">×</button>
+            <h2 style="text-align:center;margin-bottom:20px;">🛒 Form Pembelian</h2>
+            <div class="form-group"><label>🎮 Game</label><input type="text" id="purchaseGame" readonly></div>
+            <div class="form-group"><label>📦 Item</label><input type="text" id="purchaseItem" readonly></div>
+            <div class="form-group"><label>💰 Harga</label><input type="text" id="purchasePrice" readonly></div>
+            <div class="form-group"><label>🆔 ID Game *</label><input type="text" id="purchaseUserId" placeholder="Masukkan ID Game"></div>
+            <div class="form-group"><label>🔢 Server</label><input type="text" id="purchaseServer" placeholder="Opsional"></div>
+            <div class="form-group"><label>📧 Email *</label><input type="email" id="purchaseEmail" placeholder="Email"></div>
+            <div class="form-group"><label>👤 Nama *</label><input type="text" id="purchaseName" placeholder="Nama"></div>
+            <div class="form-group">
+                <label>💳 Metode *</label>
+                <select id="purchasePaymentMethod">
+                    <option value="">-- Pilih --</option>
+                    <option value="DANA">DANA (083170617054)</option>
+                    <option value="GOPAY">GOPAY (083170617054)</option>
+                    <option value="Transfer Bank">Transfer Bank</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>📎 Bukti Transfer *</label>
+                <input type="file" id="purchaseProof" accept="image/*" onchange="previewFile(event)">
+                <div class="file-preview" id="filePreview">✅ <span id="fileName"></span></div>
+            </div>
+            <button class="btn-submit-order" id="submitOrderBtn" onclick="processOrder()">✅ Konfirmasi Pesanan</button>
+            <button class="btn-cancel-order" onclick="closePurchaseModal()">❌ Batal</button>
         </div>
     </div>
 
     <!-- Chat Widget -->
     <div class="chat-widget">
-        <button class="chat-toggle-btn" id="chatToggleBtn" onclick="toggleChat()">
-            💬
-            <span class="chat-badge" id="chatBadge">1</span>
-        </button>
+        <button class="chat-toggle-btn" onclick="toggleChat()">💬<span class="chat-badge">1</span></button>
     </div>
-
     <div class="chat-window" id="chatWindow">
         <div class="chat-header">
             <img src="https://api.dicebear.com/7.x/bottts/svg?seed=YadStore" alt="Bot">
             <div class="chat-header-info">
-                <h3>🤖 YadStore Bot AI</h3>
+                <h3>🤖 YadStore AI</h3>
                 <p>🟢 Online - Siap membantu</p>
             </div>
             <button class="chat-close-btn" onclick="toggleChat()">×</button>
         </div>
         <div class="chat-messages" id="chatMessages">
-            <div class="message bot">
-                Halo! 👋 Saya YadStore Bot AI.<br><br>
-                Silakan tanya tentang game, harga, atau cara pembelian.
-                <span class="time">Sekarang</span>
-            </div>
+            <div class="message bot">Hallo, saya YadStore AI. Ada yang bisa dibantu?<span class="time">Sekarang</span></div>
         </div>
-        <div class="typing-indicator" id="typingIndicator">
-            <span></span><span></span><span></span>
-        </div>
+        <div class="typing-indicator" id="typingIndicator"><span></span><span></span><span></span></div>
         <div class="chat-input-container">
-            <input type="text" id="chatInput" placeholder="Ketik pesan Anda..." onkeypress="handleChatKeyPress(event)">
+            <input type="text" id="chatInput" placeholder="Ketik pesan..." onkeypress="if(event.key==='Enter')sendChatMessage()">
             <button class="chat-send-btn" id="chatSendBtn" onclick="sendChatMessage()">➤</button>
         </div>
     </div>
 
-    <!-- Footer -->
     <div class="footer">
         <h2>🎮 YADSTORE</h2>
-        <p>Top Up Game Terpercaya Sejak 2020</p>
-        <p>📍 Jakarta, Indonesia</p>
-        <p>📞 WhatsApp: <span id="footerWhatsapp">0812-3456-7890</span></p>
+        <p>📞 WhatsApp: <span id="footerWhatsapp">083170617054</span></p>
         <p>📧 Email: <span id="footerEmail">support@yadstore.com</span></p>
+        <p>💳 DANA: 083170617054 | GOPAY: 083170617054</p>
         <p>© 2024 YadStore. All rights reserved.</p>
     </div>
 
     <script>
-        // Firebase Configuration
+        // ==================== CONFIG ====================
         const firebaseConfig = {
             apiKey: "AIzaSyAvfHxcAT2syVbrf6-TU0JBRXtNLI0AIkc",
             authDomain: "yadstores.firebaseapp.com",
@@ -1011,209 +474,170 @@
             measurementId: "G-8Q7T7G6HQ2"
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // Admin email
+        // ==================== TELEGRAM CONFIG (DUA BOT TERPISAH) ====================
+        // Bot untuk PESANAN (mengirim bukti transfer & detail order)
+        const ORDER_BOT_TOKEN = '8835865194:AAFtF9ZoNCoK1HtlF1_jEx29l75Hjxd1iko';
+        const ORDER_CHAT_ID = '8254733927';
+        
+        // Bot untuk CHAT AI (meneruskan pertanyaan ke CS)
+        const CHAT_BOT_TOKEN = '8781331009:AAG8z-8vq95u_hFKtXeXD_7WNLshTQLzanI';
+        const CHAT_CHAT_ID = '8254733927';
+        
         const ADMIN_EMAIL = 'ynuraini686@gmail.com';
+        const WHATSAPP_NUMBER = '6283170617054';
 
-        // Game Data (Default)
+        // ==================== GAME ICONS ====================
+        const gameIcons = {
+            "Mobile Legends": "https://play-lh.googleusercontent.com/V_P-I-UENK93ahkQg2AkX4jIO-SzBibYzKdLf6Cv03WqY7QSKTOnjJQkHZTR6gY5uY4=w240-h480-rw",
+            "PUBG Mobile": "https://play-lh.googleusercontent.com/Jw05uy-KNl3A-P9wYQl7nHhW6vZ2bJ6v1Z3XrJZJ3hqN2jO7eYzG9V5mX6pQl5Y4Q=w240-h480-rw",
+            "Free Fire": "https://play-lh.googleusercontent.com/EiElcSrd6-o-19roiswSx0AZPzsq6qF3gO9lTvAg9kh5G5z8K5j6u5q3n3v3g5e5f5g=w240-h480-rw",
+            "Genshin Impact": "https://play-lh.googleusercontent.com/VSwHQjcAttxsLE47RuS4PqpC4LT7lCoSjE7Hx5AW_yCxtDvcnsHHvm5CTuL5BPN-uRTP=w240-h480-rw",
+            "Valorant": "https://cdn.iconscout.com/icon/free/png-256/free-valorant-3251603-2724650.png",
+            "Arena of Valor": "https://play-lh.googleusercontent.com/8AR-NDzZjvCZ0d6cCbQhE5HfF0eYdZf4M5n5o5eY5f5g5h5i5j5k5l5m5n5o5p5q5r5s=w240-h480-rw",
+            "Call of Duty Mobile": "https://play-lh.googleusercontent.com/V_P-I-UENK93ahkQg2AkX4jIO-SzBibYzKdLf6Cv03WqY7QSKTOnjJQkHZTR6gY5uY4=w240-h480-rw",
+            "Roblox": "https://play-lh.googleusercontent.com/WNWZifM6sVjUJ7H3XrKqQpQl5Y4Q=w240-h480-rw",
+            "League of Legends": "https://cdn.iconscout.com/icon/free/png-256/free-league-of-legends-3251603-2724650.png",
+            "Steam Wallet": "https://cdn.iconscout.com/icon/free/png-256/free-steam-3251603-2724650.png",
+            "Honkai: Star Rail": "https://play-lh.googleusercontent.com/V_P-I-UENK93ahkQg2AkX4jIO-SzBibYzKdLf6Cv03WqY7QSKTOnjJQkHZTR6gY5uY4=w240-h480-rw",
+            "Clash of Clans": "https://play-lh.googleusercontent.com/LByrur1mTmPeNr0ljI-uAUccttWfKjYV9eYdYf4M5n5o5eY5f5g5h5i5j5k5l5m5n5o5p5q5r5s=w240-h480-rw"
+        };
+
+        // ==================== DATA ====================
         const defaultGames = [
-            {
-                name: "Mobile Legends", category: "MOBA", icon: "⚔️", developer: "Moonton",
-                items: [
-                    { item: "3 Diamonds", price: 1500 }, { item: "5 Diamonds", price: 2500 },
+            { name: "Mobile Legends", category: "MOBA", icon: gameIcons["Mobile Legends"], developer: "Moonton",
+                items: [{ item: "3 Diamonds", price: 1500 }, { item: "5 Diamonds", price: 2500 },
                     { item: "12 Diamonds", price: 5500 }, { item: "19 Diamonds", price: 8500 },
                     { item: "28 Diamonds", price: 12500 }, { item: "44 Diamonds", price: 19500 },
                     { item: "59 Diamonds", price: 25500 }, { item: "85 Diamonds", price: 36500 },
                     { item: "170 Diamonds", price: 72500 }, { item: "240 Diamonds", price: 102500 },
                     { item: "296 Diamonds", price: 126500 }, { item: "408 Diamonds", price: 174000 },
                     { item: "875 Diamonds", price: 370000 }, { item: "2010 Diamonds", price: 845000 },
-                    { item: "Weekly Diamond Pass", price: 27500 }, { item: "Starlight Member", price: 135000 }
-                ]
-            },
-            {
-                name: "PUBG Mobile", category: "Battle Royale", icon: "🔫", developer: "Tencent",
-                items: [
-                    { item: "60 UC", price: 12000 }, { item: "120 UC", price: 24000 },
+                    { item: "Weekly Diamond Pass", price: 27500 }, { item: "Starlight Member", price: 135000 }] },
+            { name: "PUBG Mobile", category: "Battle Royale", icon: gameIcons["PUBG Mobile"], developer: "Tencent",
+                items: [{ item: "60 UC", price: 12000 }, { item: "120 UC", price: 24000 },
                     { item: "180 UC", price: 36000 }, { item: "240 UC", price: 48000 },
                     { item: "300 UC", price: 60000 }, { item: "600 UC", price: 120000 },
                     { item: "1500 UC", price: 300000 }, { item: "3000 UC", price: 600000 },
                     { item: "6000 UC", price: 1200000 }, { item: "Royale Pass", price: 150000 },
-                    { item: "Elite Pass", price: 250000 }
-                ]
-            },
-            {
-                name: "Free Fire", category: "Battle Royale", icon: "🔥", developer: "Garena",
-                items: [
-                    { item: "50 Diamonds", price: 10000 }, { item: "100 Diamonds", price: 20000 },
+                    { item: "Elite Pass", price: 250000 }] },
+            { name: "Free Fire", category: "Battle Royale", icon: gameIcons["Free Fire"], developer: "Garena",
+                items: [{ item: "50 Diamonds", price: 10000 }, { item: "100 Diamonds", price: 20000 },
                     { item: "200 Diamonds", price: 40000 }, { item: "310 Diamonds", price: 60000 },
                     { item: "520 Diamonds", price: 100000 }, { item: "1060 Diamonds", price: 200000 },
                     { item: "2180 Diamonds", price: 400000 }, { item: "5600 Diamonds", price: 1000000 },
-                    { item: "Membership Mingguan", price: 25000 }, { item: "Membership Bulanan", price: 75000 }
-                ]
-            },
-            {
-                name: "Genshin Impact", category: "RPG", icon: "✨", developer: "miHoYo",
-                items: [
-                    { item: "60 Genesis Crystals", price: 15000 }, { item: "300 Genesis Crystals", price: 75000 },
+                    { item: "Membership Mingguan", price: 25000 }, { item: "Membership Bulanan", price: 75000 }] },
+            { name: "Genshin Impact", category: "RPG", icon: gameIcons["Genshin Impact"], developer: "miHoYo",
+                items: [{ item: "60 Genesis Crystals", price: 15000 }, { item: "300 Genesis Crystals", price: 75000 },
                     { item: "980 Genesis Crystals", price: 245000 }, { item: "1980 Genesis Crystals", price: 495000 },
                     { item: "3280 Genesis Crystals", price: 820000 }, { item: "6480 Genesis Crystals", price: 1620000 },
-                    { item: "Blessing of Welkin Moon", price: 75000 }, { item: "Gnostic Hymn", price: 150000 }
-                ]
-            },
-            {
-                name: "Valorant", category: "FPS", icon: "🎯", developer: "Riot Games",
-                items: [
-                    { item: "125 Valorant Points", price: 30000 }, { item: "420 Valorant Points", price: 100000 },
+                    { item: "Blessing of Welkin Moon", price: 75000 }, { item: "Gnostic Hymn", price: 150000 }] },
+            { name: "Valorant", category: "FPS", icon: gameIcons["Valorant"], developer: "Riot Games",
+                items: [{ item: "125 Valorant Points", price: 30000 }, { item: "420 Valorant Points", price: 100000 },
                     { item: "700 Valorant Points", price: 165000 }, { item: "1375 Valorant Points", price: 320000 },
                     { item: "2400 Valorant Points", price: 555000 }, { item: "4000 Valorant Points", price: 920000 },
-                    { item: "8000 Valorant Points", price: 1840000 }
-                ]
-            },
-            {
-                name: "Arena of Valor", category: "MOBA", icon: "🗡️", developer: "Tencent",
-                items: [
-                    { item: "40 Vouchers", price: 15000 }, { item: "90 Vouchers", price: 30000 },
+                    { item: "8000 Valorant Points", price: 1840000 }] },
+            { name: "Arena of Valor", category: "MOBA", icon: gameIcons["Arena of Valor"], developer: "Tencent",
+                items: [{ item: "40 Vouchers", price: 15000 }, { item: "90 Vouchers", price: 30000 },
                     { item: "230 Vouchers", price: 75000 }, { item: "370 Vouchers", price: 120000 },
                     { item: "470 Vouchers", price: 150000 }, { item: "950 Vouchers", price: 300000 },
-                    { item: "2430 Vouchers", price: 750000 }, { item: "5000 Vouchers", price: 1500000 }
-                ]
-            },
-            {
-                name: "Call of Duty Mobile", category: "FPS", icon: "💣", developer: "Activision",
-                items: [
-                    { item: "80 CP", price: 15000 }, { item: "400 CP", price: 75000 },
+                    { item: "2430 Vouchers", price: 750000 }, { item: "5000 Vouchers", price: 1500000 }] },
+            { name: "Call of Duty Mobile", category: "FPS", icon: gameIcons["Call of Duty Mobile"], developer: "Activision",
+                items: [{ item: "80 CP", price: 15000 }, { item: "400 CP", price: 75000 },
                     { item: "800 CP", price: 150000 }, { item: "2000 CP", price: 375000 },
                     { item: "4000 CP", price: 750000 }, { item: "8000 CP", price: 1500000 },
-                    { item: "Battle Pass", price: 100000 }
-                ]
-            },
-            {
-                name: "Roblox", category: "Sandbox", icon: "🎮", developer: "Roblox Corp",
-                items: [
-                    { item: "400 Robux", price: 75000 }, { item: "800 Robux", price: 150000 },
+                    { item: "Battle Pass", price: 100000 }] },
+            { name: "Roblox", category: "Sandbox", icon: gameIcons["Roblox"], developer: "Roblox Corp",
+                items: [{ item: "400 Robux", price: 75000 }, { item: "800 Robux", price: 150000 },
                     { item: "1700 Robux", price: 300000 }, { item: "4500 Robux", price: 750000 },
                     { item: "10000 Robux", price: 1500000 }, { item: "Premium 450", price: 75000 },
-                    { item: "Premium 1000", price: 150000 }
-                ]
-            },
-            {
-                name: "League of Legends", category: "MOBA", icon: "🏆", developer: "Riot Games",
-                items: [
-                    { item: "350 RP", price: 75000 }, { item: "700 RP", price: 150000 },
+                    { item: "Premium 1000", price: 150000 }] },
+            { name: "League of Legends", category: "MOBA", icon: gameIcons["League of Legends"], developer: "Riot Games",
+                items: [{ item: "350 RP", price: 75000 }, { item: "700 RP", price: 150000 },
                     { item: "1400 RP", price: 300000 }, { item: "2800 RP", price: 600000 },
-                    { item: "5600 RP", price: 1200000 }, { item: "11200 RP", price: 2400000 }
-                ]
-            },
-            {
-                name: "Steam Wallet", category: "Platform", icon: "💳", developer: "Valve",
-                items: [
-                    { item: "IDR 12.000", price: 13500 }, { item: "IDR 45.000", price: 49500 },
+                    { item: "5600 RP", price: 1200000 }, { item: "11200 RP", price: 2400000 }] },
+            { name: "Steam Wallet", category: "Platform", icon: gameIcons["Steam Wallet"], developer: "Valve",
+                items: [{ item: "IDR 12.000", price: 13500 }, { item: "IDR 45.000", price: 49500 },
                     { item: "IDR 60.000", price: 65000 }, { item: "IDR 90.000", price: 97500 },
                     { item: "IDR 120.000", price: 130000 }, { item: "IDR 250.000", price: 268000 },
-                    { item: "IDR 400.000", price: 428000 }, { item: "IDR 600.000", price: 640000 }
-                ]
-            },
-            {
-                name: "Honkai: Star Rail", category: "RPG", icon: "🚂", developer: "miHoYo",
-                items: [
-                    { item: "60 Oneiric Shard", price: 15000 }, { item: "300 Oneiric Shard", price: 75000 },
+                    { item: "IDR 400.000", price: 428000 }, { item: "IDR 600.000", price: 640000 }] },
+            { name: "Honkai: Star Rail", category: "RPG", icon: gameIcons["Honkai: Star Rail"], developer: "miHoYo",
+                items: [{ item: "60 Oneiric Shard", price: 15000 }, { item: "300 Oneiric Shard", price: 75000 },
                     { item: "980 Oneiric Shard", price: 245000 }, { item: "1980 Oneiric Shard", price: 495000 },
                     { item: "3280 Oneiric Shard", price: 820000 }, { item: "6480 Oneiric Shard", price: 1620000 },
-                    { item: "Express Supply Pass", price: 75000 }
-                ]
-            },
-            {
-                name: "Clash of Clans", category: "Strategy", icon: "🏰", developer: "Supercell",
-                items: [
-                    { item: "80 Gems", price: 15000 }, { item: "500 Gems", price: 75000 },
+                    { item: "Express Supply Pass", price: 75000 }] },
+            { name: "Clash of Clans", category: "Strategy", icon: gameIcons["Clash of Clans"], developer: "Supercell",
+                items: [{ item: "80 Gems", price: 15000 }, { item: "500 Gems", price: 75000 },
                     { item: "1200 Gems", price: 150000 }, { item: "2500 Gems", price: 300000 },
                     { item: "6500 Gems", price: 750000 }, { item: "14000 Gems", price: 1500000 },
-                    { item: "Gold Pass", price: 75000 }
-                ]
-            }
+                    { item: "Gold Pass", price: 75000 }] }
         ];
 
-        let games = [...defaultGames];
+        let games = JSON.parse(JSON.stringify(defaultGames));
         let currentUser = null;
         let isAdmin = false;
-        let isChatOpen = false;
+        let markupSettings = { percent: 10, flat: 0 };
+        let pendingChatQuestion = null; // Menyimpan pertanyaan yang belum dijawab AI
 
-        // Format harga
+        // ==================== FUNCTIONS ====================
         function formatPrice(price) {
-            return 'Rp ' + price.toLocaleString('id-ID');
+            if (typeof price !== 'number' || isNaN(price)) return 'Rp 0';
+            return 'Rp ' + Math.round(price).toLocaleString('id-ID');
         }
 
-        // Notifikasi
+        function getSellPrice(basePrice) {
+            if (typeof basePrice !== 'number' || isNaN(basePrice)) basePrice = 0;
+            const withPercent = basePrice * (1 + (markupSettings.percent || 0) / 100);
+            return Math.round(withPercent + (markupSettings.flat || 0));
+        }
+
         function showNotification(message, type = 'info') {
             const existing = document.querySelectorAll('.notification');
             existing.forEach(n => n.remove());
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), 3000);
+            const el = document.createElement('div');
+            el.className = `notification ${type}`;
+            el.textContent = message;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 3000);
         }
 
-        // Login dengan Google
         async function loginWithGoogle() {
             try {
                 const provider = new firebase.auth.GoogleAuthProvider();
                 const result = await auth.signInWithPopup(provider);
                 currentUser = result.user;
                 isAdmin = currentUser.email === ADMIN_EMAIL;
-                
-                await db.collection('users').doc(currentUser.uid).set({
-                    name: currentUser.displayName,
-                    email: currentUser.email,
-                    avatar: currentUser.photoURL,
-                    role: isAdmin ? 'admin' : 'user',
-                    lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
-                
                 updateUserUI();
-                showNotification('Login berhasil! Selamat datang ' + currentUser.displayName, 'success');
+                showNotification('Login berhasil!', 'success');
             } catch (error) {
-                console.error('Error login:', error);
                 showNotification('Login gagal: ' + error.message, 'error');
             }
         }
 
-        // Logout
         async function logout() {
-            try {
-                await auth.signOut();
-                currentUser = null;
-                isAdmin = false;
-                updateUserUI();
-                showNotification('Logout berhasil!', 'info');
-            } catch (error) {
-                showNotification('Logout gagal: ' + error.message, 'error');
-            }
+            await auth.signOut();
+            currentUser = null;
+            isAdmin = false;
+            updateUserUI();
+            showNotification('Logout berhasil!', 'info');
         }
 
-        // Update UI user
         function updateUserUI() {
             const loginSection = document.getElementById('loginSection');
             const userSection = document.getElementById('userSection');
             const adminBadge = document.getElementById('adminBadge');
             const adminPanel = document.getElementById('adminPanel');
-            
             if (currentUser) {
                 loginSection.style.display = 'none';
                 userSection.style.display = 'block';
-                document.getElementById('userAvatar').src = currentUser.photoURL || 'https://via.placeholder.com/40';
+                document.getElementById('userAvatar').src = currentUser.photoURL || '';
                 document.getElementById('userName').textContent = currentUser.displayName || currentUser.email;
-                
                 if (isAdmin) {
                     adminBadge.style.display = 'inline-block';
                     adminPanel.classList.add('active');
-                } else {
-                    adminBadge.style.display = 'none';
-                    adminPanel.classList.remove('active');
                 }
             } else {
                 loginSection.style.display = 'block';
@@ -1223,505 +647,327 @@
             }
         }
 
-        // Auth state listener
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                currentUser = user;
-                isAdmin = user.email === ADMIN_EMAIL;
-                try {
-                    const userDoc = await db.collection('users').doc(user.uid).get();
-                    if (userDoc.exists && userDoc.data().role === 'admin') {
-                        isAdmin = true;
-                    }
-                } catch (error) {
-                    console.error('Error fetching user role:', error);
-                }
-            } else {
-                currentUser = null;
-                isAdmin = false;
-            }
+        auth.onAuthStateChanged(user => {
+            currentUser = user;
+            isAdmin = user && user.email === ADMIN_EMAIL;
             updateUserUI();
         });
 
-        // Display games
         function displayGames() {
-            const gameGrid = document.getElementById('gameGrid');
-            gameGrid.innerHTML = '';
-            
-            games.forEach((game) => {
-                const minPrice = Math.min(...game.items.map(item => item.price));
-                const maxPrice = Math.max(...game.items.map(item => item.price));
-                
+            const grid = document.getElementById('gameGrid');
+            grid.innerHTML = '';
+            games.forEach(game => {
+                const prices = game.items.map(i => getSellPrice(i.price));
+                const min = Math.min(...prices);
+                const max = Math.max(...prices);
                 const card = document.createElement('div');
                 card.className = 'game-card';
                 card.onclick = () => showItems(game);
                 card.innerHTML = `
-                    <div class="game-icon">${game.icon}</div>
+                    <div class="game-icon"><img src="${game.icon}" alt="${game.name}" loading="lazy" onerror="this.style.display='none'"></div>
                     <div class="game-info">
                         <span class="category">${game.category}</span>
                         <h3>${game.name}</h3>
-                        <p>${game.developer}</p>
-                        <p class="price-range">${formatPrice(minPrice)} - ${formatPrice(maxPrice)}</p>
-                        <p style="margin-top: 10px;">📦 ${game.items.length} item tersedia</p>
-                    </div>
-                `;
-                gameGrid.appendChild(card);
+                        <p class="price-range">${formatPrice(min)} - ${formatPrice(max)}</p>
+                        <p class="item-count">📦 ${game.items.length} item</p>
+                    </div>`;
+                grid.appendChild(card);
             });
-            
             document.getElementById('statGames').textContent = games.length + '+';
             updateItemGameSelect();
         }
 
-        // Show items
         function showItems(game) {
-            const itemsList = document.getElementById('itemsList');
-            let itemsHTML = `
-                <h3 style="color: #333; margin-bottom: 20px;">${game.icon} ${game.name} - Daftar Item</h3>
-                <table class="items-table">
-                    <thead>
-                        <tr>
-                            <th>Item</th>
-                            <th>Harga</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-            
+            const list = document.getElementById('itemsList');
+            list.innerHTML = `<h3 style="color:#333;margin-bottom:15px;">${game.name} - Daftar Item</h3>`;
             game.items.forEach(item => {
-                itemsHTML += `
-                    <tr>
-                        <td>${item.item}</td>
-                        <td class="price-tag">${formatPrice(item.price)}</td>
-                        <td><button class="btn-buy" onclick="buyItem('${game.name}', '${item.item}', ${item.price})">Beli</button></td>
-                    </tr>
-                `;
+                const price = getSellPrice(item.price);
+                const row = document.createElement('div');
+                row.className = 'item-row';
+                row.innerHTML = `
+                    <span class="item-name">${item.item}</span>
+                    <span class="item-price">${formatPrice(price)}</span>
+                    <button class="btn-buy" onclick="openPurchaseModal('${game.name}', '${item.item}', ${price})">Beli</button>`;
+                list.appendChild(row);
             });
-            
-            itemsHTML += '</tbody></table>';
-            itemsList.innerHTML = itemsHTML;
             document.getElementById('itemsSection').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Buy item
-        async function buyItem(gameName, itemName, price) {
-            if (!currentUser) {
-                showNotification('Silakan login terlebih dahulu!', 'error');
-                return;
-            }
-            
-            try {
-                await db.collection('transactions').add({
-                    userId: currentUser.uid,
-                    userEmail: currentUser.email,
-                    userName: currentUser.displayName || currentUser.email,
-                    gameName,
-                    itemName,
-                    price,
-                    status: 'pending',
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                showNotification('Pesanan berhasil dibuat!', 'success');
-                
-                const message = `Halo YadStore! Saya ingin membeli:\n\nGame: ${gameName}\nItem: ${itemName}\nHarga: ${formatPrice(price)}\n\nNama: ${currentUser.displayName}\nEmail: ${currentUser.email}\n\nMohon diproses. Terima kasih!`;
-                const whatsappLink = `https://wa.me/6283170617054?text=${encodeURIComponent(message)}`;
-                window.open(whatsappLink, '_blank');
-            } catch (error) {
-                showNotification('Gagal membuat pesanan!', 'error');
+        function openPurchaseModal(game, item, price) {
+            document.getElementById('purchaseGame').value = game;
+            document.getElementById('purchaseItem').value = item;
+            document.getElementById('purchasePrice').value = formatPrice(price);
+            document.getElementById('purchaseEmail').value = currentUser ? currentUser.email : '';
+            document.getElementById('purchaseName').value = currentUser ? (currentUser.displayName || '') : '';
+            document.getElementById('purchaseModal').classList.add('active');
+        }
+
+        function closePurchaseModal() {
+            document.getElementById('purchaseModal').classList.remove('active');
+            document.getElementById('purchaseProof').value = '';
+            document.getElementById('filePreview').classList.remove('show');
+        }
+
+        function previewFile(event) {
+            const file = event.target.files[0];
+            if (file) {
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('filePreview').classList.add('show');
             }
         }
 
-        // Search
+        async function sendOrderToTelegram(photo, caption) {
+            const formData = new FormData();
+            formData.append('chat_id', ORDER_CHAT_ID);
+            formData.append('photo', photo);
+            formData.append('caption', caption);
+            const resp = await fetch(`https://api.telegram.org/bot${ORDER_BOT_TOKEN}/sendPhoto`, { method: 'POST', body: formData });
+            return resp.json();
+        }
+
+        async function sendChatToTelegram(text) {
+            const resp = await fetch(`https://api.telegram.org/bot${CHAT_BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHAT_CHAT_ID, text })
+            });
+            return resp.json();
+        }
+
+        async function processOrder() {
+            const btn = document.getElementById('submitOrderBtn');
+            const game = document.getElementById('purchaseGame').value;
+            const item = document.getElementById('purchaseItem').value;
+            const price = document.getElementById('purchasePrice').value;
+            const userId = document.getElementById('purchaseUserId').value.trim();
+            const server = document.getElementById('purchaseServer').value.trim();
+            const email = document.getElementById('purchaseEmail').value.trim();
+            const name = document.getElementById('purchaseName').value.trim();
+            const method = document.getElementById('purchasePaymentMethod').value;
+            const proof = document.getElementById('purchaseProof').files[0];
+
+            if (!userId || !email || !name || !method || !proof) {
+                showNotification('❌ Lengkapi semua field!', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = '⏳ Mengirim...';
+
+            const orderId = 'YAD' + Date.now().toString().slice(-8);
+            const caption = `🔔 PESANAN BARU!\n\n📋 Order ID: ${orderId}\n🎮 Game: ${game}\n📦 Item: ${item}\n💰 Harga: ${price}\n\n👤 ID: ${userId}${server ? `\n🔢 Server: ${server}` : ''}\n📧 Email: ${email}\n👤 Nama: ${name}\n💳 Metode: ${method}\n📎 Bukti: Terlampir`;
+
+            try {
+                await sendOrderToTelegram(proof, caption);
+                showNotification('✅ Pesanan terkirim!', 'success');
+                closePurchaseModal();
+            } catch (e) {
+                console.error(e);
+                showNotification('⚠️ Gagal kirim pesanan', 'error');
+            }
+            btn.disabled = false;
+            btn.textContent = '✅ Konfirmasi Pesanan';
+        }
+
         document.getElementById('searchInput').addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            const filteredGames = games.filter(game => 
-                game.name.toLowerCase().includes(searchTerm) ||
-                game.category.toLowerCase().includes(searchTerm) ||
-                game.items.some(item => item.item.toLowerCase().includes(searchTerm))
-            );
-            
-            const gameGrid = document.getElementById('gameGrid');
-            gameGrid.innerHTML = '';
-            
-            filteredGames.forEach(game => {
-                const minPrice = Math.min(...game.items.map(item => item.price));
-                const maxPrice = Math.max(...game.items.map(item => item.price));
-                
+            const term = this.value.toLowerCase();
+            const filtered = games.filter(g => g.name.toLowerCase().includes(term) || g.items.some(i => i.item.toLowerCase().includes(term)));
+            const grid = document.getElementById('gameGrid');
+            grid.innerHTML = '';
+            filtered.forEach(game => {
+                const prices = game.items.map(i => getSellPrice(i.price));
+                const min = Math.min(...prices);
+                const max = Math.max(...prices);
                 const card = document.createElement('div');
                 card.className = 'game-card';
                 card.onclick = () => showItems(game);
-                card.innerHTML = `
-                    <div class="game-icon">${game.icon}</div>
-                    <div class="game-info">
-                        <span class="category">${game.category}</span>
-                        <h3>${game.name}</h3>
-                        <p>${game.developer}</p>
-                        <p class="price-range">${formatPrice(minPrice)} - ${formatPrice(maxPrice)}</p>
-                    </div>
-                `;
-                gameGrid.appendChild(card);
+                card.innerHTML = `<div class="game-icon"><img src="${game.icon}" loading="lazy" onerror="this.style.display='none'"></div>
+                    <div class="game-info"><span class="category">${game.category}</span><h3>${game.name}</h3>
+                    <p class="price-range">${formatPrice(min)} - ${formatPrice(max)}</p></div>`;
+                grid.appendChild(card);
             });
         });
 
-        // Admin functions
-        function switchTab(tabName, btn) {
-            document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.admin-content').forEach(content => content.classList.remove('active'));
-            
-            btn.classList.add('active');
-            document.getElementById('tab-' + tabName).classList.add('active');
-            
-            if (tabName === 'transactions') loadTransactions();
-            if (tabName === 'users') loadUsers();
-        }
-
-        function updateBackground() {
-            const bgUrl = document.getElementById('bgUrl').value;
-            const bgColor = document.getElementById('bgColor').value;
-            const bgOpacity = document.getElementById('bgOpacity').value;
-            
-            if (bgUrl) {
-                document.documentElement.style.setProperty('--bg-image', `url('${bgUrl}')`);
-            }
-            document.documentElement.style.setProperty('--bg-color', bgColor);
-            document.documentElement.style.setProperty('--bg-opacity', bgOpacity);
-            document.body.style.background = bgColor;
-            
-            db.collection('settings').doc('background').set({
-                url: bgUrl,
-                color: bgColor,
-                opacity: parseFloat(bgOpacity)
-            }, { merge: true });
-            
-            showNotification('Background berhasil diperbarui!', 'success');
-        }
-
-        function resetBackground() {
-            document.documentElement.style.setProperty('--bg-image', 'url("https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1920")');
-            document.documentElement.style.setProperty('--bg-color', '#667eea');
-            document.documentElement.style.setProperty('--bg-opacity', '0.15');
-            document.body.style.background = '#667eea';
-            
-            db.collection('settings').doc('background').set({
-                url: '',
-                color: '#667eea',
-                opacity: 0.15
-            });
-            
-            showNotification('Background direset ke default!', 'info');
-        }
-
-        function addGame() {
-            const name = document.getElementById('gameName').value;
-            const category = document.getElementById('gameCategory').value;
-            const icon = document.getElementById('gameIcon').value || '🎮';
-            const developer = document.getElementById('gameDeveloper').value;
-            
-            if (!name) {
-                showNotification('Nama game wajib diisi!', 'error');
-                return;
-            }
-            
-            games.push({ name, category, icon, developer, items: [] });
-            
-            db.collection('games').add({
-                name, category, icon, developer, items: []
-            });
-            
-            displayGames();
-            showNotification('Game berhasil ditambahkan!', 'success');
-            
-            document.getElementById('gameName').value = '';
-            document.getElementById('gameIcon').value = '';
-            document.getElementById('gameDeveloper').value = '';
-        }
-
-        function updateItemGameSelect() {
-            const select = document.getElementById('itemGameSelect');
-            if (!select) return;
-            select.innerHTML = '';
-            
-            games.forEach((game, index) => {
-                const option = document.createElement('option');
-                option.value = index;
-                option.textContent = game.name;
-                select.appendChild(option);
-            });
-        }
-
-        function addItem() {
-            const gameIndex = parseInt(document.getElementById('itemGameSelect').value);
-            const itemName = document.getElementById('itemName').value;
-            const itemPrice = parseInt(document.getElementById('itemPrice').value);
-            
-            if (!itemName || !itemPrice) {
-                showNotification('Nama dan harga item wajib diisi!', 'error');
-                return;
-            }
-            
-            games[gameIndex].items.push({ item: itemName, price: itemPrice });
-            
-            db.collection('games').where('name', '==', games[gameIndex].name).get()
-                .then((snapshot) => {
-                    snapshot.forEach((doc) => {
-                        doc.ref.update({ items: games[gameIndex].items });
-                    });
-                });
-            
-            displayGames();
-            showNotification('Item berhasil ditambahkan!', 'success');
-            
-            document.getElementById('itemName').value = '';
-            document.getElementById('itemPrice').value = '';
-        }
-
-        function loadTransactions() {
-            const list = document.getElementById('transactionsList');
-            list.innerHTML = '<p>Memuat transaksi...</p>';
-            db.collection('transactions').orderBy('createdAt', 'desc').limit(20).get()
-                .then((snapshot) => {
-                    if (snapshot.empty) {
-                        list.innerHTML = '<p>Tidak ada transaksi.</p>';
-                        return;
-                    }
-                    let html = '<table class="items-table"><thead><tr><th>User</th><th>Game</th><th>Item</th><th>Harga</th><th>Status</th></tr></thead><tbody>';
-                    snapshot.forEach((doc) => {
-                        const data = doc.data();
-                        html += `<tr>
-                            <td>${data.userName || data.userEmail}</td>
-                            <td>${data.gameName}</td>
-                            <td>${data.itemName}</td>
-                            <td>${formatPrice(data.price)}</td>
-                            <td>${data.status}</td>
-                        </tr>`;
-                    });
-                    html += '</tbody></table>';
-                    list.innerHTML = html;
-                })
-                .catch(() => {
-                    list.innerHTML = '<p>Error memuat transaksi.</p>';
-                });
-        }
-
-        function loadUsers() {
-            const list = document.getElementById('usersList');
-            list.innerHTML = '<p>Memuat pengguna...</p>';
-            db.collection('users').limit(20).get()
-                .then((snapshot) => {
-                    if (snapshot.empty) {
-                        list.innerHTML = '<p>Tidak ada pengguna.</p>';
-                        return;
-                    }
-                    let html = '<table class="items-table"><thead><tr><th>Nama</th><th>Email</th><th>Role</th></tr></thead><tbody>';
-                    snapshot.forEach((doc) => {
-                        const data = doc.data();
-                        html += `<tr>
-                            <td>${data.name || '-'}</td>
-                            <td>${data.email}</td>
-                            <td>${data.role || 'user'}</td>
-                        </tr>`;
-                    });
-                    html += '</tbody></table>';
-                    list.innerHTML = html;
-                })
-                .catch(() => {
-                    list.innerHTML = '<p>Error memuat pengguna.</p>';
-                });
-        }
-
-        function saveSettings() {
-            const storeName = document.getElementById('storeName').value;
-            const storeWhatsapp = document.getElementById('storeWhatsapp').value;
-            const storeEmail = document.getElementById('storeEmail').value;
-            
-            db.collection('settings').doc('store').set({
-                name: storeName,
-                whatsapp: storeWhatsapp,
-                email: storeEmail
-            });
-            
-            document.getElementById('footerWhatsapp').textContent = storeWhatsapp;
-            document.getElementById('footerEmail').textContent = storeEmail;
-            
-            showNotification('Pengaturan berhasil disimpan!', 'success');
-        }
-
-        function closeModal() {
-            document.getElementById('modal').classList.remove('active');
-        }
-
-        // ==================== CHAT WIDGET FUNCTIONS ====================
+        // ==================== CHAT ====================
         function toggleChat() {
-            const chatWindow = document.getElementById('chatWindow');
-            const chatBadge = document.getElementById('chatBadge');
-            
-            if (isChatOpen) {
-                chatWindow.classList.remove('active');
-                isChatOpen = false;
-            } else {
-                chatWindow.classList.add('active');
-                isChatOpen = true;
-                chatBadge.style.display = 'none';
-                document.getElementById('chatInput').focus();
-            }
-        }
-
-        function handleChatKeyPress(event) {
-            if (event.key === 'Enter') {
-                sendChatMessage();
-            }
+            document.getElementById('chatWindow').classList.toggle('active');
         }
 
         function addChatMessage(text, sender) {
-            const chatMessages = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender}`;
-            
-            const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-            messageDiv.innerHTML = `${text}<span class="time">${time}</span>`;
-            
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            const container = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            div.className = `message ${sender}`;
+            div.innerHTML = text + `<span class="time">${new Date().toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit'})}</span>`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
         }
 
-        function showTypingIndicator() {
-            document.getElementById('typingIndicator').classList.add('active');
+        function addChatOptions() {
+            const container = document.getElementById('chatMessages');
+            const optionsDiv = document.createElement('div');
+            optionsDiv.className = 'chat-options';
+            optionsDiv.id = 'chatOptions';
+            optionsDiv.innerHTML = `
+                <button class="chat-option-btn yes" onclick="confirmConnectCS()">✅ Ya, hubungkan ke CS</button>
+                <button class="chat-option-btn no" onclick="declineConnectCS()">❌ Tidak, terima kasih</button>
+            `;
+            container.appendChild(optionsDiv);
+            container.scrollTop = container.scrollHeight;
         }
 
-        function hideTypingIndicator() {
-            document.getElementById('typingIndicator').classList.remove('active');
+        function removeChatOptions() {
+            const options = document.getElementById('chatOptions');
+            if (options) options.remove();
         }
 
-        function getChatbotResponse(message) {
-            const msg = message.toLowerCase();
+        function getBotResponse(msg) {
+            const m = msg.toLowerCase();
+            const foundGame = games.find(g => m.includes(g.name.toLowerCase()));
             
-            if (msg.includes('harga') || msg.includes('price') || msg.includes('berapa')) {
-                const foundGame = games.find(g => msg.includes(g.name.toLowerCase()));
-                if (foundGame) {
-                    const cheapest = foundGame.items[0];
-                    const mostExpensive = foundGame.items[foundGame.items.length - 1];
-                    return `💰 Harga ${foundGame.name}:<br><br>Termurah: ${cheapest.item} - ${formatPrice(cheapest.price)}<br>Termahal: ${mostExpensive.item} - ${formatPrice(mostExpensive.price)}<br><br>Total ${foundGame.items.length} item tersedia.`;
-                }
-                return '💰 Game yang tersedia:<br><br>' + games.map(g => `${g.icon} ${g.name}`).join('<br>');
+            if (m.includes('harga') && foundGame) {
+                const prices = foundGame.items.map(i => getSellPrice(i.price));
+                return `💰 ${foundGame.name}: ${formatPrice(Math.min(...prices))} - ${formatPrice(Math.max(...prices))}`;
             }
-            
-            if (msg.includes('ml') || msg.includes('mobile legend')) {
-                return 'Mobile Legends tersedia mulai Rp 1.500 (3 Diamonds) hingga Rp 845.000 (2010 Diamonds). Mau beli berapa? 😊';
-            }
-            
-            if (msg.includes('pubg')) {
-                return 'PUBG Mobile: 60 UC Rp 12.000, 300 UC Rp 60.000, 600 UC Rp 120.000, Royale Pass Rp 150.000. 🎮';
-            }
-            
-            if (msg.includes('free fire') || msg.includes('ff')) {
-                return 'Free Fire: 50 Diamond Rp 10.000, 100 Diamond Rp 20.000, 520 Diamond Rp 100.000. 🔥';
-            }
-            
-            if (msg.includes('genshin')) {
-                return 'Genshin Impact: 60 Crystal Rp 15.000, 300 Crystal Rp 75.000, 980 Crystal Rp 245.000. ✨';
-            }
-            
-            if (msg.includes('valorant')) {
-                return 'Valorant Points: 125 VP Rp 30.000, 420 VP Rp 100.000, 700 VP Rp 165.000. 🎯';
-            }
-            
-            if (msg.includes('cara') || msg.includes('beli') || msg.includes('order') || msg.includes('top up')) {
-                return '📝 Cara membeli:<br><br>1. Pilih game<br>2. Klik item yang diinginkan<br>3. Login dengan Google<br>4. Konfirmasi via WhatsApp<br>5. Bayar<br>6. Item diproses! 😊';
-            }
-            
-            if (msg.includes('pembayaran') || msg.includes('bayar') || msg.includes('transfer')) {
-                return '💳 Metode pembayaran:<br><br>• DANA<br>• GOPAY<br>• Transfer Bank<br>• QRIS<br><br>Hubungi CS untuk detail.';
-            }
-            
-            if (msg.includes('halo') || msg.includes('hai') || msg.includes('hello') || msg.includes('assalamualaikum')) {
-                return 'Halo! 👋 Selamat datang di YadStore.<br><br>Ada yang bisa saya bantu? Tanyakan tentang game atau harga!';
-            }
-            
-            if (msg.includes('terima kasih') || msg.includes('thanks') || msg.includes('makasih')) {
-                return 'Sama-sama! 😊 Senang bisa membantu. Jangan ragu untuk bertanya lagi!';
-            }
-            
-            return 'Terima kasih atas pertanyaan Anda! 😊<br><br>Saya bisa membantu dengan:<br>• Info harga game<br>• Cara pembelian<br>• Metode pembayaran<br><br>Silakan tanya lebih spesifik!';
+            if (m.includes('ml') || m.includes('mobile legend')) return 'Mobile Legends: Rp 1.500 - Rp 135.000. Mau beli? 😊';
+            if (m.includes('pubg')) return 'PUBG Mobile: Rp 12.000 - Rp 250.000. 🎮';
+            if (m.includes('ff') || m.includes('free fire')) return 'Free Fire: Rp 10.000 - Rp 75.000. 🔥';
+            if (m.includes('genshin')) return 'Genshin: Rp 15.000 - Rp 150.000. ✨';
+            if (m.includes('valorant')) return 'Valorant: Rp 30.000 - Rp 1.840.000. 🎯';
+            if (m.includes('cara') || m.includes('beli')) return 'Cara beli: Pilih game → Klik Beli → Isi form → Upload bukti → Konfirmasi. 😊';
+            if (m.includes('bayar') || m.includes('pembayaran')) return 'Pembayaran: DANA/GOPAY 083170617054. 💳';
+            if (m.includes('halo') || m.includes('hai') || m.includes('hello')) return 'Halo! 👋 Ada yang bisa dibantu?';
+            if (m.includes('terima kasih')) return 'Sama-sama! 😊';
+            return null;
         }
 
-        function sendChatMessage() {
+        async function sendChatMessage() {
             const input = document.getElementById('chatInput');
-            const sendBtn = document.getElementById('chatSendBtn');
-            const message = input.value.trim();
+            const msg = input.value.trim();
+            if (!msg) return;
             
-            if (!message) return;
+            // Jika ada opsi yang belum dijawab, abaikan input baru
+            if (pendingChatQuestion) {
+                addChatMessage('⚠️ Silakan jawab opsi di atas terlebih dahulu.', 'bot');
+                return;
+            }
             
-            // Add user message
-            addChatMessage(message, 'user');
+            addChatMessage(msg, 'user');
             input.value = '';
             
-            // Disable send button
-            sendBtn.disabled = true;
+            const typingIndicator = document.getElementById('typingIndicator');
+            typingIndicator.classList.add('active');
             
-            // Show typing indicator
-            showTypingIndicator();
-            
-            // Get bot response after delay
-            setTimeout(() => {
-                hideTypingIndicator();
-                const botResponse = getChatbotResponse(message);
-                addChatMessage(botResponse, 'bot');
-                sendBtn.disabled = false;
-                input.focus();
+            setTimeout(async () => {
+                typingIndicator.classList.remove('active');
+                const botResponse = getBotResponse(msg);
+                
+                if (botResponse) {
+                    addChatMessage(botResponse, 'bot');
+                } else {
+                    // AI tidak mengerti, tampilkan opsi
+                    pendingChatQuestion = msg;
+                    addChatMessage('🤖 Maaf, saya tidak mengerti pertanyaan Anda.<br><br>Apakah Anda ingin saya menghubungkan Anda dengan Customer Service kami?', 'bot');
+                    addChatOptions();
+                }
             }, 1000 + Math.random() * 1000);
         }
 
-        // Load settings on startup
-        function loadSettings() {
-            db.collection('settings').doc('background').get()
-                .then((doc) => {
-                    if (doc.exists) {
-                        const data = doc.data();
-                        if (data.url) document.documentElement.style.setProperty('--bg-image', `url('${data.url}')`);
-                        if (data.color) {
-                            document.documentElement.style.setProperty('--bg-color', data.color);
-                            document.body.style.background = data.color;
-                        }
-                        if (data.opacity) document.documentElement.style.setProperty('--bg-opacity', data.opacity);
-                    }
-                });
+        async function confirmConnectCS() {
+            removeChatOptions();
+            if (!pendingChatQuestion) return;
             
-            db.collection('settings').doc('store').get()
-                .then((doc) => {
-                    if (doc.exists) {
-                        const data = doc.data();
-                        if (data.whatsapp) document.getElementById('footerWhatsapp').textContent = data.whatsapp;
-                        if (data.email) document.getElementById('footerEmail').textContent = data.email;
-                    }
-                });
+            addChatMessage('✅ Menghubungkan ke Customer Service...', 'bot');
+            
+            const telegramMsg = `💬 Pertanyaan user yang diteruskan:\n\n"${pendingChatQuestion}"\n\n👤 ${currentUser ? currentUser.displayName : 'Guest'}\n📧 ${currentUser ? currentUser.email : 'Tidak login'}\n🕐 ${new Date().toLocaleString('id-ID')}`;
+            
+            try {
+                await sendChatToTelegram(telegramMsg);
+                addChatMessage('✅ Pertanyaan Anda telah diteruskan ke CS. Mohon tunggu balasan di Telegram.', 'admin');
+            } catch (e) {
+                addChatMessage('⚠️ Gagal menghubungkan. Silakan hubungi WhatsApp: 083170617054', 'admin');
+            }
+            
+            pendingChatQuestion = null;
         }
 
-        // Load games from Firestore
-        function loadGamesFromFirestore() {
-            db.collection('games').get()
-                .then((snapshot) => {
-                    if (!snapshot.empty) {
-                        games = [];
-                        snapshot.forEach((doc) => {
-                            games.push(doc.data());
-                        });
-                        displayGames();
-                    } else {
-                        defaultGames.forEach((game) => {
-                            db.collection('games').add(game);
-                        });
-                    }
-                })
-                .catch((error) => {
-                    console.error('Error loading games:', error);
-                });
+        function declineConnectCS() {
+            removeChatOptions();
+            pendingChatQuestion = null;
+            addChatMessage('👌 Baik! Silakan tanyakan hal lain atau hubungi kami via WhatsApp: 083170617054', 'bot');
         }
 
-        // Initialize
+        // ==================== ADMIN ====================
+        function switchTab(name, btn) {
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('tab-' + name).classList.add('active');
+        }
+
+        function updateItemGameSelect() {
+            const sel = document.getElementById('itemGameSelect');
+            if (!sel) return;
+            sel.innerHTML = '';
+            games.forEach((g, i) => {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = g.name;
+                sel.appendChild(opt);
+            });
+        }
+
+        function addGame() {
+            const name = document.getElementById('gameName').value.trim();
+            const category = document.getElementById('gameCategory').value;
+            const icon = document.getElementById('gameIconUrl').value.trim() || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&size=80`;
+            const developer = document.getElementById('gameDeveloper').value.trim();
+            if (!name) return showNotification('Nama wajib diisi!', 'error');
+            games.push({ name, category, icon, developer, items: [] });
+            displayGames();
+            showNotification('Game ditambahkan!', 'success');
+        }
+
+        function addItem() {
+            const idx = parseInt(document.getElementById('itemGameSelect').value);
+            const name = document.getElementById('itemName').value.trim();
+            const price = parseInt(document.getElementById('itemPrice').value);
+            if (!name || !price) return showNotification('Lengkapi data!', 'error');
+            games[idx].items.push({ item: name, price });
+            displayGames();
+            showNotification('Item ditambahkan!', 'success');
+        }
+
+        function saveMarkup() {
+            markupSettings.percent = parseFloat(document.getElementById('markupPercent').value) || 0;
+            markupSettings.flat = parseFloat(document.getElementById('markupFlat').value) || 0;
+            displayGames();
+            showNotification('Markup disimpan!', 'success');
+        }
+
+        function applyMarkup() {
+            saveMarkup();
+            showNotification('Markup diterapkan!', 'success');
+        }
+
+        function updateBackground() {
+            const url = document.getElementById('bgUrl').value;
+            const color = document.getElementById('bgColor').value;
+            const opacity = document.getElementById('bgOpacity').value;
+            if (url) document.documentElement.style.setProperty('--bg-image', `url('${url}')`);
+            document.documentElement.style.setProperty('--bg-color', color);
+            document.documentElement.style.setProperty('--bg-opacity', opacity);
+            document.body.style.background = color;
+            showNotification('Background diperbarui!', 'success');
+        }
+
+        function saveSettings() {
+            document.getElementById('footerWhatsapp').textContent = document.getElementById('storeWhatsapp').value;
+            document.getElementById('footerEmail').textContent = document.getElementById('storeEmail').value;
+            showNotification('Pengaturan disimpan!', 'success');
+        }
+
+        // ==================== INIT ====================
         displayGames();
-        loadSettings();
-        loadGamesFromFirestore();
     </script>
 </body>
 </html>

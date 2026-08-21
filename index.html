@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YadStore - Top Up Game Termurah & Terpercaya</title>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js">
+    </script>
+
+    <style>
+        :root {
+            --bg-image: url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1920');
+            --bg-color: #667eea;
+            --bg-opacity: 0.15;
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --accent: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --dark: #1e3c72;
+            --light: #f8f9fa;
+            --chat-primary: #0088cc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            position: relative;
+            background: var(--bg-color);
+            transition: background 0.5s ease;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: var(--bg-image);
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            opacity: var(--bg-opacity);
+            z-index: -1;
+            transition: all 0.5s ease;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 15px 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: 2px;
+            cursor: pointer;
+        }
+
+        .header p {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid white;
+            cursor: pointer;
+            background: #fff;
+        }
+
+        .user-name {
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .badge-admin {
+            background: #ffc107;
+            color: #333;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.7em;
+            font-weight: bold;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-google {
+            background: white;
+            color: #333;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            min-width: 150px;
+            margin: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-card h3 {
+            color: #667eea;
+            font-size: 2em;
+        }
+
+        .search-bar {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1.1em;
+            transition: all 0.3s;
+        }
+        .search-bar input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        .game-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        .game-card:hover {
+            transform: translateY(-10px);
+        }
+        .game-icon {
+            width: 100%;
+            height: 140px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4em;
+        }
+        .game-info {
+            padding: 20px;
+        }
+        .game-info h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .category {
+            display: inline-block;
+            padding: 5px 10px;
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.8em;
+            margin-bottom: 10px;
+        }
+        .price-range {
+            color: #666;
+            font-size: 0.85em;
+        }
+
+        .items-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            overflow-x: auto;
+        }
+        .items-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+        .items-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        .items-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .items-table tr:hover {
+            background: #f8f9fa;
+        }
+        .price-tag {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .btn-buy {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
+
+        .admin-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+        .admin-panel.active {
+            display: block;
+        }
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .admin-tab {
+            padding: 10px 20px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .admin-tab.active {
+            background: #667eea;
+            color: white;
+        }
+        .admin-content {
+            display: none;
+        }
+        .admin-content.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            z-index: 3000;
+            animation: slideIn 0.3s ease;
+        }
+        .notification.success {
+            background: #28a745;
+        }
+        .notification.error {
+            background: #dc3545;
+        }
+        .notification.info {
+            background: #667eea;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .chat-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1500;
+        }
+        .chat-toggle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #0088cc;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5em;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+        .chat-window {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .chat-window.active {
+            display: flex;
+        }
+        .chat-header {
+            background: #0088cc;
+            color: white;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .chat-header img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+        .chat-header-info h3 {
+            font-size: 1em;
+        }
+        .chat-header-info p {
+            font-size: 0.8em;
+            opacity: 0.9;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f0f2f5;
+        }
+        .message {
+            margin-bottom: 15px;
+            max-width: 80%;
+            clear: both;
+        }
+        .message.user {
+            float: right;
+            background: #0088cc;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 15px 15px 0 15px;
+        }
+        .message.bot {
+            float: left;
+            background: white;
+            color: #333;
+            padding: 10px 15px;
+            border-radius: 15px 15px 15px 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .message .time {
+            font-size: 0.7em;
+            opacity: 0.7;
+            display: block;
+            margin-top: 5px;
+        }
+        .chat-input {
+            display: flex;
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            gap: 10px;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+        }
+        .chat-input button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #0088cc;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .typing-indicator {
+            display: none;
+            float: left;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 15px;
+        }
+        .typing-indicator.active {
+            display: block;
+        }
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #999;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+        @keyframes typing {
+            0%,
+            60%,
+            100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .footer {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            text-align: center;
+            padding: 30px;
+            margin-top: 50px;
+        }
+
+        @media (max-width: 768px) {
+            .game-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+            .header h1 {
+                font-size: 1.3em;
+            }
+            .stats {
+                flex-direction: column;
+            }
+            .chat-window {
+                width: 300px;
+                height: 400px;
+                right: 10px;
+                bottom: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-top">
+            <div onclick="location.reload()">
+                <h1>🎮 YADSTORE</h1>
+                <p>Top Up Game Termurah & Terpercaya</p>
+            </div>
+            <div class="user-menu">
+                <div id="loginSection">
+                    <button class="btn btn-google" onclick="loginWithGoogle()">
+                        🔐 Login dengan Google
+                    </button>
+                </div>
+                <div id="userSection" style="display: none;">
+                    <div class="user-info">
+                        <img class="user-avatar" id="userAvatar" src="" alt="Avatar">
+                        <div>
+                            <div class="user-name" id="userName"></div>
+                            <span class="badge-admin" id="adminBadge" style="display:none;">ADMIN</span>
+                        </div>
+                        <button class="btn btn-danger" onclick="logout()">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="stats">
+            <div class="stat-card"><h3 id="statGames">12+</h3><p>Game Tersedia</p></div>
+            <div class="stat-card"><h3>1 Juta+</h3><p>Transaksi Sukses</p></div>
+            <div class="stat-card"><h3>4.9/5</h3><p>Rating Pelanggan</p></div>
+            <div class="stat-card"><h3>24/7</h3><p>Layanan Online</p></div>
+        </div>
+
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="🔍 Cari game atau item...">
+        </div>
+
+        <div class="game-grid" id="gameGrid"></div>
+
+        <div class="items-section" id="itemsSection">
+            <h2>📦 Daftar Item & Harga</h2>
+            <div id="itemsList"></div>
+        </div>
+
+        <div class="admin-panel" id="adminPanel">
+            <h2 style="text-align:center;margin-bottom:20px;">⚙️ Admin Panel - YadStore</h2>
+            <div class="admin-tabs">
+                <button class="admin-tab active" onclick="switchTab('bg')">🎨 Background</button>
+                <button class="admin-tab" onclick="switchTab('games')">🎮 Games</button>
+                <button class="admin-tab" onclick="switchTab('items')">📦 Items</button>
+                <button class="admin-tab" onclick="switchTab('transactions')">💰 Transaksi</button>
+                <button class="admin-tab" onclick="switchTab('users')">👥 Users</button>
+                <button class="admin-tab" onclick="switchTab('chatbot')">🤖 Chatbot AI</button>
+                <button class="admin-tab" onclick="switchTab('settings')">⚙️ Settings</button>
+            </div>
+
+            <div class="admin-content active" id="tab-bg">
+                <h3>🎨 Ganti Background Website</h3>
+                <div class="form-group">
+                    <label>URL Gambar Background</label>
+                    <input type="text" id="bgUrl" placeholder="https://example.com/image.jpg">
+                </div>
+                <div class="form-group">
+                    <label>Warna Background</label>
+                    <input type="color" id="bgColor" value="#667eea">
+                </div>
+                <div class="form-group">
+                    <label>Opacity Background (0.1 - 1.0)</label>
+                    <input type="number" id="bgOpacity" min="0.1" max="1" step="0.05" value="0.15">
+                </div>
+                <button class="btn btn-primary" onclick="updateBackground()">💾 Simpan</button>
+                <button class="btn btn-danger" onclick="resetBackground()">🔄 Reset</button>
+            </div>
+
+            <div class="admin-content" id="tab-games">
+                <h3>🎮 Tambah Game Baru</h3>
+                <div class="form-group"><label>Nama Game</label><input type="text" id="gameName"></div>
+                <div class="form-group"><label>Kategori</label><select id="gameCategory"><option>MOBA</option><option>FPS</option><option>Battle Royale</option><option>RPG</option><option>Strategy</option><option>Sandbox</option><option>Platform</option></select></div>
+                <div class="form-group"><label>Icon (Emoji)</label><input type="text" id="gameIcon" placeholder="🎮"></div>
+                <div class="form-group"><label>Developer</label><input type="text" id="gameDeveloper"></div>
+                <button class="btn btn-success" onclick="addGame()">➕ Tambah Game</button>
+            </div>
+
+            <div class="admin-content" id="tab-items">
+                <h3>📦 Tambah Item</h3>
+                <div class="form-group"><label>Pilih Game</label><select id="itemGameSelect"></select></div>
+                <div class="form-group"><label>Nama Item</label><input type="text" id="itemName"></div>
+                <div class="form-group"><label>Harga (Rp)</label><input type="number" id="itemPrice"></div>
+                <button class="btn btn-success" onclick="addItem()">➕ Tambah Item</button>
+            </div>
+
+            <div class="admin-content" id="tab-transactions">
+                <h3>💰 Riwayat Transaksi</h3>
+                <div id="transactionsList"></div>
+            </div>
+
+            <div class="admin-content" id="tab-users">
+                <h3>👥 Daftar Pengguna</h3>
+                <div id="usersList"></div>
+            </div>
+
+            <div class="admin-content" id="tab-chatbot">
+                <h3>🤖 Pengaturan Chatbot AI</h3>
+                <div class="form-group"><label>Telegram Bot Token</label><input type="text" id="telegramBotToken"></div>
+                <div class="form-group"><label>Telegram Chat ID</label><input type="text" id="telegramChatId"></div>
+                <div class="form-group"><label>Hugging Face API Token</label><input type="password" id="hfApiToken"></div>
+                <div class="form-group"><label>Hugging Face Model</label><select id="hfModel"><option value="microsoft/DialoGPT-medium">DialoGPT Medium</option><option value="microsoft/DialoGPT-large">DialoGPT Large</option><option value="facebook/blenderbot-400M-distill">BlenderBot</option><option value="google/flan-t5-base">Flan T5 Base</option></select></div>
+                <button class="btn btn-primary" onclick="saveChatbotSettings()">💾 Simpan</button>
+                <button class="btn btn-success" onclick="testChatbot()">🧪 Test</button>
+            </div>
+
+            <div class="admin-content" id="tab-settings">
+                <h3>⚙️ Pengaturan Toko</h3>
+                <div class="form-group"><label>Nama Toko</label><input type="text" id="storeName" value="YadStore"></div>
+                <div class="form-group"><label>WhatsApp CS</label><input type="text" id="storeWhatsapp" value="083170617054"></div>
+                <div class="form-group"><label>Email Support</label><input type="text" id="storeEmail" value="support@yadstore.com"></div>
+                <div class="form-group"><label>DANA</label><input type="text" id="storeDana" value="083170617054"></div>
+                <div class="form-group"><label>GOPAY</label><input type="text" id="storeGopay" value="083170617054"></div>
+                <button class="btn btn-primary" onclick="saveSettings()">💾 Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-widget">
+        <button class="chat-toggle" onclick="toggleChat()">💬</button>
+        <div class="chat-window" id="chatWindow">
+            <div class="chat-header">
+                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=YadStore" alt="Bot">
+                <div class="chat-header-info">
+                    <h3>YadStore Bot</h3>
+                    <p>🟢 Online - AI Assistant</p>
+                </div>
+                <button onclick="toggleChat()" style="background:none;border:none;color:white;font-size:1.5em;cursor:pointer;">×</button>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot">Halo! 👋 Saya YadStore Bot AI.<br><br>Silakan tanya tentang game, harga, atau cara pembelian.<span class="time">Sekarang</span></div>
+            </div>
+            <div class="typing-indicator" id="typingIndicator"><span></span><span></span><span></span></div>
+            <div class="chat-input">
+                <input type="text" id="chatInput" placeholder="Ketik pesan..." onkeypress="handleChatKeyPress(event)">
+                <button onclick="sendChatMessage()">➤</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <h2>🎮 YADSTORE</h2>
+        <p>Top Up Game Terpercaya Sejak 2020</p>
+        <p>📍 Jakarta, Indonesia</p>
+        <p>📞 WhatsApp: <span id="footerWhatsapp">083170617054</span></p>
+        <p>📧 Email: <span id="footerEmail">support@yadstore.com</span></p>
+        <p>💳 DANA: 083170617054 | GOPAY: 083170617054</p>
+        <p>© 2024 YadStore. All rights reserved.</p>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAvfHxcAT2syVbrf6-TU0JBRXtNLI0AIkc",
+            authDomain: "yadstores.firebaseapp.com",
+            databaseURL: "https://yadstores-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "yadstores",
+            storageBucket: "yadstores.firebasestorage.app",
+            messagingSenderId: "666352014774",
+            appId: "1:666352014774:web:159ab5b455efb2fb2f9d17",
+            measurementId: "G-8Q7T7G6HQ2"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        const ADMIN_EMAIL = 'ynuraini686@gmail.com';
+        const TELEGRAM_BOT_TOKEN = '8781331009:AAG8z-8vq95u_hFKtXeXD_7WNLshTQLzanI';
+        const TELEGRAM_CHAT_ID = '8254733927';
+        const HF_API_TOKEN = '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';
+
+        let chatbotConfig = {
+            telegramBotToken: TELEGRAM_BOT_TOKEN,
+            telegramChatId: TELEGRAM_CHAT_ID,
+            hfApiToken: HF_API_TOKEN,
+            hfModel: 'microsoft/DialoGPT-medium'
+        };
+
+        const defaultGames = [
+            { name: "Mobile Legends", category: "MOBA", icon: "⚔️", developer: "Moonton",
+                items: [{ item: "3 Diamonds", price: 1500 }, { item: "5 Diamonds", price: 2500 },
+                    { item: "12 Diamonds", price: 5500 }, { item: "44 Diamonds", price: 19500 },
+                    { item: "170 Diamonds", price: 72500 }, { item: "Starlight Member", price: 135000 }] },
+            { name: "PUBG Mobile", category: "Battle Royale", icon: "🔫", developer: "Tencent",
+                items: [{ item: "60 UC", price: 12000 }, { item: "300 UC", price: 60000 },
+                    { item: "600 UC", price: 120000 }, { item: "Royale Pass", price: 150000 }] },
+            { name: "Free Fire", category: "Battle Royale", icon: "🔥", developer: "Garena",
+                items: [{ item: "50 Diamonds", price: 10000 }, { item: "100 Diamonds", price: 20000 },
+                    { item: "520 Diamonds", price: 100000 }, { item: "Membership Bulanan", price: 75000 }] },
+            { name: "Genshin Impact", category: "RPG", icon: "✨", developer: "miHoYo",
+                items: [{ item: "60 Genesis Crystals", price: 15000 }, { item: "300 Genesis Crystals", price: 75000 },
+                    { item: "980 Genesis Crystals", price: 245000 }, { item: "Blessing of Welkin Moon", price: 75000 }] },
+            { name: "Valorant", category: "FPS", icon: "🎯", developer: "Riot Games",
+                items: [{ item: "125 VP", price: 30000 }, { item: "420 VP", price: 100000 }, { item: "700 VP", price: 165000 }] },
+            { name: "Steam Wallet", category: "Platform", icon: "💳", developer: "Valve",
+                items: [{ item: "IDR 12.000", price: 13500 }, { item: "IDR 45.000", price: 49500 }, { item: "IDR 120.000", price: 130000 }] }
+        ];
+
+        let games = [...defaultGames];
+        let currentUser = null;
+        let isAdmin = false;
+
+        function formatPrice(price) { return 'Rp ' + price.toLocaleString('id-ID'); }
+
+        function showNotification(message, type = 'info') {
+            const el = document.createElement('div');
+            el.className = 'notification ' + type;
+            el.textContent = message;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 3000);
+        }
+
+        async function loginWithGoogle() {
+            try {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                const result = await auth.signInWithPopup(provider);
+                currentUser = result.user;
+                isAdmin = currentUser.email === ADMIN_EMAIL;
+                await db.collection('users').doc(currentUser.uid).set({
+                    name: currentUser.displayName,
+                    email: currentUser.email,
+                    avatar: currentUser.photoURL,
+                    role: isAdmin ? 'admin' : 'user',
+                    lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                updateUserUI();
+                showNotification('Login berhasil! Selamat datang ' + currentUser.displayName, 'success');
+            } catch (error) {
+                showNotification('Login gagal: ' + error.message, 'error');
+            }
+        }
+
+        async function logout() {
+            await auth.signOut();
+            currentUser = null;
+            isAdmin = false;
+            updateUserUI();
+            showNotification('Logout berhasil!', 'info');
+        }
+
+        function updateUserUI() {
+            const loginSection = document.getElementById('loginSection');
+            const userSection = document.getElementById('userSection');
+            const adminBadge = document.getElementById('adminBadge');
+            const adminPanel = document.getElementById('adminPanel');
+            if (currentUser) {
+                loginSection.style.display = 'none';
+                userSection.style.display = 'block';
+                document.getElementById('userAvatar').src = currentUser.photoURL || 'https://via.placeholder.com/40';
+                document.getElementById('userName').textContent = currentUser.displayName || currentUser.email;
+                if (isAdmin) { adminBadge.style.display = 'inline-block';
+                    adminPanel.classList.add('active'); } else { adminBadge.style.display = 'none';
+                    adminPanel.classList.remove('active'); }
+            } else {
+                loginSection.style.display = 'block';
+                userSection.style.display = 'none';
+                adminBadge.style.display = 'none';
+                adminPanel.classList.remove('active');
+            }
+        }
+
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                isAdmin = user.email === ADMIN_EMAIL;
+                const doc = await db.collection('users').doc(user.uid).get();
+                if (doc.exists && doc.data().role === 'admin') isAdmin = true;
+            } else { currentUser = null;
+                isAdmin = false; }
+            updateUserUI();
+        });
+
+        function displayGames() {
+            const grid = document.getElementById('gameGrid');
+            grid.innerHTML = '';
+            games.forEach(game => {
+                const min = Math.min(...game.items.map(i => i.price));
+                const max = Math.max(...game.items.map(i => i.price));
+                const card = document.createElement('div');
+                card.className = 'game-card';
+                card.onclick = () => showItems(game);
+                card.innerHTML = `<div class="game-icon">${game.icon}</div><div class="game-info">
+                    <span class="category">${game.category}</span><h3>${game.name}</h3><p>${game.developer}</p>
+                    <p class="price-range">${formatPrice(min)} - ${formatPrice(max)}</p>
+                    <p style="margin-top:10px;">📦 ${game.items.length} item</p></div>`;
+                grid.appendChild(card);
+            });
+            document.getElementById('statGames').textContent = games.length + '+';
+            updateItemGameSelect();
+        }
+
+        function showItems(game) {
+            const list = document.getElementById('itemsList');
+            let html = `<h3 style="color:#333;margin-bottom:20px;">${game.icon} ${game.name} - Daftar Item</h3>
+                <table class="items-table"><thead><tr><th>Item</th><th>Harga</th><th>Aksi</th></tr></thead><tbody>`;
+            game.items.forEach(item => {
+                html += `<tr><td>${item.item}</td><td class="price-tag">${formatPrice(item.price)}</td>
+                    <td><button class="btn-buy" onclick="buyItem('${game.name}','${item.item}',${item.price})">Beli</button></td></tr>`;
+            });
+            html += '</tbody></table>';
+            list.innerHTML = html;
+            document.getElementById('itemsSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function buyItem(gameName, itemName, price) {
+            if (!currentUser) { showNotification('Silakan login terlebih dahulu!', 'error'); return; }
+            try {
+                await db.collection('transactions').add({
+                    userId: currentUser.uid,
+                    userEmail: currentUser.email,
+                    gameName,
+                    itemName,
+                    price,
+                    status: 'pending',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                showNotification('Pesanan berhasil dibuat!', 'success');
+                const msg =
+                    `Halo YadStore! Saya ingin membeli:\n\nGame: ${gameName}\nItem: ${itemName}\nHarga: ${formatPrice(price)}\n\nNama: ${currentUser.displayName}\nEmail: ${currentUser.email}\n\nMohon diproses. Terima kasih!`;
+                window.open(`https://wa.me/6283170617054?text=${encodeURIComponent(msg)}`, '_blank');
+                await fetch(
+                    `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: '💰 Transaksi Baru:\n' + msg })
+                    });
+            } catch (error) { showNotification('Gagal membuat pesanan!', 'error'); }
+        }
+
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const term = this.value.toLowerCase();
+            const filtered = games.filter(g => g.name.toLowerCase().includes(term) || g.category.toLowerCase()
+                .includes(term) || g.items.some(i => i.item.toLowerCase().includes(term)));
+            const grid = document.getElementById('gameGrid');
+            grid.innerHTML = '';
+            filtered.forEach(game => {
+                const min = Math.min(...game.items.map(i => i.price));
+                const max = Math.max(...game.items.map(i => i.price));
+                const card = document.createElement('div');
+                card.className = 'game-card';
+                card.onclick = () => showItems(game);
+                card.innerHTML = `<div class="game-icon">${game.icon}</div><div class="game-info">
+                    <span class="category">${game.category}</span><h3>${game.name}</h3><p>${game.developer}</p>
+                    <p class="price-range">${formatPrice(min)} - ${formatPrice(max)}</p></div>`;
+                grid.appendChild(card);
+            });
+        });
+
+        function switchTab(name) {
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('tab-' + name).classList.add('active');
+        }
+
+        function updateBackground() {
+            const url = document.getElementById('bgUrl').value;
+            const color = document.getElementById('bgColor').value;
+            const opacity = document.getElementById('bgOpacity').value;
+            if (url) document.documentElement.style.setProperty('--bg-image', `url('${url}')`);
+            document.documentElement.style.setProperty('--bg-color', color);
+            document.documentElement.style.setProperty('--bg-opacity', opacity);
+            document.body.style.background = color;
+            db.collection('settings').doc('background').set({ url, color, opacity }, { merge: true });
+            showNotification('Background diperbarui!', 'success');
+        }
+
+        function resetBackground() {
+            document.documentElement.style.setProperty('--bg-image',
+                'url("https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1920")');
+            document.documentElement.style.setProperty('--bg-color', '#667eea');
+            document.documentElement.style.setProperty('--bg-opacity', '0.15');
+            document.body.style.background = '#667eea';
+            db.collection('settings').doc('background').set({ url: '', color: '#667eea', opacity: 0.15 });
+            showNotification('Background direset!', 'info');
+        }
+
+        function addGame() {
+            const name = document.getElementById('gameName').value;
+            const category = document.getElementById('gameCategory').value;
+            const icon = document.getElementById('gameIcon').value || '🎮';
+            const developer = document.getElementById('gameDeveloper').value;
+            if (!name) { showNotification('Nama game wajib diisi!', 'error'); return; }
+            games.push({ name, category, icon, developer, items: [] });
+            db.collection('games').add({ name, category, icon, developer, items: [] });
+            displayGames();
+            showNotification('Game ditambahkan!', 'success');
+            document.getElementById('gameName').value = '';
+            document.getElementById('gameIcon').value = '';
+            document.getElementById('gameDeveloper').value = '';
+        }
+
+        function updateItemGameSelect() {
+            const sel = document.getElementById('itemGameSelect');
+            sel.innerHTML = '';
+            games.forEach((g, i) => {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = g.name;
+                sel.appendChild(opt);
+            });
+        }
+
+        function addItem() {
+            const idx = parseInt(document.getElementById('itemGameSelect').value);
+            const name = document.getElementById('itemName').value;
+            const price = parseInt(document.getElementById('itemPrice').value);
+            if (!name || !price) { showNotification('Nama dan harga wajib diisi!', 'error'); return; }
+            games[idx].items.push({ item: name, price });
+            db.collection('games').where('name', '==', games[idx].name).get().then(snap => {
+                snap.forEach(doc => doc.ref.update({ items: games[idx].items }));
+            });
+            displayGames();
+            showNotification('Item ditambahkan!', 'success');
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemPrice').value = '';
+        }
+
+        function saveChatbotSettings() {
+            chatbotConfig.telegramBotToken = document.getElementById('telegramBotToken').value;
+            chatbotConfig.telegramChatId = document.getElementById('telegramChatId').value;
+            chatbotConfig.hfApiToken = document.getElementById('hfApiToken').value;
+            chatbotConfig.hfModel = document.getElementById('hfModel').value;
+            db.collection('settings').doc('chatbot').set(chatbotConfig);
+            showNotification('Chatbot disimpan!', 'success');
+        }
+
+        function saveSettings() {
+            const data = {
+                name: document.getElementById('storeName').value,
+                whatsapp: document.getElementById('storeWhatsapp').value,
+                email: document.getElementById('storeEmail').value,
+                dana: document.getElementById('storeDana').value,
+                gopay: document.getElementById('storeGopay').value
+            };
+            db.collection('settings').doc('store').set(data);
+            document.getElementById('footerWhatsapp').textContent = data.whatsapp;
+            document.getElementById('footerEmail').textContent = data.email;
+            showNotification('Pengaturan disimpan!', 'success');
+        }
+
+        function toggleChat() {
+            document.getElementById('chatWindow').classList.toggle('active');
+            if (document.getElementById('chatWindow').classList.contains('active')) {
+                document.getElementById('chatInput').focus();
+            }
+        }
+
+        function handleChatKeyPress(e) { if (e.key === 'Enter') sendChatMessage(); }
+
+        function addMessage(text, sender) {
+            const container = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            div.className = 'message ' + sender;
+            div.innerHTML = text + '<span class="time">' + new Date().toLocaleTimeString('id-ID', { hour: '2-digit',
+                minute: '2-digit' }) + '</span>';
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showTyping() { document.getElementById('typingIndicator').classList.add('active'); }
+
+        function hideTyping() { document.getElementById('typingIndicator').classList.remove('active'); }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const msg = input.value.trim();
+            if (!msg) return;
+            addMessage(msg, 'user');
+            input.value = '';
+            showTyping();
+            try {
+                const aiResp = await getHuggingFaceResponse(msg);
+                hideTyping();
+                addMessage(aiResp, 'bot');
+                await sendToTelegram(msg, aiResp);
+            } catch (e) {
+                hideTyping();
+                const fallback = generateFallbackResponse(msg);
+                addMessage(fallback, 'bot');
+            }
+        }
+
+        async function getHuggingFaceResponse(message) {
+            if (!chatbotConfig.hfApiToken) return generateFallbackResponse(message);
+            try {
+                const resp = await fetch(`https://api-inference.huggingface.co/models/${chatbotConfig.hfModel}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${chatbotConfig.hfApiToken}`,
+                        'Content-Type': 'application/json' },
+                    body: JSON.stringify({ inputs: message, parameters: { max_length: 150, temperature: 0.7,
+                            top_p: 0.9 } })
+                });
+                if (!resp.ok) throw new Error('HF error');
+                const data = await resp.json();
+                if (Array.isArray(data) && data.length > 0) return data[0].generated_text || data[0]
+                    .summary_text || generateFallbackResponse(message);
+                return generateFallbackResponse(message);
+            } catch (e) { return generateFallbackResponse(message); }
+        }
+
+        async function sendToTelegram(userMsg, botMsg) {
+            if (!chatbotConfig.telegramBotToken || !chatbotConfig.telegramChatId) return;
+            try {
+                const text =
+                    `💬 Chat YadStore:\n\n👤 User: ${userMsg}\n🤖 Bot: ${botMsg}\n🕐 ${new Date().toLocaleString('id-ID')}`;
+                await fetch(`https://api.telegram.org/bot${chatbotConfig.telegramBotToken}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: chatbotConfig.telegramChatId, text })
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        function generateFallbackResponse(msg) {
+            const m = msg.toLowerCase();
+            if (m.includes('ml') || m.includes('mobile legend'))
+                return 'Mobile Legends tersedia mulai Rp 1.500 (3 Diamonds) hingga Rp 845.000 (2010 Diamonds). Mau beli berapa? 😊';
+            if (m.includes('pubg')) return 'PUBG Mobile: 60 UC Rp 12.000, 300 UC Rp 60.000, 600 UC Rp 120.000, Royale Pass Rp 150.000. 🎮';
+            if (m.includes('free fire') || m.includes('ff'))
+                return 'Free Fire: 50 Diamond Rp 10.000, 100 Diamond Rp 20.000, 520 Diamond Rp 100.000. 🔥';
+            if (m.includes('genshin')) return 'Genshin Impact: 60 Crystal Rp 15.000, 300 Crystal Rp 75.000, 980 Crystal Rp 245.000. ✨';
+            if (m.includes('valorant')) return 'Valorant Points: 125 VP Rp 30.000, 420 VP Rp 100.000, 700 VP Rp 165.000. 🎯';
+            if (m.includes('cara') || m.includes('beli') || m.includes('order'))
+                return 'Cara order: 1) Pilih game, 2) Klik Beli, 3) Login, 4) Konfirmasi via WhatsApp, 5) Bayar, 6) Diproses! 😊';
+            if (m.includes('pembayaran') || m.includes('bayar'))
+                return 'Metode pembayaran: DANA (083170617054), GOPAY (083170617054), WhatsApp (083170617054). 💳';
+            if (m.includes('halo') || m.includes('hai') || m.includes('hello'))
+                return 'Halo! 👋 Selamat datang di YadStore. Ada yang bisa saya bantu? Tanyakan game atau harga!';
+            return 'Terima kasih! 😊 Silakan tanya tentang game tertentu, harga, atau cara pembelian. CS kami siap membantu di WhatsApp 083170617054.';
+        }
+
+        function testChatbot() {
+            const testMsg = 'Halo, game apa saja yang tersedia?';
+            addMessage('🧪 Test: ' + testMsg, 'user');
+            showTyping();
+            setTimeout(async () => {
+                hideTyping();
+                const resp = await getHuggingFaceResponse(testMsg);
+                addMessage('✅ ' + resp, 'bot');
+            }, 1000);
+        }
+
+        function loadSettings() {
+            db.collection('settings').doc('background').get().then(doc => {
+                if (doc.exists) {
+                    const d = doc.data();
+                    if (d.url) document.documentElement.style.setProperty('--bg-image', `url('${d.url}')`);
+                    if (d.color) { document.documentElement.style.setProperty('--bg-color', d.color);
+                        document.body.style.background = d.color; }
+                    if (d.opacity) document.documentElement.style.setProperty('--bg-opacity', d.opacity);
+                }
+            });
+            db.collection('settings').doc('chatbot').get().then(doc => {
+                if (doc.exists) {
+                    chatbotConfig = { ...chatbotConfig, ...doc.data() };
+                    document.getElementById('telegramBotToken').value = chatbotConfig.telegramBotToken || '';
+                    document.getElementById('telegramChatId').value = chatbotConfig.telegramChatId || '';
+                    document.getElementById('hfApiToken').value = chatbotConfig.hfApiToken || '';
+                    document.getElementById('hfModel').value = chatbotConfig.hfModel || 'microsoft/DialoGPT-medium';
+                } else {
+                    document.getElementById('telegramBotToken').value = TELEGRAM_BOT_TOKEN;
+                    document.getElementById('telegramChatId').value = TELEGRAM_CHAT_ID;
+                    document.getElementById('hfApiToken').value = HF_API_TOKEN;
+                }
+            });
+        }
+
+        function loadGames() {
+            db.collection('games').get().then(snap => {
+                if (!snap.empty) {
+                    games = [];
+                    snap.forEach(doc => games.push(doc.data()));
+                    displayGames();
+                } else {
+                    defaultGames.forEach(g => db.collection('games').add(g));
+                }
+            }).catch(() => {});
+        }
+
+        displayGames();
+        loadSettings();
+        loadGames();
+    </script>
+</body>
+</html>
